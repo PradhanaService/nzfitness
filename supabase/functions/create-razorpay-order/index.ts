@@ -33,7 +33,7 @@ serve(async (req) => {
     const authHeaders = `Basic ${btoa(`${razorpayKeyId}:${razorpayKeySecret}`)}`;
     
     // Amount must be in paise (smallest currency unit: price * 100)
-    const amountInPaise = price * 100;
+    const amountInPaise = Math.round(price * 100);
 
     const orderRes = await fetch("https://api.razorpay.com/v1/orders", {
       method: "POST",

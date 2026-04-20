@@ -11,15 +11,8 @@ const WHATSAPP_1 = "918122390693";
 const WHATSAPP_2 = "918296890693";
 
 const handleWhatsApp = (message: string) => {
-  const encodedMsg = encodeURIComponent(message);
-
-  // Open first number
-  window.open(`https://wa.me/${WHATSAPP_1}?text=${encodedMsg}`, '_blank');
-
-  // Open second number with a 500ms delay to prevent browser popup blocking
-  setTimeout(() => {
-    window.open(`https://wa.me/${WHATSAPP_2}?text=${encodedMsg}`, '_blank');
-  }, 500);
+  const target = Math.random() > 0.5 ? WHATSAPP_1 : WHATSAPP_2;
+  window.open(`https://wa.me/${target}?text=${encodeURIComponent(message)}`, '_blank');
 };
 // --- Components ---
 
@@ -558,8 +551,45 @@ const SpecialOffers: React.FC = () => {
     fetchOffers();
   }, []);
 
-  if (loading || offers.length === 0) {
+  if (loading) {
     return null;
+  }
+
+  if (offers.length === 0) {
+    return (
+      <section id="offers" className="py-16 md:py-24 relative overflow-hidden">
+        <div className="absolute inset-0 z-0">
+          <img src="/images/crossfit.jpg" alt="Offers Background" className="w-full h-full object-cover brightness-[0.2] blur-md scale-110 transform-gpu" />
+          <div className="absolute inset-0 bg-black/80 pointer-events-none"></div>
+        </div>
+        <div className="absolute inset-0 z-0 opacity-10">
+          <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-gold/20 rounded-full blur-[100px]"></div>
+          <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-gold/10 rounded-full blur-[100px]"></div>
+        </div>
+        <div className="container mx-auto px-4 md:px-6 lg:px-8 relative z-10 max-w-7xl text-center">
+          <div className="flex items-center justify-center gap-3 mb-4">
+            <div className="h-px w-12 md:w-20 bg-gradient-to-r from-transparent to-gold/50"></div>
+            <div className="flex items-center gap-2">
+              <span className="text-gold font-bold text-sm uppercase tracking-[0.3em]">Exclusive Deals</span>
+            </div>
+            <div className="h-px w-12 md:w-20 bg-gradient-to-l from-transparent to-gold/50"></div>
+          </div>
+          <h2 className="text-4xl md:text-5xl lg:text-6xl font-black mb-12 text-white tracking-tight">
+            SPECIAL OFFERS
+          </h2>
+          <div className="glass p-8 md:p-12 rounded-3xl border border-white/5 inline-block max-w-2xl mx-auto">
+            <svg className="w-16 h-16 text-gold/50 mx-auto mb-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <h3 className="text-2xl font-bold text-white mb-4">No Special Offers Right Now</h3>
+            <p className="text-neutral-400 mb-8 border-b border-white/10 pb-8">There are currently no active special offers. Keep training hard and check back later for exciting new deals!</p>
+            <a href="#membership" className="inline-flex gold-gradient text-black font-bold py-3 px-8 rounded-full shadow-lg hover:shadow-[0_4px_20px_rgba(229,192,123,0.3)] hover:-translate-y-1 transition-all duration-300 text-sm tracking-widest uppercase">
+              View Memberships
+            </a>
+          </div>
+        </div>
+      </section>
+    );
   }
 
   return (

@@ -1,6 +1,5 @@
 import { serve } from "https://deno.land/std@0.177.0/http/server.ts"
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.41.1"
-import { hmac } from "https://deno.land/x/hmac@v2.0.1/mod.ts";
 
 serve(async (req) => {
   try {
@@ -16,8 +15,19 @@ serve(async (req) => {
       throw new Error("Webhook secret not configured.");
     }
 
-    // Verify signature
-    const expectedSignature = hmac("sha256", webhookSecret, payloadText, "utf8", "hex");
+    // Verify signature using standard Web Crypto API
+    const encoder = new TextEncoder();
+    const key = await crypto.subtle.importKey(
+      "raw",
+      encoder.encode(webhookSecret),
+      { name: "HMAC", hash: "SHA-256" },
+      false,
+      ["sign"]
+    );
+    const signatureBuffer = await crypto.subtle.sign("HMAC", key, encoder.encode(payloadText));
+    const expectedSignature = Array.from(new Uint8Array(signatureBuffer))
+      .map(b => b.toString(16).padStart(2, '0'))
+      .join('');
     
     if (expectedSignature !== signature) {
       return new Response('Invalid signature', { status: 400 });
