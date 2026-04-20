@@ -36,3 +36,13 @@ export interface AppImage {
   image_data: string;
   updated_at: string;
 }
+
+export interface DatabaseReview {
+  id: string;
+  name: string;
+  text: string;
+  rating: number;
+  is_active: boolean;
+  display_order: number;
+  created_at: string;
+}

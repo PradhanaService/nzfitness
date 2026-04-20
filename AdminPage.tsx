@@ -917,10 +917,172 @@ const GalleryManagement: React.FC = () => {
     </div>
   );
 };
+// Reviews Management Component
+const ReviewsManagement: React.FC = () => {
+  const [reviews, setReviews] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
+  const [successMessage, setSuccessMessage] = useState('');
+  const [editingReview, setEditingReview] = useState<any | null>(null);
+  const [showForm, setShowForm] = useState(false);
+  const [formData, setFormData] = useState({
+    name: '',
+    text: '',
+    rating: 5,
+    is_active: true,
+    display_order: 0,
+  });
+
+  const fetchReviews = async () => {
+    const { data, error } = await supabase
+      .from('reviews')
+      .select('*')
+      .order('display_order', { ascending: true });
+    
+    if (data) setReviews(data);
+    if (error) setErrorMessage(error.message);
+    setLoading(false);
+  };
+
+  useEffect(() => {
+    fetchReviews();
+  }, []);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSaving(true);
+    setErrorMessage('');
+    setSuccessMessage('');
+
+    if (editingReview) {
+      const { error } = await supabase.from('reviews').update(formData).eq('id', editingReview.id);
+      if (error) setErrorMessage(error.message);
+      else setSuccessMessage('Review updated.');
+    } else {
+      const { error } = await supabase.from('reviews').insert([formData]);
+      if (error) setErrorMessage(error.message);
+      else setSuccessMessage('Review created.');
+    }
+
+    if (!errorMessage) {
+      setFormData({ name: '', text: '', rating: 5, is_active: true, display_order: 0 });
+      setEditingReview(null);
+      setShowForm(false);
+      await fetchReviews();
+    }
+    setSaving(false);
+  };
+
+  const handleEdit = (review: any) => {
+    setErrorMessage('');
+    setSuccessMessage('');
+    setEditingReview(review);
+    setFormData({
+      name: review.name,
+      text: review.text,
+      rating: review.rating,
+      is_active: review.is_active,
+      display_order: review.display_order,
+    });
+    setShowForm(true);
+  };
+
+  const handleDelete = async (id: string) => {
+    if (confirm('Are you sure you want to delete this review?')) {
+      const { error } = await supabase.from('reviews').delete().eq('id', id);
+      if (error) setErrorMessage(error.message);
+      else {
+        setSuccessMessage('Review deleted.');
+        fetchReviews();
+      }
+    }
+  };
+
+  const toggleActive = async (review: any) => {
+    const { error } = await supabase.from('reviews').update({ is_active: !review.is_active }).eq('id', review.id);
+    if (error) setErrorMessage(error.message);
+    else fetchReviews();
+  };
+
+  if (loading) return <div className="text-white text-center p-8">Loading...</div>;
+
+  return (
+    <div className="space-y-6">
+      <div className="flex justify-between items-center">
+        <h2 className="text-2xl font-black text-white">Manage Reviews</h2>
+        <button onClick={() => { setShowForm(!showForm); setEditingReview(null); setErrorMessage(''); setSuccessMessage(''); setFormData({ name: '', text: '', rating: 5, is_active: true, display_order: 0 }); }} className="gold-gradient text-black font-bold py-2 px-6 rounded-full hover:scale-105 transition-all">
+          {showForm ? 'Cancel' : '+ Add Review'}
+        </button>
+      </div>
+
+      {errorMessage && <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-3 text-red-500 text-sm">{errorMessage}</div>}
+      {successMessage && <div className="bg-green-500/10 border border-green-500/30 rounded-xl p-3 text-green-500 text-sm">{successMessage}</div>}
+
+      {showForm && (
+        <form onSubmit={handleSubmit} className="glass rounded-2xl p-6 border border-gold/30 space-y-4">
+          <h3 className="text-xl font-bold text-white">{editingReview ? 'Edit Review' : 'New Review'}</h3>
+          <div>
+            <label className="block text-white font-bold mb-2">Reviewer Name *</label>
+            <input type="text" value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} required className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-gold outline-none" />
+          </div>
+          <div>
+            <label className="block text-white font-bold mb-2">Review Text *</label>
+            <textarea value={formData.text} onChange={(e) => setFormData({ ...formData, text: e.target.value })} rows={4} required className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-gold outline-none" />
+          </div>
+          <div className="grid md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-white font-bold mb-2">Rating (1-5) *</label>
+              <input type="number" min="1" max="5" value={formData.rating} onChange={(e) => setFormData({ ...formData, rating: Number(e.target.value) })} required className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-gold outline-none" />
+            </div>
+            <div>
+              <label className="block text-white font-bold mb-2">Display Order</label>
+              <input type="number" value={formData.display_order} onChange={(e) => setFormData({ ...formData, display_order: Number(e.target.value) })} className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-gold outline-none" />
+            </div>
+          </div>
+          <div className="flex items-center gap-3">
+            <input type="checkbox" checked={formData.is_active} onChange={(e) => setFormData({ ...formData, is_active: e.target.checked })} className="w-5 h-5" />
+            <label className="text-white font-bold">Active (Visible)</label>
+          </div>
+          <button type="submit" disabled={saving} className="w-full gold-gradient text-black font-black py-3 rounded-full hover:shadow-[0_0_30px_rgba(229,192,123,0.6)] transition-all disabled:opacity-50">
+            {saving ? 'SAVING...' : editingReview ? 'Update Review' : 'Create Review'}
+          </button>
+        </form>
+      )}
+
+      <div className="grid gap-4">
+        {reviews.map((review) => (
+          <div key={review.id} className="glass rounded-2xl p-6 border border-white/10">
+            <div className="flex justify-between items-start mb-4">
+              <div>
+                <h3 className="text-xl font-bold text-white mb-2">{review.name}</h3>
+                <div className="flex text-gold mb-2">{'★'.repeat(review.rating)}{'☆'.repeat(5 - review.rating)}</div>
+                <p className="text-neutral-400 mb-2 italic">"{review.text}"</p>
+              </div>
+              <div className="flex flex-col gap-2 items-end">
+                <span className={`px-3 py-1 rounded-full text-xs font-bold ${review.is_active ? 'bg-green-500/20 text-green-500' : 'bg-red-500/20 text-red-500'}`}>
+                  {review.is_active ? 'Active' : 'Inactive'}
+                </span>
+                <span className="px-3 py-1 rounded-full text-xs font-bold bg-blue-500/20 text-blue-500 text-center">Order: {review.display_order}</span>
+              </div>
+            </div>
+            <div className="flex gap-2">
+              <button onClick={() => handleEdit(review)} className="px-4 py-2 bg-blue-500/20 text-blue-500 rounded-lg font-bold hover:bg-blue-500/30 transition-all">Edit</button>
+              <button onClick={() => toggleActive(review)} className="px-4 py-2 bg-yellow-500/20 text-yellow-500 rounded-lg font-bold hover:bg-yellow-500/30 transition-all">{review.is_active ? 'Deactivate' : 'Activate'}</button>
+              <button onClick={() => handleDelete(review.id)} className="px-4 py-2 bg-red-500/20 text-red-500 rounded-lg font-bold hover:bg-red-500/30 transition-all">Delete</button>
+            </div>
+          </div>
+        ))}
+        {reviews.length === 0 && <div className="text-center text-neutral-400 py-12">No reviews yet. Click "Add Review" to create one.</div>}
+      </div>
+    </div>
+  );
+};
 
 // Main Admin Dashboard
+
 const AdminDashboard: React.FC<{ user: User }> = ({ user }) => {
-  const [activeTab, setActiveTab] = useState<'offers' | 'plans'>('offers');
+  const [activeTab, setActiveTab] = useState<'offers' | 'plans' | 'images' | 'reviews'>('offers');
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
@@ -953,7 +1115,7 @@ const AdminDashboard: React.FC<{ user: User }> = ({ user }) => {
       </nav>
 
       <div className="container mx-auto px-4 md:px-6 py-8">
-        <div className="flex gap-4 mb-8">
+        <div className="flex flex-wrap gap-4 mb-8">
           <button
             onClick={() => setActiveTab('offers')}
             className={`px-6 py-3 rounded-full font-bold transition-all ${
@@ -974,8 +1136,6 @@ const AdminDashboard: React.FC<{ user: User }> = ({ user }) => {
           >
             Membership Plans
           </button>
-        </div>
-
           <button
             onClick={() => setActiveTab('images')}
             className={`px-6 py-3 rounded-full font-bold transition-all ${
@@ -986,8 +1146,19 @@ const AdminDashboard: React.FC<{ user: User }> = ({ user }) => {
           >
             Site Images
           </button>
+          <button
+            onClick={() => setActiveTab('reviews')}
+            className={`px-6 py-3 rounded-full font-bold transition-all ${
+              activeTab === 'reviews'
+                ? 'gold-gradient text-black'
+                : 'glass text-white hover:border-gold border border-white/10'
+            }`}
+          >
+            Reviews
+          </button>
+        </div>
 
-        {activeTab === 'offers' ? <OffersManagement /> : activeTab === 'plans' ? <PlansManagement /> : <GalleryManagement />}
+        {activeTab === 'offers' ? <OffersManagement /> : activeTab === 'plans' ? <PlansManagement /> : activeTab === 'images' ? <GalleryManagement /> : <ReviewsManagement />}
       </div>
     </div>
   );

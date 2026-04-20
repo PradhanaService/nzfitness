@@ -134,12 +134,12 @@ const Hero: React.FC = () => {
 
   // Dynamic Gallery Constructor
   const customKeys = Object.keys(siteImages).filter(k => k.startsWith('hero_media_')).sort();
-  const heroMedia = customKeys.length > 0 
+  const heroMedia = customKeys.length > 0
     ? customKeys.map(k => ({
-        type: siteImages[k].startsWith('data:video/') ? 'video' : 'image',
-        src: siteImages[k],
-        alt: 'NOIZE Custom Hero Media'
-      }))
+      type: siteImages[k].startsWith('data:video/') ? 'video' : 'image',
+      src: siteImages[k],
+      alt: 'NOIZE Custom Hero Media'
+    }))
     : HERO_MEDIA_DEFAULT;
 
   // Legacy fallback support for users switching from Single Image Override
@@ -669,12 +669,12 @@ const BrandStory: React.FC = () => {
 
   // Dynamic Gallery Constructor
   const customKeys = Object.keys(siteImages).filter(k => k.startsWith('gym_media_')).sort();
-  const gymMedia = customKeys.length > 0 
+  const gymMedia = customKeys.length > 0
     ? customKeys.map(k => ({
-        type: siteImages[k].startsWith('data:video/') ? 'video' : 'image',
-        src: siteImages[k],
-        alt: 'NOIZE Custom Gym Media'
-      }))
+      type: siteImages[k].startsWith('data:video/') ? 'video' : 'image',
+      src: siteImages[k],
+      alt: 'NOIZE Custom Gym Media'
+    }))
     : GYM_MEDIA_DEFAULT;
 
   useEffect(() => {
@@ -844,25 +844,25 @@ const ProgramsGrid: React.FC = () => {
               const thumbnail = customKeys.length > 0 ? siteImages[customKeys[0]] : (siteImages[legacyKey] || program.imageUrl);
 
               return (
-              <div
-                key={program.id}
-                onClick={() => setSelectedProgram(program)}
-                className="group glass rounded-3xl overflow-hidden border border-white/10 hover:border-gold/50 cursor-pointer hover:-translate-y-2 hover:shadow-[0_12px_40px_rgba(229,192,123,0.2)] transition-all duration-500 bg-[#121212]/90 flex flex-col h-full"
-              >
-                <div className="h-52 md:h-48 relative overflow-hidden">
-                  <img src={thumbnail} alt={program.title} className="w-full h-full object-cover object-center transition-transform duration-700 group-hover:scale-105" loading="lazy" decoding="async" />
-                  <div className="absolute inset-0 bg-gradient-to-t from-[#121212] via-transparent to-transparent"></div>
-                  <div className="absolute top-4 right-4 bg-black/60 backdrop-blur-md px-3 py-1 rounded-full border border-gold/30">
-                    <span className="text-gold text-[10px] font-bold uppercase tracking-widest">View Details</span>
+                <div
+                  key={program.id}
+                  onClick={() => setSelectedProgram(program)}
+                  className="group glass rounded-3xl overflow-hidden border border-white/10 hover:border-gold/50 cursor-pointer hover:-translate-y-2 hover:shadow-[0_12px_40px_rgba(229,192,123,0.2)] transition-all duration-500 bg-[#121212]/90 flex flex-col h-full"
+                >
+                  <div className="h-52 md:h-48 relative overflow-hidden">
+                    <img src={thumbnail} alt={program.title} className="w-full h-full object-cover object-center transition-transform duration-700 group-hover:scale-105" loading="lazy" decoding="async" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-[#121212] via-transparent to-transparent"></div>
+                    <div className="absolute top-4 right-4 bg-black/60 backdrop-blur-md px-3 py-1 rounded-full border border-gold/30">
+                      <span className="text-gold text-[10px] font-bold uppercase tracking-widest">View Details</span>
+                    </div>
+                  </div>
+                  <div className="p-6 md:p-8 flex-grow flex flex-col pointer-events-none">
+                    <div className="text-gold mb-3 opacity-90 group-hover:opacity-100 transition-opacity">{program.icon}</div>
+                    <h3 className="text-lg md:text-xl font-bold mb-3 tracking-wide group-hover:text-gold transition-colors">{program.title}</h3>
+                    <p className="text-neutral-400 text-sm font-light leading-relaxed flex-grow">{program.description}</p>
                   </div>
                 </div>
-                <div className="p-6 md:p-8 flex-grow flex flex-col pointer-events-none">
-                  <div className="text-gold mb-3 opacity-90 group-hover:opacity-100 transition-opacity">{program.icon}</div>
-                  <h3 className="text-lg md:text-xl font-bold mb-3 tracking-wide group-hover:text-gold transition-colors">{program.title}</h3>
-                  <p className="text-neutral-400 text-sm font-light leading-relaxed flex-grow">{program.description}</p>
-                </div>
-              </div>
-            );
+              );
             })}
           </div>
         </div>
@@ -1063,7 +1063,7 @@ const TransformationCard: React.FC<{ t: any, index: number }> = ({ t, index }) =
 
   const prefix = `transformation_${index + 1}_`;
   const legacyKey = `transformation_${index + 1}`;
-  
+
   const customKeys = Object.keys(siteImages).filter(k => k.startsWith(prefix)).sort();
 
   const beforeImage = customKeys.length > 0 ? siteImages[customKeys[0]] : (siteImages[`${legacyKey}_before`] || siteImages[legacyKey] || t.beforeImg);
@@ -1278,24 +1278,24 @@ const Gallery: React.FC = () => {
   const siteImages = useContext(SiteImagesContext);
 
   const customImageKeys = Object.keys(siteImages).filter(k => k.startsWith('gallery_image_')).sort();
-  const images = customImageKeys.length > 0 
+  const images = customImageKeys.length > 0
     ? customImageKeys.map(k => siteImages[k])
     : [
-        '/images/gallery-1.jpg',
-        '/images/gallery-2.jpg',
-        '/images/gallery-3.jpg',
-        '/images/gallery-4.jpg',
-        '/images/gallery-5.jpg'
-      ];
+      '/images/gallery-1.jpg',
+      '/images/gallery-2.jpg',
+      '/images/gallery-3.jpg',
+      '/images/gallery-4.jpg',
+      '/images/gallery-5.jpg'
+    ];
 
   const customVideoKeys = Object.keys(siteImages).filter(k => k.startsWith('gallery_video_')).sort();
   const videos = customVideoKeys.length > 0
     ? customVideoKeys.map(k => siteImages[k])
     : [
-        '/images/gallery-6.mp4',
-        '/images/gallery-7.mp4',
-        '/images/gallery-8.mp4'
-      ];
+      '/images/gallery-6.mp4',
+      '/images/gallery-7.mp4',
+      '/images/gallery-8.mp4'
+    ];
 
   const mediaWall = [
     ...images.map((src) => ({ type: 'image' as const, src })),
@@ -1493,91 +1493,130 @@ const WhyChooseUs: React.FC = () => (
 const WeeklyHighlights: React.FC = () => {
   const siteImages = useContext(SiteImagesContext);
   return (
-  <section className="py-12 md:py-24 bg-[#0A0A0A]">
-    <div className="container mx-auto px-4 md:px-6">
-      <div className="text-center mb-8 md:mb-16">
-        <h2 className="text-3xl md:text-5xl lg:text-6xl font-black mb-3 md:mb-4 uppercase">Weekly <span className="text-gold">Highlights</span></h2>
-        <p className="text-neutral-400 text-sm md:text-base px-4">Our lifestyle goes beyond the weights.</p>
-      </div>
+    <section className="py-12 md:py-24 bg-[#0A0A0A]">
+      <div className="container mx-auto px-4 md:px-6">
+        <div className="text-center mb-8 md:mb-16">
+          <h2 className="text-3xl md:text-5xl lg:text-6xl font-black mb-3 md:mb-4 uppercase">Weekly <span className="text-gold">Highlights</span></h2>
+          <p className="text-neutral-400 text-sm md:text-base px-4">Our lifestyle goes beyond the weights.</p>
+        </div>
 
-      <div className="grid md:grid-cols-3 gap-4 md:gap-8">
-        {[
-          {
-            day: "MONDAY & FRIDAY",
-            title: "ZUMBA PARTY",
-            color: "from-pink-600/40",
-            image: siteImages['highlight_1'] || "/images/zumba-yog.jpg",
-            icon: <svg className="w-8 h-8 md:w-10 md:h-10 text-pink-500 drop-shadow-[0_0_15px_rgba(236,72,153,0.5)]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3" /></svg>
-          },
-          {
-            day: "SATURDAY",
-            title: "BADMINTON",
-            color: "from-green-500/40",
-            image: siteImages['highlight_2'] || "/images/gallery-2.jpg",
-            icon: <svg className="w-8 h-8 md:w-10 md:h-10 text-green-400 drop-shadow-[0_0_15px_rgba(74,222,128,0.5)]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
-          },
-          {
-            day: "SUNDAY",
-            title: "RECOVERY",
-            color: "from-blue-600/40",
-            image: siteImages['highlight_3'] || "/images/gallery-4.jpg",
-            icon: <svg className="w-8 h-8 md:w-10 md:h-10 text-blue-400 drop-shadow-[0_0_15px_rgba(96,165,250,0.5)]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" /></svg>
-          }
-        ].map((activity, idx) => (
-          <div key={idx} className={`group relative glass rounded-[24px] md:rounded-[32px] border border-white/10 hover:border-white/30 overflow-hidden hover:-translate-y-2 hover:shadow-[0_20px_50px_rgba(0,0,0,0.5)] transition-all duration-500 min-h-[220px] md:min-h-[280px] flex flex-col justify-end cursor-pointer`}>
-            <div className="absolute inset-0 z-0 bg-[#0A0A0A]">
-              <img src={activity.image} alt={activity.title} className="w-full h-full object-cover opacity-30 group-hover:opacity-50 group-hover:scale-110 transition-all duration-700" />
-              <div className={`absolute inset-0 bg-gradient-to-br ${activity.color} via-black/80 to-black mix-blend-overlay group-hover:opacity-80 transition-opacity`}></div>
-              <div className={`absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent`}></div>
-            </div>
-
-            <div className="relative z-10 p-6 md:p-8 transform group-hover:-translate-y-2 transition-transform duration-500">
-              <div className="mb-4 opacity-80 group-hover:opacity-100 group-hover:scale-110 transition-all origin-left duration-500">
-                {activity.icon}
+        <div className="grid md:grid-cols-3 gap-4 md:gap-8">
+          {[
+            {
+              day: "MONDAY & FRIDAY",
+              title: "ZUMBA PARTY",
+              color: "from-pink-600/40",
+              image: siteImages['highlight_1'] || "/images/zumba-yog.jpg",
+              icon: <svg className="w-8 h-8 md:w-10 md:h-10 text-pink-500 drop-shadow-[0_0_15px_rgba(236,72,153,0.5)]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3" /></svg>
+            },
+            {
+              day: "SATURDAY",
+              title: "BADMINTON",
+              color: "from-green-500/40",
+              image: siteImages['highlight_2'] || "/images/gallery-2.jpg",
+              icon: <svg className="w-8 h-8 md:w-10 md:h-10 text-green-400 drop-shadow-[0_0_15px_rgba(74,222,128,0.5)]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
+            },
+            {
+              day: "SUNDAY",
+              title: "RECOVERY",
+              color: "from-blue-600/40",
+              image: siteImages['highlight_3'] || "/images/gallery-4.jpg",
+              icon: <svg className="w-8 h-8 md:w-10 md:h-10 text-blue-400 drop-shadow-[0_0_15px_rgba(96,165,250,0.5)]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" /></svg>
+            }
+          ].map((activity, idx) => (
+            <div key={idx} className={`group relative glass rounded-[24px] md:rounded-[32px] border border-white/10 hover:border-white/30 overflow-hidden hover:-translate-y-2 hover:shadow-[0_20px_50px_rgba(0,0,0,0.5)] transition-all duration-500 min-h-[220px] md:min-h-[280px] flex flex-col justify-end cursor-pointer`}>
+              <div className="absolute inset-0 z-0 bg-[#0A0A0A]">
+                <img src={activity.image} alt={activity.title} className="w-full h-full object-cover opacity-30 group-hover:opacity-50 group-hover:scale-110 transition-all duration-700" />
+                <div className={`absolute inset-0 bg-gradient-to-br ${activity.color} via-black/80 to-black mix-blend-overlay group-hover:opacity-80 transition-opacity`}></div>
+                <div className={`absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent`}></div>
               </div>
-              <span className="text-gold font-black text-xs md:text-sm tracking-[0.2em] uppercase block mb-1 drop-shadow-md">{activity.day}</span>
-              <h3 className="text-2xl md:text-3xl lg:text-4xl font-black text-white group-hover:tracking-wider transition-all duration-300 drop-shadow-lg uppercase">{activity.title}</h3>
+
+              <div className="relative z-10 p-6 md:p-8 transform group-hover:-translate-y-2 transition-transform duration-500">
+                <div className="mb-4 opacity-80 group-hover:opacity-100 group-hover:scale-110 transition-all origin-left duration-500">
+                  {activity.icon}
+                </div>
+                <span className="text-gold font-black text-xs md:text-sm tracking-[0.2em] uppercase block mb-1 drop-shadow-md">{activity.day}</span>
+                <h3 className="text-2xl md:text-3xl lg:text-4xl font-black text-white group-hover:tracking-wider transition-all duration-300 drop-shadow-lg uppercase">{activity.title}</h3>
+              </div>
             </div>
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
-    </div>
-  </section>
+    </section>
   );
 };
 
-const Testimonials: React.FC = () => (
-  <section className="py-12 md:py-24 bg-gold/5">
-    <div className="container mx-auto px-4 md:px-6">
-      <div className="text-center mb-8 md:mb-12">
-        <div className="inline-flex items-center gap-2 mb-4 glass px-4 py-2 rounded-full border border-gold/20">
-          <svg className="w-5 h-5 text-gold" fill="currentColor" viewBox="0 0 20 20">
-            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-          </svg>
-          <span className="text-gold font-bold text-sm uppercase tracking-wider">100% Verified Reviews</span>
-        </div>
-        <h2 className="text-3xl md:text-5xl lg:text-6xl font-black mb-3 md:mb-4">
-          WHAT OUR <span className="text-gold">MEMBERS</span> SAY
-        </h2>
-        <p className="text-neutral-400 text-sm md:text-base px-4">Real results, real stories from our NOIZE community.</p>
-      </div>
+const Testimonials: React.FC = () => {
+  const [reviews, setReviews] = useState<any[]>(REVIEWS);
 
-      <div className="flex overflow-x-auto gap-4 md:gap-8 pb-6 md:pb-10 scrollbar-hide">
-        {REVIEWS.map(review => (
-          <div key={review.id} className="min-w-[280px] md:min-w-[400px] glass p-5 md:p-8 rounded-[20px] md:rounded-[28px] border border-gold/20">
-            <div className="flex gap-1 mb-3 md:mb-4">
-              {[...Array(review.rating)].map((_, i) => (
-                <svg key={i} className="w-4 h-4 md:w-5 md:h-5 text-gold" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" /></svg>
-              ))}
-            </div>
-            <p className="text-neutral-300 italic mb-4 md:mb-6 text-sm md:text-base">"{review.text}"</p>
-            <p className="text-gold font-black uppercase text-xs md:text-sm">{review.name}</p>
+  useEffect(() => {
+    const fetchReviews = async () => {
+      const { data } = await supabase
+        .from('reviews')
+        .select('*')
+        .eq('is_active', true)
+        .order('display_order', { ascending: true });
+      if (data && data.length > 0) {
+        setReviews(data);
+      } else {
+        setReviews(REVIEWS);
+      }
+    };
+
+    fetchReviews();
+
+    const channel = supabase.channel('public:reviews')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'reviews' }, () => {
+        fetchReviews();
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, []);
+
+  return (
+    <section className="py-12 md:py-24 bg-gold/5">
+      <div className="container mx-auto px-4 md:px-6">
+        <div className="text-center mb-8 md:mb-12">
+          <div className="inline-flex items-center gap-2 mb-4 glass px-4 py-2 rounded-full border border-gold/20">
+            <svg className="w-5 h-5 text-gold" fill="currentColor" viewBox="0 0 20 20">
+              <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+            </svg>
+            <span className="text-gold font-bold text-sm uppercase tracking-wider">100% Verified Reviews</span>
           </div>
-        ))}
+          <h2 className="text-3xl md:text-5xl lg:text-6xl font-black mb-3 md:mb-4">
+            WHAT OUR <span className="text-gold">MEMBERS</span> SAY
+          </h2>
+          <p className="text-neutral-400 text-sm md:text-base px-4">Real results, real stories from our NOIZE community.</p>
+        </div>
+
+        <div className="relative overflow-hidden group py-4">
+          {/* Gradient overlays to hide edges */}
+          <div className="absolute top-0 left-0 bottom-0 w-8 md:w-20 bg-gradient-to-r from-[#121212] to-transparent z-10 pointer-events-none"></div>
+          <div className="absolute top-0 right-0 bottom-0 w-8 md:w-20 bg-gradient-to-l from-[#121212] to-transparent z-10 pointer-events-none"></div>
+
+          <div className="flex gap-4 md:gap-8 w-max animate-auto-scroll scrollbar-hide px-4 md:px-0 hover:[animation-play-state:paused]">
+            {[...reviews, ...reviews].map((review, index) => (
+              <div key={`${review.id || index}-${index}`} className="w-[280px] md:w-[400px] flex-shrink-0 glass p-5 md:p-8 rounded-[20px] md:rounded-[28px] border border-gold/20 flex flex-col justify-between">
+                <div>
+                  <div className="flex gap-1 mb-3 md:mb-4">
+                    {[...Array(review.rating)].map((_, i) => (
+                      <svg key={i} className="w-4 h-4 md:w-5 md:h-5 text-gold" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" /></svg>
+                    ))}
+                  </div>
+                  <p className="text-neutral-300 italic mb-4 md:mb-6 text-sm md:text-base">"{review.text}"</p>
+                </div>
+                <p className="text-gold font-black uppercase text-xs md:text-sm">{review.name}</p>
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
-    </div>
-  </section>
-);
+    </section>
+  );
+};
 
 const Contact: React.FC = () => (
   <section id="contact" className="py-12 md:py-24 bg-[#0A0A0A]">

@@ -114,6 +114,23 @@
       .animate-scroll-desktop:hover {
         animation-play-state: paused;
       }
+      @keyframes auto-scroll {
+        0% { transform: translateX(0); }
+        100% { transform: translateX(calc(-50% - 1rem)); } 
+      }
+      @media (min-width: 768px) {
+        @keyframes auto-scroll {
+          0% { transform: translateX(0); }
+          100% { transform: translateX(calc(-50% - 2rem)); } 
+        }
+      }
+      .animate-auto-scroll {
+        animation: auto-scroll 30s linear infinite;
+        will-change: transform;
+      }
+      .animate-auto-scroll:hover {
+        animation-play-state: paused;
+      }
       @keyframes media-drift {
         0% { transform: scale(1.0); }
         50% { transform: scale(1.04); }
