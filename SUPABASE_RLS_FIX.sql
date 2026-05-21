@@ -4,12 +4,15 @@
 
 ALTER TABLE public.offers ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.membership_plans ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.section_images ENABLE ROW LEVEL SECURITY;
 
 GRANT USAGE ON SCHEMA public TO anon, authenticated;
 GRANT SELECT ON public.offers TO anon, authenticated;
 GRANT INSERT, UPDATE, DELETE ON public.offers TO authenticated;
 GRANT SELECT ON public.membership_plans TO anon, authenticated;
 GRANT INSERT, UPDATE, DELETE ON public.membership_plans TO authenticated;
+GRANT SELECT ON public.section_images TO anon, authenticated;
+GRANT INSERT, UPDATE, DELETE ON public.section_images TO authenticated;
 
 DROP POLICY IF EXISTS "Enable read access for all users" ON public.offers;
 DROP POLICY IF EXISTS "Enable insert for authenticated users" ON public.offers;
@@ -81,8 +84,39 @@ CREATE POLICY "Authenticated users can delete membership plans"
   TO authenticated
   USING (true);
 
+DROP POLICY IF EXISTS "Enable read access for all users" ON public.section_images;
+DROP POLICY IF EXISTS "Enable all actions for authenticated admins" ON public.section_images;
+DROP POLICY IF EXISTS "Public can read section images" ON public.section_images;
+DROP POLICY IF EXISTS "Authenticated users can insert section images" ON public.section_images;
+DROP POLICY IF EXISTS "Authenticated users can update section images" ON public.section_images;
+DROP POLICY IF EXISTS "Authenticated users can delete section images" ON public.section_images;
+
+CREATE POLICY "Public can read section images"
+  ON public.section_images
+  FOR SELECT
+  USING (true);
+
+CREATE POLICY "Authenticated users can insert section images"
+  ON public.section_images
+  FOR INSERT
+  TO authenticated
+  WITH CHECK (true);
+
+CREATE POLICY "Authenticated users can update section images"
+  ON public.section_images
+  FOR UPDATE
+  TO authenticated
+  USING (true)
+  WITH CHECK (true);
+
+CREATE POLICY "Authenticated users can delete section images"
+  ON public.section_images
+  FOR DELETE
+  TO authenticated
+  USING (true);
+
 SELECT schemaname, tablename, policyname, cmd, roles
 FROM pg_policies
 WHERE schemaname = 'public'
-  AND tablename IN ('offers', 'membership_plans')
+  AND tablename IN ('offers', 'membership_plans', 'section_images')
 ORDER BY tablename, policyname;

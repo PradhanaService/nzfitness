@@ -1,6 +1,30 @@
 
 import React from 'react';
-import { Program, Plan, Transformation, Review } from './types';
+import { Program, Plan, PortalContentSection, Transformation, Review, TrainingType } from './types';
+
+export const TRAINING_TYPES: TrainingType[] = [
+  {
+    id: 'gym',
+    title: 'Offline/Gym Workouts',
+    icon: <svg className="w-12 h-12 md:w-16 md:h-16 text-gold drop-shadow-[0_0_15px_rgba(229,192,123,0.3)]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>,
+    description: 'Experience premium gym facilities with expert trainers',
+    features: ['Premium Equipment', 'Expert Trainers', 'Group Classes']
+  },
+  {
+    id: 'online',
+    title: 'Online Training',
+    icon: <svg className="w-12 h-12 md:w-16 md:h-16 text-gold drop-shadow-[0_0_15px_rgba(229,192,123,0.3)]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>,
+    description: 'Train from anywhere with live sessions and personalized guidance',
+    features: ['Live Video Sessions', 'Flexible Scheduling', 'One-on-One Coaching']
+  },
+  {
+    id: 'home',
+    title: 'Home Training',
+    icon: <svg className="w-12 h-12 md:w-16 md:h-16 text-gold drop-shadow-[0_0_15px_rgba(229,192,123,0.3)]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6C13.5 12 11.5 14 11.5 16S13.5 20 16 20 20.5 18 20.5 16 18.5 12 16 12z" /></svg>,
+    description: 'Customized workout plans for your home setup',
+    features: ['No Equipment Needed', 'Custom Plans', 'Video Demonstrations']
+  }
+];
 
 export const PROGRAMS: Program[] = [
   {
@@ -115,4 +139,31 @@ export const REVIEWS: Review[] = [
     text: 'Raj is such a friendly trainer. His diet plans are simple & easy to follow, nothing too fancy. Strength training sessions are really good and I can already see the difference in my stamina and inch loss. He motivates me every session. Totally recommend him if you want someone who actually cares about your progress!',
     rating: 5
   }
+];
+
+export const DEFAULT_PORTAL_CONTENT: PortalContentSection[] = [
+  {
+    section_key: 'offline_workout',
+    title: 'Offline/Gym Workouts',
+    description: 'Experience premium gym facilities with expert trainers',
+    features: ['Premium Equipment', 'Expert Trainers', 'Group Classes'],
+  },
+  {
+    section_key: 'special_offers',
+    title: 'Special Offers',
+    description: 'Unlock limited-time gym deals curated for members who are ready to start now.',
+    features: ['Limited-Time Pricing', 'Referral Perks', 'Flexible Validity'],
+  },
+  {
+    section_key: 'online_workout',
+    title: 'Online Training',
+    description: 'Train from anywhere with live sessions and personalized guidance',
+    features: ['Live Video Sessions', 'Flexible Scheduling', 'One-on-One Coaching'],
+  },
+  {
+    section_key: 'home_workout',
+    title: 'Home Training',
+    description: 'Customized workout plans for your home setup',
+    features: ['No Equipment Needed', 'Custom Plans', 'Video Demonstrations'],
+  },
 ];

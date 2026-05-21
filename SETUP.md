@@ -1,10 +1,10 @@
 # NOIZE Fitness - Admin System Setup Guide
 
-This guide will walk you through setting up the complete admin system with Supabase authentication and database.
+This guide will walk you through setting up the complete admin system with Firebase authentication, Firestore, and phone OTP.
 
 ## 🎯 Overview
 
-- **Database & Auth**: Supabase (Free Tier)
+- **Database & Auth**: Firebase
 - **Hosting**: Vercel (Free)
 - **Admin Features**: 
   - Secure login for gym owner
@@ -16,7 +16,7 @@ This guide will walk you through setting up the complete admin system with Supab
 ## 📋 Prerequisites
 
 1. GitHub account
-2. Supabase account (free): https://supabase.com
+2. Firebase account (free): https://console.firebase.google.com
 3. Vercel account (free): https://vercel.com
 
 ## 🚀 Step-by-Step Setup
@@ -39,32 +39,42 @@ This guide will walk you through setting up the complete admin system with Supab
 4. Click **Run** (bottom right)
 5. You should see "Success. No rows returned"
 
-### Step 3: Create Admin User
+### Step 3: Enable Firebase Authentication
 
-1. In Supabase, go to **Authentication** > **Users**
-2. Click "Add user" > "Create new user"
+1. Open **Firebase Console** → **Authentication** → **Sign-in method**
+2. Enable **Email/Password** for admin login
+3. Enable **Phone** for OTP login
+4. Save the changes
+
+### Step 4: Create Admin User
+
+1. In Firebase, go to **Authentication** > **Users**
+2. Click **Add user**
 3. Fill in:
    - Email: your_email@example.com (use your real email)
    - Password: (create a strong password - this is your admin login)
-   - Auto Confirm User: ✅ Check this box
-4. Click "Create user"
+4. Click **Add user**
 
-### Step 4: Configure Environment Variables
+### Step 5: Configure Environment Variables
 
-1. In Supabase, go to **Project Settings** > **API**
-2. Find these two values:
-   - **Project URL** (looks like: `https://xxxxx.supabase.co`)
-   - **anon public** key (long string starting with `eyJ...`)
+1. In Firebase, go to **Project settings** > **General**
+2. Create or open your web app configuration
+3. Copy the Firebase config values
 
 3. In your project folder:
    - Rename `.env.example` to `.env.local`
    - Replace the values:
      ```env
-     VITE_SUPABASE_URL=your_project_url_here
-     VITE_SUPABASE_ANON_KEY=your_anon_key_here
+     VITE_FIREBASE_API_KEY=your_firebase_api_key
+     VITE_FIREBASE_AUTH_DOMAIN=your-project.firebaseapp.com
+     VITE_FIREBASE_PROJECT_ID=your-project-id
+     VITE_FIREBASE_STORAGE_BUCKET=your-project.firebasestorage.app
+     VITE_FIREBASE_MESSAGING_SENDER_ID=your_sender_id
+     VITE_FIREBASE_APP_ID=your_app_id
+     VITE_FIREBASE_MEASUREMENT_ID=your_measurement_id
      ```
 
-### Step 5: Test Locally
+### Step 6: Test Locally
 
 ```bash
 # Install dependencies (if not done already)
@@ -76,10 +86,16 @@ npm run dev
 
 1. Open http://localhost:3000 - main website should load
 2. Open http://localhost:3000/admin - you should see login page
-3. Login with the email and password you created in Step 3
+3. Login with the email and password you created in Step 4
 4. Try adding a test offer or membership plan
 
-### Step 6: Deploy to Vercel
+### Step 7: Configure Firebase Authorized Domains
+
+1. Open **Firebase Console** → **Authentication** → **Settings** → **Authorized domains**
+2. Make sure `localhost` exists for development
+3. Add your deployed domain later, such as `your-domain.vercel.app`
+
+### Step 8: Deploy to Vercel
 
 #### Option A: Deploy via Vercel Dashboard
 
@@ -88,8 +104,13 @@ npm run dev
 3. Click "New Project"
 4. Import your GitHub repository
 5. In "Environment Variables" section, add:
-   - `VITE_SUPABASE_URL` = your Supabase project URL
-   - `VITE_SUPABASE_ANON_KEY` = your Supabase anon key
+   - `VITE_FIREBASE_API_KEY`
+   - `VITE_FIREBASE_AUTH_DOMAIN`
+   - `VITE_FIREBASE_PROJECT_ID`
+   - `VITE_FIREBASE_STORAGE_BUCKET`
+   - `VITE_FIREBASE_MESSAGING_SENDER_ID`
+   - `VITE_FIREBASE_APP_ID`
+   - `VITE_FIREBASE_MEASUREMENT_ID`
 6. Click "Deploy"
 7. Wait 1-2 minutes for deployment
 
@@ -204,9 +225,15 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;
 ### Can't log in to admin panel
 
 - Verify email/password are correct
-- Check if user exists in Supabase > Authentication > Users
-- Ensure "Auto Confirm User" was checked
-- Try resetting password in Supabase dashboard
+- Check if user exists in Firebase > Authentication > Users
+- Check if **Authentication** > **Sign-in method** > **Email/Password** is enabled
+- Check if the current domain is present in Firebase authorized domains
+
+### OTP not working
+
+- Check if **Authentication** > **Sign-in method** > **Phone** is enabled
+- Check if the current domain is present in Firebase authorized domains
+- If testing locally, use `localhost`
 
 ### Offers/Plans not showing on website
 

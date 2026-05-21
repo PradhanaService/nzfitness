@@ -1,15 +1,91 @@
 import React, { useState, useEffect, useRef, useContext } from 'react';
-import { PROGRAMS, TRANSFORMATIONS, REVIEWS } from './constants';
-import { Program, Transformation, Review } from './types';
-import { supabase, MembershipPlan, Offer, AppImage } from './supabaseClient';
+import { useNavigate } from 'react-router-dom';
+import { DEFAULT_PORTAL_CONTENT, PROGRAMS, TRANSFORMATIONS, REVIEWS, TRAINING_TYPES } from './constants';
+import { PortalContentSection, Program, Transformation, Review } from './types';
+import { supabase, MembershipPlan, Offer, AppImage, PortalContent, MembershipCategory } from './supabaseClient';
 
 export const SiteImagesContext = React.createContext<Record<string, string>>({});
+
+const smoothScrollToId = (id: string, offset = 96, duration = 700) => {
+  const element = document.getElementById(id);
+  if (!element) return;
+
+  const startY = window.scrollY;
+  const targetY = Math.max(0, element.getBoundingClientRect().top + window.scrollY - offset);
+  const distance = targetY - startY;
+  const startTime = performance.now();
+  const easeInOutCubic = (t: number) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
+
+  const step = (currentTime: number) => {
+    const elapsed = currentTime - startTime;
+    const progress = Math.min(elapsed / duration, 1);
+    const easedProgress = easeInOutCubic(progress);
+    window.scrollTo(0, startY + distance * easedProgress);
+
+    if (progress < 1) {
+      window.requestAnimationFrame(step);
+    }
+  };
+
+  window.requestAnimationFrame(step);
+};
+
+const PORTAL_CONTENT_DEFAULT_MAP = DEFAULT_PORTAL_CONTENT.reduce<Record<string, PortalContentSection>>((acc, section) => {
+  acc[section.section_key] = section;
+  return acc;
+}, {});
+
+const portalSectionIcons = {
+  offline_workout: TRAINING_TYPES[0].icon,
+  online_workout: TRAINING_TYPES[1].icon,
+  home_workout: TRAINING_TYPES[2].icon,
+};
+
+const MEMBERSHIP_SECTION_CONFIG: {
+  category: MembershipCategory;
+  typeId: 'offline' | 'online' | 'home';
+  sectionKey: keyof typeof portalSectionIcons;
+}[] = [
+  { category: 'offline', typeId: 'offline', sectionKey: 'offline_workout' },
+  { category: 'online', typeId: 'online', sectionKey: 'online_workout' },
+  { category: 'home_workout', typeId: 'home', sectionKey: 'home_workout' },
+];
+
+const normalizeMembershipCategory = (category?: string | null): MembershipCategory => {
+  if (category === 'online' || category === 'home_workout') {
+    return category;
+  }
+  return 'offline';
+};
+
+const buildTrainingTypes = (portalContent: Record<string, PortalContentSection>) => [
+  {
+    id: 'offline',
+    title: portalContent.offline_workout.title,
+    description: portalContent.offline_workout.description,
+    features: portalContent.offline_workout.features,
+    icon: portalSectionIcons.offline_workout,
+  },
+  {
+    id: 'online',
+    title: portalContent.online_workout.title,
+    description: portalContent.online_workout.description,
+    features: portalContent.online_workout.features,
+    icon: portalSectionIcons.online_workout,
+  },
+  {
+    id: 'home',
+    title: portalContent.home_workout.title,
+    description: portalContent.home_workout.description,
+    features: portalContent.home_workout.features,
+    icon: portalSectionIcons.home_workout,
+  },
+];
 
 // --- Helper for Dual WhatsApp Logic ---
 // Helper for TRUE Parallel WhatsApp Messaging
 const WHATSAPP_1 = "918122390693";
 const WHATSAPP_2 = "918296890693";
-
 const handleWhatsApp = (message: string) => {
   const target = Math.random() > 0.5 ? WHATSAPP_1 : WHATSAPP_2;
   window.open(`https://wa.me/${target}?text=${encodeURIComponent(message)}`, '_blank');
@@ -31,13 +107,13 @@ const GYM_MEDIA_DEFAULT = [
   { type: 'image', src: '/images/gallery-5.jpg', alt: 'NOIZE gym atmosphere' }
 ];
 
-const Navbar: React.FC = () => {
+const Navbar: React.FC<{ onJoinNow: () => void }> = ({ onJoinNow }) => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 50);
-    window.addEventListener('scroll', handleScroll);
+    window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
@@ -54,7 +130,14 @@ const Navbar: React.FC = () => {
       <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${isScrolled ? 'py-3 md:py-4 glass shadow-2xl' : 'py-4 md:py-6 bg-transparent'}`}>
         <div className="container mx-auto px-4 md:px-6 flex justify-between items-center">
           <a href="#home" className="flex items-center gap-2 md:gap-3">
-            <img src="/images/logo.png" alt="NOIZE Fitness" className="h-8 md:h-10 w-auto" />
+            <img
+              src="/images/logo.png"
+              alt="NOIZE Fitness"
+              className="h-8 md:h-10 w-auto"
+              loading="eager"
+              fetchPriority="high"
+              decoding="async"
+            />
             <span className="text-xl md:text-2xl font-black tracking-tighter text-gold drop-shadow-[0_2px_8px_rgba(229,192,123,0.5)]">NOIZE</span>
           </a>
 
@@ -71,9 +154,13 @@ const Navbar: React.FC = () => {
 
           <div className="flex items-center gap-3">
 
-            <a href="/portal" className="hidden sm:block gold-gradient text-black font-bold py-2 px-4 md:px-6 rounded-full text-xs md:text-sm hover:scale-105 transition-transform">
+            <button
+              type="button"
+              onClick={onJoinNow}
+              className="hidden sm:block gold-gradient text-black font-bold py-2 px-4 md:px-6 rounded-full text-xs md:text-sm hover:scale-105 transition-transform"
+            >
               JOIN NOW
-            </a>
+            </button>
 
             {/* Mobile Menu Toggle */}
             <div className="md:hidden">
@@ -111,9 +198,16 @@ const Navbar: React.FC = () => {
             <a href="#gallery" onClick={closeMenu} className="text-lg font-bold text-white hover:text-gold transition-colors uppercase tracking-wide">Gallery</a>
             <a href="#contact" onClick={closeMenu} className="text-lg font-bold text-white hover:text-gold transition-colors uppercase tracking-wide">Contact</a>
 
-            <a href="/portal" onClick={closeMenu} className="gold-gradient text-black font-bold py-3 px-6 rounded-full text-sm hover:scale-105 transition-transform mt-4 text-center block">
+            <button
+              type="button"
+              onClick={() => {
+                closeMenu();
+                onJoinNow();
+              }}
+              className="gold-gradient text-black font-bold py-3 px-6 rounded-full text-sm hover:scale-105 transition-transform mt-4 text-center block"
+            >
               JOIN NOW
-            </a>
+            </button>
           </div>
         </div>
       </div>
@@ -121,7 +215,7 @@ const Navbar: React.FC = () => {
   );
 };
 
-const Hero: React.FC = () => {
+const Hero: React.FC<{ onStart: () => void }> = ({ onStart }) => {
   const [activeMedia, setActiveMedia] = useState(0);
   const siteImages = useContext(SiteImagesContext);
 
@@ -168,13 +262,13 @@ const Hero: React.FC = () => {
           >
             {media.type === 'video' ? (
               <video
-                src={media.src}
+                src={activeMedia === index ? media.src : undefined}
                 className="w-full h-full object-cover"
-                autoPlay
+                autoPlay={activeMedia === index}
                 muted
                 loop
                 playsInline
-                preload="metadata"
+                preload={activeMedia === index ? 'metadata' : 'none'}
                 aria-label={media.alt}
               />
             ) : (
@@ -184,6 +278,7 @@ const Hero: React.FC = () => {
                 className="w-full h-full object-cover transition-transform duration-[10000ms] transform-gpu will-change-transform"
                 style={{ transform: activeMedia === index ? 'scale(1.05)' : 'scale(1)' }}
                 fetchPriority={index === 0 ? 'high' : 'auto'}
+                loading={index === 0 ? 'eager' : 'lazy'}
                 decoding="async"
               />
             )}
@@ -215,10 +310,13 @@ const Hero: React.FC = () => {
         </p>
 
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4 md:gap-6 px-4 animate-fade-in-up" style={{ animationDelay: '0.8s' }}>
-          {/* Rectified: Jumps to Membership Section */}
-          <a href="#membership" className="gold-gradient text-black font-bold py-3 md:py-4 px-8 md:px-10 rounded-full text-sm md:text-base tracking-widest uppercase w-full sm:w-auto shadow-lg shadow-gold/20 hover:shadow-[0_8px_30px_rgba(229,192,123,0.4)] hover:-translate-y-1 transition-all duration-300 text-center">
+          {/* Rectified: Opens Global Auth Flow */}
+          <button
+            onClick={onStart}
+            className="gold-gradient text-black font-bold py-3 md:py-4 px-8 md:px-10 rounded-full text-sm md:text-base tracking-widest uppercase w-full sm:w-auto shadow-lg shadow-gold/20 hover:shadow-[0_8px_30px_rgba(229,192,123,0.4)] hover:-translate-y-1 transition-all duration-300 text-center"
+          >
             GET STARTED
-          </a>
+          </button>
           <button
             onClick={() => handleWhatsApp("Hi, I'm interested in joining NOIZE Fitness & Lifestyle. Please share more details.")}
             className="glass shadow-lg border border-white/10 text-white font-bold py-3 md:py-4 px-8 md:px-10 rounded-full text-sm md:text-base tracking-widest uppercase w-full sm:w-auto flex items-center justify-center gap-3 hover:bg-white/5 hover:border-white/20 hover:-translate-y-1 transition-all duration-300 group"
@@ -247,51 +345,19 @@ const Hero: React.FC = () => {
   );
 };
 
-const TrainingTypes: React.FC = () => {
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedType, setSelectedType] = useState<string | null>(null);
+const TrainingBookingModal: React.FC<{
+  isOpen: boolean;
+  onClose: () => void;
+  selectedType: string | null;
+  trainingTypes: ReturnType<typeof buildTrainingTypes>;
+}> = ({ isOpen, onClose, selectedType, trainingTypes }) => {
+  const [step, setStep] = useState<'time' | 'form'>('time');
   const [selectedTime, setSelectedTime] = useState<string>('');
-  const [showForm, setShowForm] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
     phone: '',
     email: ''
   });
-
-  useEffect(() => {
-    if (isModalOpen) {
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = 'unset';
-    }
-    return () => {
-      document.body.style.overflow = 'unset';
-    };
-  }, [isModalOpen]);
-
-  const trainingTypes = [
-    {
-      id: 'online',
-      title: 'Online Training',
-      icon: <svg className="w-12 h-12 md:w-16 md:h-16 text-gold drop-shadow-[0_0_15px_rgba(229,192,123,0.3)]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>,
-      description: 'Train from anywhere with live sessions and personalized guidance',
-      features: ['Live Video Sessions', 'Flexible Scheduling', 'One-on-One Coaching']
-    },
-    {
-      id: 'gym',
-      title: 'Offline/Gym Workouts',
-      icon: <svg className="w-12 h-12 md:w-16 md:h-16 text-gold drop-shadow-[0_0_15px_rgba(229,192,123,0.3)]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>,
-      description: 'Experience premium gym facilities with expert trainers',
-      features: ['Premium Equipment', 'Expert Trainers', 'Group Classes']
-    },
-    {
-      id: 'home',
-      title: 'Home Training',
-      icon: <svg className="w-12 h-12 md:w-16 md:h-16 text-gold drop-shadow-[0_0_15px_rgba(229,192,123,0.3)]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6C13.5 12 11.5 14 11.5 16S13.5 20 16 20 20.5 18 20.5 16 18.5 12 16 12z" /></svg>,
-      description: 'Customized workout plans for your home setup',
-      features: ['No Equipment Needed', 'Custom Plans', 'Video Demonstrations']
-    }
-  ];
 
   const timeSlots = [
     '6:00 AM - 8:00 AM',
@@ -302,24 +368,29 @@ const TrainingTypes: React.FC = () => {
     '8:00 PM - 10:00 PM'
   ];
 
-  const handleTypeSelect = (typeId: string) => {
-    setSelectedType(typeId);
-    setSelectedTime('');
-    setShowForm(false);
-    setIsModalOpen(true);
-  };
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+      setStep('time');
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [isOpen]);
 
-  const handleCloseModal = () => {
-    setIsModalOpen(false);
-    setSelectedType(null);
-    setSelectedTime('');
-    setShowForm(false);
-    setFormData({ name: '', phone: '', email: '' });
-  };
+  useEffect(() => {
+    if (!isOpen) {
+      setSelectedTime('');
+      setStep('time');
+      setFormData({ name: '', phone: '', email: '' });
+    }
+  }, [isOpen]);
 
   const handleTimeSelect = (time: string) => {
     setSelectedTime(time);
-    setShowForm(true);
+    setStep('form');
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -334,15 +405,188 @@ const TrainingTypes: React.FC = () => {
     const selectedTypeObj = trainingTypes.find(t => t.id === selectedType);
     const message = `Hi, I'm interested in ${selectedTypeObj?.title}%0A%0APreferred Time: ${selectedTime}%0A%0AName: ${formData.name}%0APhone: ${formData.phone}%0AEmail: ${formData.email}%0A%0APlease share more details about this training option.`;
 
-    // Parallel Logic Applied
     handleWhatsApp(message);
-    handleCloseModal();
+    onClose();
+  };
+
+  if (!isOpen) return null;
+
+  const currentType = trainingTypes.find(t => t.id === selectedType);
+
+  return (
+    <div
+      className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fade-in"
+      onClick={onClose}
+    >
+      <div
+        className="relative w-full max-w-3xl max-h-[90vh] overflow-y-auto glass rounded-3xl border-2 border-gold/40 shadow-2xl shadow-gold/20 animate-fade-in-up"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <button
+          onClick={onClose}
+          className="absolute top-4 right-4 z-10 w-10 h-10 flex items-center justify-center rounded-full bg-red-600 hover:bg-red-700 text-white transition-all hover:scale-110 hover:rotate-90 duration-300 group shadow-lg"
+          aria-label="Close"
+        >
+          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+
+        <div className="p-6 md:p-10">
+          {step === 'time' && (
+            <div>
+              <div className="flex items-center gap-3 mb-6">
+                <span className="text-4xl">{currentType?.icon}</span>
+                <div>
+                  <h3 className="text-2xl md:text-3xl font-black text-white">
+                    {currentType?.title}
+                  </h3>
+                  <p className="text-gold text-sm md:text-base font-bold">Select Your Preferred Time</p>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-4">
+                {timeSlots.map((time) => (
+                  <button
+                    key={time}
+                    onClick={() => handleTimeSelect(time)}
+                    className={`p-3 md:p-4 rounded-2xl border-2 font-bold text-xs md:text-base transition-all hover:scale-105 ${selectedTime === time
+                      ? 'border-gold bg-gold/10 text-gold shadow-lg shadow-gold/30'
+                      : 'border-white/10 text-white hover:border-gold/50 hover:bg-gold/5'
+                      }`}
+                  >
+                    {time}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {step === 'form' && (
+            <div>
+              <button
+                onClick={() => setStep('time')}
+                className="text-neutral-400 hover:text-white mb-6 flex items-center gap-2 transition-colors"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" />
+                </svg>
+                Change Time
+              </button>
+
+              <div className="flex items-center gap-3 mb-6">
+                <span className="text-4xl">{currentType?.icon}</span>
+                <div>
+                  <h3 className="text-2xl md:text-3xl font-black text-white">
+                    Complete Your Booking
+                  </h3>
+                  <p className="text-neutral-400 text-sm md:text-base">
+                    {currentType?.title}
+                  </p>
+                  <p className="text-gold font-bold text-sm md:text-base">
+                    Time: {selectedTime}
+                  </p>
+                </div>
+              </div>
+
+              <form onSubmit={handleSubmit} className="space-y-5">
+                <div>
+                  <label className="block text-white font-bold mb-2 text-sm md:text-base">Full Name *</label>
+                  <input
+                    type="text"
+                    name="name"
+                    value={formData.name}
+                    onChange={handleInputChange}
+                    required
+                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-gold focus:outline-none transition-colors"
+                    placeholder="Enter your name"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-white font-bold mb-2 text-sm md:text-base">Phone Number *</label>
+                  <input
+                    type="tel"
+                    name="phone"
+                    value={formData.phone}
+                    onChange={handleInputChange}
+                    required
+                    pattern="[0-9]{10}"
+                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-gold focus:outline-none transition-colors"
+                    placeholder="10-digit mobile number"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-white font-bold mb-2 text-sm md:text-base">Email Address *</label>
+                  <input
+                    type="email"
+                    name="email"
+                    value={formData.email}
+                    onChange={handleInputChange}
+                    required
+                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-gold focus:outline-none transition-colors"
+                    placeholder="your@email.com"
+                  />
+                </div>
+
+                <button
+                  type="submit"
+                  className="w-full gold-gradient text-black font-black py-4 px-8 rounded-full text-base md:text-lg hover:shadow-[0_0_30px_rgba(229,192,123,0.6)] transition-all flex items-center justify-center gap-3 group"
+                >
+                  Send Enquiry via WhatsApp
+                </button>
+              </form>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const TrainingTypes: React.FC<{ onTypeSelect: (typeId: string) => void; trainingTypes: ReturnType<typeof buildTrainingTypes> }> = ({ onTypeSelect, trainingTypes }) => {
+  const [slotModal, setSlotModal] = useState<'online' | 'home' | null>(null);
+  const [selectedSlot, setSelectedSlot] = useState('');
+  const TIME_SLOTS = {
+    morning: [
+      '5:30 AM – 6:30 AM',
+      '6:00 AM – 7:30 AM',
+      '7:30 AM - 8.30 AM',
+    ],
+    evening: [
+      '5:30 PM - 6:30 PM',
+      '6:30 PM – 7:30 PM',
+      '7:30 PM – 8:30 PM',
+    ],
+  };
+
+  const handleSlotModalOpen = (type: 'online' | 'home') => {
+    setSelectedSlot('');
+    setSlotModal(type);
+  };
+
+  const handleSlotConfirm = () => {
+    if (!slotModal || !selectedSlot) return;
+
+    const tabMap = { online: 'online', home: 'home_workout' } as const;
+    const tab = tabMap[slotModal];
+    sessionStorage.setItem('noize_selected_slot', selectedSlot);
+    sessionStorage.setItem('noize_slot_type', slotModal);
+    setSlotModal(null);
+    window.location.href = `/portal?tab=${tab}`;
   };
 
   return (
     <section id="training-types" className="py-16 md:py-24 relative overflow-hidden">
       <div className="absolute inset-0 z-0">
-        <img src="/images/gallery-1.jpg" alt="Training Background" className="w-full h-full object-cover brightness-[0.2] blur-sm scale-110 transform-gpu" />
+        <img
+          src="/images/gallery-1.jpg"
+          alt="Training Background"
+          className="w-full h-full object-cover brightness-[0.2] blur-sm scale-110 transform-gpu"
+          loading="lazy"
+          decoding="async"
+        />
         <div className="absolute inset-0 bg-black/80 pointer-events-none"></div>
       </div>
       <div className="container mx-auto px-4 md:px-6 relative z-10">
@@ -359,7 +603,7 @@ const TrainingTypes: React.FC = () => {
           {trainingTypes.map((type) => (
             <div
               key={type.id}
-              onClick={() => handleTypeSelect(type.id)}
+              onClick={() => onTypeSelect(type.id)}
               className="glass rounded-3xl p-8 md:p-10 border border-white/5 hover:border-gold/30 hover:-translate-y-2 hover:shadow-[0_12px_45px_rgba(229,192,123,0.15)] transition-all duration-500 cursor-pointer group flex flex-col h-full bg-[#121212]/80"
             >
               <div className="mb-8 p-4 rounded-2xl bg-white/5 border border-white/10 group-hover:bg-gold/10 group-hover:border-gold/30 transition-all duration-500 w-max">
@@ -379,149 +623,106 @@ const TrainingTypes: React.FC = () => {
                   </li>
                 ))}
               </ul>
-              <button className="w-full mt-auto bg-transparent border-2 border-gold/40 text-gold font-black py-4 px-6 rounded-full group-hover:bg-gold group-hover:text-black group-hover:shadow-[0_0_20px_rgba(229,192,123,0.4)] transition-all duration-500 uppercase tracking-widest text-sm relative overflow-hidden z-10 before:absolute before:inset-0 before:bg-white/20 before:-translate-x-full hover:before:translate-x-0 before:transition-transform before:duration-500 before:-z-10">
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+
+                  if (type.id === 'online') {
+                    handleSlotModalOpen('online');
+                    return;
+                  }
+
+                  if (type.id === 'home') {
+                    handleSlotModalOpen('home');
+                    return;
+                  }
+
+                  onTypeSelect('offline');
+                }}
+                className="w-full mt-auto bg-transparent border-2 border-gold/40 text-gold font-black py-4 px-6 rounded-full group-hover:bg-gold group-hover:text-black group-hover:shadow-[0_0_20px_rgba(229,192,123,0.4)] transition-all duration-500 uppercase tracking-widest text-sm relative overflow-hidden z-10 before:absolute before:inset-0 before:bg-white/20 before:-translate-x-full hover:before:translate-x-0 before:transition-transform before:duration-500 before:-z-10"
+              >
                 Select Option
               </button>
             </div>
           ))}
         </div>
-      </div>
 
-      {isModalOpen && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fade-in"
-          onClick={handleCloseModal}
-        >
+        {slotModal && (
           <div
-            className="relative w-full max-w-3xl max-h-[90vh] overflow-y-auto glass rounded-3xl border-2 border-gold/40 shadow-2xl shadow-gold/20 animate-fade-in-up"
-            onClick={(e) => e.stopPropagation()}
+            className="fixed inset-0 z-[150] flex items-center justify-center bg-black/85 p-4 backdrop-blur-md"
+            onClick={() => setSlotModal(null)}
           >
-            <button
-              onClick={handleCloseModal}
-              className="absolute top-4 right-4 z-10 w-10 h-10 flex items-center justify-center rounded-full bg-red-600 hover:bg-red-700 text-white transition-all hover:scale-110 hover:rotate-90 duration-300 group shadow-lg"
-              aria-label="Close"
+            <div
+              className="glass w-full max-w-md rounded-[32px] border border-white/10 p-6 md:p-8"
+              onClick={(e) => e.stopPropagation()}
             >
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </button>
+              <div className="mb-8 text-center">
+                <h3 className="text-2xl font-black tracking-tight text-white md:text-3xl">Choose Your Batch Time</h3>
+                <p className="mt-3 text-sm text-neutral-400">Select a preferred slot to continue</p>
+              </div>
 
-            <div className="p-6 md:p-10">
-              {!showForm && (
+              <div className="space-y-6">
                 <div>
-                  <div className="flex items-center gap-3 mb-6">
-                    <span className="text-4xl">{trainingTypes.find(t => t.id === selectedType)?.icon}</span>
-                    <div>
-                      <h3 className="text-2xl md:text-3xl font-black text-white">
-                        {trainingTypes.find(t => t.id === selectedType)?.title}
-                      </h3>
-                      <p className="text-gold text-sm md:text-base font-bold">Select Your Preferred Time</p>
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-4">
-                    {timeSlots.map((time) => (
+                  <p className="mb-3 text-sm font-black text-gold">🌅 Morning Batch</p>
+                  <div className="space-y-3">
+                    {TIME_SLOTS.morning.map((slot) => (
                       <button
-                        key={time}
-                        onClick={() => handleTimeSelect(time)}
-                        className={`p-3 md:p-4 rounded-2xl border-2 font-bold text-xs md:text-base transition-all hover:scale-105 ${selectedTime === time
-                          ? 'border-gold bg-gold/10 text-gold shadow-lg shadow-gold/30'
-                          : 'border-white/10 text-white hover:border-gold/50 hover:bg-gold/5'
-                          }`}
+                        key={slot}
+                        type="button"
+                        onClick={() => setSelectedSlot(slot)}
+                        className={`w-full rounded-full px-5 py-3 text-sm font-black uppercase tracking-widest transition-all ${
+                          selectedSlot === slot
+                            ? 'gold-gradient text-black'
+                            : 'border border-white/10 bg-white/5 text-white hover:border-gold/40'
+                        }`}
                       >
-                        {time}
+                        {slot}
                       </button>
                     ))}
                   </div>
                 </div>
-              )}
 
-              {showForm && (
                 <div>
-                  <button
-                    onClick={() => setShowForm(false)}
-                    className="text-neutral-400 hover:text-white mb-6 flex items-center gap-2 transition-colors"
-                  >
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" />
-                    </svg>
-                    Change Time
-                  </button>
-
-                  <div className="flex items-center gap-3 mb-6">
-                    <span className="text-4xl">{trainingTypes.find(t => t.id === selectedType)?.icon}</span>
-                    <div>
-                      <h3 className="text-2xl md:text-3xl font-black text-white">
-                        Complete Your Booking
-                      </h3>
-                      <p className="text-neutral-400 text-sm md:text-base">
-                        {trainingTypes.find(t => t.id === selectedType)?.title}
-                      </p>
-                      <p className="text-gold font-bold text-sm md:text-base">
-                        Time: {selectedTime}
-                      </p>
-                    </div>
+                  <p className="mb-3 text-sm font-black text-gold">🌆 Evening Batch</p>
+                  <div className="space-y-3">
+                    {TIME_SLOTS.evening.map((slot) => (
+                      <button
+                        key={slot}
+                        type="button"
+                        onClick={() => setSelectedSlot(slot)}
+                        className={`w-full rounded-full px-5 py-3 text-sm font-black uppercase tracking-widest transition-all ${
+                          selectedSlot === slot
+                            ? 'gold-gradient text-black'
+                            : 'border border-white/10 bg-white/5 text-white hover:border-gold/40'
+                        }`}
+                      >
+                        {slot}
+                      </button>
+                    ))}
                   </div>
-
-                  <form onSubmit={handleSubmit} className="space-y-5">
-                    <div>
-                      <label className="block text-white font-bold mb-2 text-sm md:text-base">Full Name *</label>
-                      <input
-                        type="text"
-                        name="name"
-                        value={formData.name}
-                        onChange={handleInputChange}
-                        required
-                        className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-gold focus:outline-none transition-colors"
-                        placeholder="Enter your name"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-white font-bold mb-2 text-sm md:text-base">Phone Number *</label>
-                      <input
-                        type="tel"
-                        name="phone"
-                        value={formData.phone}
-                        onChange={handleInputChange}
-                        required
-                        pattern="[0-9]{10}"
-                        className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-gold focus:outline-none transition-colors"
-                        placeholder="10-digit mobile number"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-white font-bold mb-2 text-sm md:text-base">Email Address *</label>
-                      <input
-                        type="email"
-                        name="email"
-                        value={formData.email}
-                        onChange={handleInputChange}
-                        required
-                        className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-gold focus:outline-none transition-colors"
-                        placeholder="your@email.com"
-                      />
-                    </div>
-
-                    <button
-                      type="submit"
-                      className="w-full gold-gradient text-black font-black py-4 px-8 rounded-full text-base md:text-lg hover:shadow-[0_0_30px_rgba(229,192,123,0.6)] transition-all flex items-center justify-center gap-3 group"
-                    >
-                      Send Enquiry via WhatsApp
-                    </button>
-                  </form>
                 </div>
-              )}
+              </div>
+
+              <button
+                type="button"
+                disabled={!selectedSlot}
+                onClick={handleSlotConfirm}
+                className="mt-8 w-full rounded-full px-5 py-3 text-sm font-black uppercase tracking-widest transition-all disabled:cursor-not-allowed disabled:opacity-50 gold-gradient text-black"
+              >
+                Confirm Slot
+              </button>
             </div>
           </div>
-        </div>
-      )}
+        )}
+      </div>
     </section>
   );
 };
 
-const SpecialOffers: React.FC = () => {
+// Module-level guard to prevent double-rotation in React Strict Mode during development
+let offerRotatedInThisSession = false;
+
+const SpecialOffers: React.FC<{ sectionContent: PortalContentSection }> = ({ sectionContent }) => {
   const [offers, setOffers] = useState<Offer[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -537,9 +738,26 @@ const SpecialOffers: React.FC = () => {
 
         if (error) throw error;
         if (data && data.length > 0) {
-          const dayOfYear = Math.floor(Date.now() / 86400000);
-          const dailyIndex = dayOfYear % data.length;
-          setOffers([data[dailyIndex]]);
+          const storageKey = 'noize_last_offer_index';
+          const lastIndexStr = localStorage.getItem(storageKey);
+          let currentIndex = 0;
+
+          if (lastIndexStr !== null) {
+            currentIndex = parseInt(lastIndexStr, 10);
+          }
+
+          // Only rotate once per page load/refresh
+          if (!offerRotatedInThisSession) {
+            const nextIndex = (currentIndex + 1) % data.length;
+            setOffers([data[nextIndex]]);
+            localStorage.setItem(storageKey, nextIndex.toString());
+            offerRotatedInThisSession = true;
+          } else {
+            // If already rotated (e.g. Strict Mode second run), just show the current one
+            setOffers([data[currentIndex % data.length]]);
+          }
+        } else {
+          setOffers([]);
         }
       } catch (err) {
         console.error('Error fetching offers:', err);
@@ -549,6 +767,12 @@ const SpecialOffers: React.FC = () => {
     };
 
     fetchOffers();
+    
+    // Reset the guard when the component unmounts (optional, but good for HMR)
+    return () => {
+      // We don't reset it on unmount because a refresh is a full reload anyway.
+      // But for HMR it might be better to stay true.
+    };
   }, []);
 
   if (loading) {
@@ -556,40 +780,7 @@ const SpecialOffers: React.FC = () => {
   }
 
   if (offers.length === 0) {
-    return (
-      <section id="offers" className="py-16 md:py-24 relative overflow-hidden">
-        <div className="absolute inset-0 z-0">
-          <img src="/images/crossfit.jpg" alt="Offers Background" className="w-full h-full object-cover brightness-[0.2] blur-md scale-110 transform-gpu" />
-          <div className="absolute inset-0 bg-black/80 pointer-events-none"></div>
-        </div>
-        <div className="absolute inset-0 z-0 opacity-10">
-          <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-gold/20 rounded-full blur-[100px]"></div>
-          <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-gold/10 rounded-full blur-[100px]"></div>
-        </div>
-        <div className="container mx-auto px-4 md:px-6 lg:px-8 relative z-10 max-w-7xl text-center">
-          <div className="flex items-center justify-center gap-3 mb-4">
-            <div className="h-px w-12 md:w-20 bg-gradient-to-r from-transparent to-gold/50"></div>
-            <div className="flex items-center gap-2">
-              <span className="text-gold font-bold text-sm uppercase tracking-[0.3em]">Exclusive Deals</span>
-            </div>
-            <div className="h-px w-12 md:w-20 bg-gradient-to-l from-transparent to-gold/50"></div>
-          </div>
-          <h2 className="text-4xl md:text-5xl lg:text-6xl font-black mb-12 text-white tracking-tight">
-            SPECIAL OFFERS
-          </h2>
-          <div className="glass p-8 md:p-12 rounded-3xl border border-white/5 inline-block max-w-2xl mx-auto">
-            <svg className="w-16 h-16 text-gold/50 mx-auto mb-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-            <h3 className="text-2xl font-bold text-white mb-4">No Special Offers Right Now</h3>
-            <p className="text-neutral-400 mb-8 border-b border-white/10 pb-8">There are currently no active special offers. Keep training hard and check back later for exciting new deals!</p>
-            <a href="#membership" className="inline-flex gold-gradient text-black font-bold py-3 px-8 rounded-full shadow-lg hover:shadow-[0_4px_20px_rgba(229,192,123,0.3)] hover:-translate-y-1 transition-all duration-300 text-sm tracking-widest uppercase">
-              View Memberships
-            </a>
-          </div>
-        </div>
-      </section>
-    );
+    return null; // Return nothing if there are no active offers, satisfying "not other things shouldnt show"
   }
 
   return (
@@ -613,11 +804,20 @@ const SpecialOffers: React.FC = () => {
             <div className="h-px w-12 md:w-20 bg-gradient-to-l from-transparent to-gold/50"></div>
           </div>
           <h2 className="text-4xl md:text-5xl lg:text-6xl font-black mb-4 md:mb-6 text-white tracking-tight">
-            SPECIAL OFFERS
+            {sectionContent.title.toUpperCase()}
           </h2>
           <p className="text-neutral-400 text-base md:text-xl max-w-2xl mx-auto font-light">
-            Limited time deals to kickstart your fitness journey
+            {sectionContent.description}
           </p>
+          {sectionContent.features.length > 0 && (
+            <div className="flex flex-wrap justify-center gap-3 mt-6">
+              {sectionContent.features.map((feature, index) => (
+                <span key={`${feature}-${index}`} className="px-4 py-2 rounded-full glass border border-gold/20 text-xs md:text-sm text-neutral-200 uppercase tracking-wider">
+                  {feature}
+                </span>
+              ))}
+            </div>
+          )}
         </div>
 
         <div className="grid grid-cols-1 gap-8 md:gap-10 max-w-5xl mx-auto">
@@ -648,14 +848,7 @@ const SpecialOffers: React.FC = () => {
                     <p className="text-neutral-300 text-base md:text-lg leading-relaxed mb-6">
                       {offer.description}
                     </p>
-                    <div className="flex items-center justify-start gap-2 text-neutral-400">
-                      <svg className="w-5 h-5 text-gold flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                      </svg>
-                      <span className="font-semibold text-sm">
-                        Valid till: <span className="text-gold font-black">{new Date(offer.valid_till).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' })}</span>
-                      </span>
-                    </div>
+
                   </div>
 
                   <div className="lg:min-w-[340px] flex flex-col justify-center gap-6 lg:border-l lg:border-white/10 lg:pl-8">
@@ -683,6 +876,13 @@ const SpecialOffers: React.FC = () => {
                       <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent translate-x-[-100%] group-hover/btn:translate-x-[100%] transition-transform duration-700"></div>
                     </button>
                   </div>
+                </div>
+
+                {/* T&C Notification */}
+                <div className="px-8 pb-4 border-t border-white/5 bg-white/[0.02]">
+                  <p className="text-[10px] text-gold uppercase tracking-[0.2em] font-bold py-3 text-center">
+                    * Terms & Conditions Apply
+                  </p>
                 </div>
               </div>
             </div>
@@ -735,11 +935,10 @@ const BrandStory: React.FC = () => {
               <video
                 src={media.src}
                 className="w-full h-full object-cover brightness-[0.78] saturate-[1.15]"
-                autoPlay
                 muted
                 loop
                 playsInline
-                preload="metadata"
+                preload="none"
                 aria-label={media.alt}
               />
             ) : (
@@ -999,17 +1198,11 @@ const Membership: React.FC = () => {
   const [plans, setPlans] = useState<MembershipPlan[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
+  const [activeCategory, setActiveCategory] = useState<MembershipCategory>('offline');
 
   useEffect(() => {
     const fetchPlans = async () => {
       try {
-        const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-        if (!supabaseUrl || supabaseUrl.includes('placeholder')) {
-          setLoading(false);
-          setError(true);
-          return;
-        }
-
         const { data, error: fetchError } = await supabase
           .from('membership_plans')
           .select('*')
@@ -1043,16 +1236,112 @@ const Membership: React.FC = () => {
     return null;
   }
 
+  const groupedPlans = MEMBERSHIP_SECTION_CONFIG.map((section) => ({
+    ...section,
+    content: PORTAL_CONTENT_DEFAULT_MAP[section.sectionKey],
+    plans: plans.filter((plan) => normalizeMembershipCategory(plan.category) === section.category),
+  })).filter((section) => section.plans.length > 0);
+  const visiblePlans = groupedPlans.filter(
+    section => section.category === activeCategory
+  );
+
   return (
     <section id="membership" className="py-16 md:py-24">
       <div className="container mx-auto px-6 md:px-6">
         <div className="text-center mb-10 md:mb-16">
           <h2 className="text-3xl md:text-5xl lg:text-6xl font-black mb-3 md:mb-4">FLEXIBLE <span className="text-gold">PLANS</span></h2>
-          <p className="text-neutral-400 text-sm md:text-base px-4">Maximum results with membership options that fit your lifestyle.</p>
+          <p className="text-neutral-400 text-sm md:text-base px-4">Maximum results with membership options for offline, online, and home workout goals.</p>
+          <div className="mt-8 flex flex-wrap items-center justify-center gap-3 md:gap-4">
+            <button
+              onClick={() => setActiveCategory('offline')}
+              className={`px-5 py-3 rounded-full text-xs md:text-sm uppercase tracking-widest transition-all ${activeCategory === 'offline'
+                ? 'gold-gradient text-black font-black'
+                : 'border border-white/15 text-white bg-transparent'
+              }`}
+            >
+              Offline
+            </button>
+            <button
+              onClick={() => setActiveCategory('online')}
+              className={`px-5 py-3 rounded-full text-xs md:text-sm uppercase tracking-widest transition-all ${activeCategory === 'online'
+                ? 'gold-gradient text-black font-black'
+                : 'border border-white/15 text-white bg-transparent'
+              }`}
+            >
+              Online
+            </button>
+            <button
+              onClick={() => setActiveCategory('home_workout')}
+              className={`px-5 py-3 rounded-full text-xs md:text-sm uppercase tracking-widest transition-all ${activeCategory === 'home_workout'
+                ? 'gold-gradient text-black font-black'
+                : 'border border-white/15 text-white bg-transparent'
+              }`}
+            >
+              Home Workout
+            </button>
+            <button
+              onClick={() => window.location.href = '/portal'}
+              className="px-6 py-3 rounded-full gold-gradient text-black text-xs md:text-sm font-black uppercase tracking-widest hover:scale-[1.02] transition-all"
+            >
+              Membership Details
+            </button>
+          </div>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8 max-w-7xl mx-auto">
-          {plans.map((plan) => (
+        <div className="max-w-7xl mx-auto space-y-12">
+          {visiblePlans.map((section) => (
+            <div key={section.category} id={`membership-${section.category}`} className="space-y-6 scroll-mt-32">
+              <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4">
+                <div>
+                  <p className="text-gold text-xs font-black uppercase tracking-[0.3em] mb-2">Membership Type</p>
+                  <h3 className="text-2xl md:text-4xl font-black text-white">{section.content.title}</h3>
+                  <p className="text-neutral-400 text-sm md:text-base mt-2 max-w-2xl">{section.content.description}</p>
+                </div>
+                <button
+                  onClick={() => window.location.href = '/portal'}
+                  className="w-full md:w-auto py-3 px-7 rounded-full font-black text-xs md:text-sm gold-gradient text-black uppercase tracking-widest hover:scale-[1.02] transition-all"
+                >
+                  View {section.content.title}
+                </button>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6 md:gap-8">
+                {section.plans.map((plan) => (
+                  <div key={plan.id} className={`relative flex flex-col p-8 md:p-10 rounded-[24px] md:rounded-[32px] border ${plan.is_popular ? 'border-gold bg-gold/5' : 'border-white/10 glass'} transition-all hover:translate-y-[-10px]`}>
+                    {plan.is_popular && (
+                      <span className="absolute -top-3 md:-top-4 left-1/2 -translate-x-1/2 bg-gold text-black text-xs font-black py-1.5 px-4 md:px-4 rounded-full uppercase tracking-widest">
+                        Most Popular
+                      </span>
+                    )}
+                    <h4 className="text-2xl md:text-2xl font-black mb-2">{plan.name}</h4>
+                    <p className="text-gold text-sm md:text-sm font-bold mb-6 md:mb-6">{plan.tagline}</p>
+                    <div className="text-4xl md:text-4xl font-black mb-8 md:mb-8">Rs. {plan.price.toLocaleString()}<span className="text-sm font-light text-neutral-400">/-</span></div>
+                    <p className="text-neutral-400 text-xs mb-4">{plan.duration}</p>
+
+                    <ul className="space-y-3 md:space-y-4 mb-6 md:mb-10 flex-grow">
+                      {plan.features.map((feature, i) => (
+                        <li key={i} className="flex items-center gap-2 md:gap-3 text-neutral-300 text-xs md:text-sm">
+                          <svg className="w-4 h-4 text-gold flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" /></svg>
+                          {feature}
+                        </li>
+                      ))}
+                    </ul>
+
+                    <button
+                      onClick={() => window.location.href = '/portal'}
+                      className={`w-full py-3 md:py-4 rounded-full font-black text-xs md:text-sm transition-all text-center block ${plan.is_popular ? 'gold-gradient text-black hover:shadow-lg' : 'glass text-white hover:bg-white/10'}`}
+                    >
+                      VIEW DETAILS
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <div className="hidden grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8 max-w-7xl mx-auto">
+          {false && plans.map((plan) => (
             <div key={plan.id} className={`relative flex flex-col p-8 md:p-10 rounded-[24px] md:rounded-[32px] border ${plan.is_popular ? 'border-gold bg-gold/5' : 'border-white/10 glass'} transition-all hover:translate-y-[-10px]`}>
               {plan.is_popular && (
                 <span className="absolute -top-3 md:-top-4 left-1/2 -translate-x-1/2 bg-gold text-black text-xs font-black py-1.5 px-4 md:px-4 rounded-full uppercase tracking-widest">
@@ -1083,6 +1372,7 @@ const Membership: React.FC = () => {
           ))}
         </div>
       </div>
+
     </section>
   );
 };
@@ -1198,7 +1488,7 @@ const Transformations: React.FC = () => {
   );
 };
 
-const OnlineClasses: React.FC = () => (
+const OnlineClasses: React.FC<{ sectionContent: PortalContentSection }> = ({ sectionContent }) => (
   <section id="online-classes" className="py-16 md:py-24 bg-gradient-to-br from-gold/10 via-transparent to-gold/5 relative overflow-hidden">
     <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PHBhdHRlcm4gaWQ9ImdyaWQiIHdpZHRoPSI2MCIgaGVpZ2h0PSI2MCIgcGF0dGVyblVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+PHBhdGggZD0iTSAxMCAwIEwgMCAwIDAgMTAiIGZpbGw9Im5vbmUiIHN0cm9rZT0icmdiYSgyMjksMTkyLDEyMywwLjA1KSIgc3Ryb2tlLXdpZHRoPSIxIi8+PC9wYXR0ZXJuPjwvZGVmcz48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSI2MAlSIIGZpbGw9InVybCgjZ3JpZCkiLz48L3N2Zz4=')] opacity-50"></div>
 
@@ -1212,7 +1502,7 @@ const OnlineClasses: React.FC = () => (
           TRAIN FROM <span className="text-gold">ANYWHERE</span>
         </h2>
         <p className="text-base md:text-base px-6 max-w-2xl mx-auto text-neutral-300">
-          Join our premium online classes and get expert guidance from the comfort of your home.
+          {sectionContent.description}
         </p>
       </div>
 
@@ -1228,13 +1518,13 @@ const OnlineClasses: React.FC = () => (
           </div>
           <h3 className="text-xl md:text-2xl font-black mb-2 md:mb-3 text-white">Live Sessions</h3>
           <p className="text-neutral-400 text-sm md:text-base leading-relaxed">
-            Join interactive live classes with real-time feedback from certified trainers
+            {sectionContent.features[0] || 'Join interactive live classes with real-time feedback from certified trainers'}
           </p>
         </div>
 
         <div
           onClick={() => {
-            document.getElementById('programs')?.scrollIntoView({ behavior: 'smooth' });
+            smoothScrollToId('programs');
           }}
           className="glass rounded-[24px] p-6 md:p-8 border border-white/10 hover:border-gold/30 transition-all group hover:scale-105 duration-500 cursor-pointer"
         >
@@ -1245,7 +1535,7 @@ const OnlineClasses: React.FC = () => (
           </div>
           <h3 className="text-xl md:text-2xl font-black mb-2 md:mb-3 text-white">All Programs</h3>
           <p className="text-neutral-400 text-sm md:text-base leading-relaxed">
-            Choose from Transformation, CrossFit, Zumba, Yoga & Functional Training
+            {sectionContent.features[1] || 'Choose from Transformation, CrossFit, Zumba, Yoga & Functional Training'}
           </p>
         </div>
       </div>
@@ -1257,10 +1547,10 @@ const OnlineClasses: React.FC = () => (
               <span className="text-gold text-xs md:text-sm font-bold uppercase tracking-wider">Included in Membership</span>
             </div>
             <h3 className="text-2xl md:text-3xl lg:text-4xl font-black mb-2 md:mb-3 text-white">
-              Get Access to <span className="text-gold">Online Classes</span>
+              Get Access to <span className="text-gold">{sectionContent.title}</span>
             </h3>
             <p className="text-neutral-400 text-sm md:text-base mb-4 md:mb-0">
-              Available with all membership plans - no extra charges
+              {sectionContent.features[2] || 'Available with all membership plans - no extra charges'}
             </p>
           </div>
           <div className="flex-shrink-0">
@@ -1772,6 +2062,405 @@ const Footer: React.FC = () => (
   </footer>
 );
 
+type OfflineCustomerProfile = {
+  fullName: string;
+  age: string;
+  dob: string;
+  email: string;
+  phoneNumber: string;
+};
+
+const OFFLINE_EMAIL_PENDING_KEY = 'noize_offline_email_pending';
+const OFFLINE_PORTAL_CUSTOMER_KEY = 'noize_offline_portal_customer';
+const OFFLINE_PORTAL_ACCESS_KEY = 'noize_offline_portal_access';
+const OFFLINE_EMAIL_COOLDOWN_KEY = 'noize_offline_email_cooldown_until';
+const OFFLINE_EMAIL_ERROR_KEY = 'noize_offline_email_error';
+
+const OfflineLoginModal: React.FC<{
+  isOpen: boolean;
+  onClose: () => void;
+  onSuccess: (profile: OfflineCustomerProfile, repeatVisits: number) => void;
+}> = ({ isOpen, onClose, onSuccess }) => {
+  const [formData, setFormData] = useState<OfflineCustomerProfile>({
+    fullName: '',
+    age: '',
+    dob: '',
+    email: '',
+    phoneNumber: ''
+  });
+  const [emailCode, setEmailCode] = useState('');
+  const [isEmailCodeSent, setIsEmailCodeSent] = useState(false);
+  const [isEmailVerified, setIsEmailVerified] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [infoMessage, setInfoMessage] = useState<string | null>(null);
+  const [emailCooldownSeconds, setEmailCooldownSeconds] = useState(0);
+
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+      const savedProfile = sessionStorage.getItem(OFFLINE_EMAIL_PENDING_KEY);
+      const savedEmailError = sessionStorage.getItem(OFFLINE_EMAIL_ERROR_KEY);
+      if (!savedProfile) {
+        supabase.auth.clearEmailOtpSession();
+        sessionStorage.removeItem(OFFLINE_PORTAL_ACCESS_KEY);
+      }
+      if (savedProfile) {
+        try {
+          const parsedProfile = JSON.parse(savedProfile) as OfflineCustomerProfile;
+          setFormData((current) => ({
+            ...current,
+            ...parsedProfile,
+          }));
+          setIsEmailCodeSent(true);
+          setInfoMessage((current) => current || `Continue verifying ${parsedProfile.email.trim().toLowerCase()} to unlock the offline portal.`);
+        } catch {
+          sessionStorage.removeItem(OFFLINE_EMAIL_PENDING_KEY);
+        }
+      }
+      if (savedEmailError) {
+        setError(savedEmailError);
+        sessionStorage.removeItem(OFFLINE_EMAIL_ERROR_KEY);
+      }
+    } else {
+      document.body.style.overflow = 'unset';
+      setFormData({
+        fullName: '',
+        age: '',
+        dob: '',
+        email: '',
+        phoneNumber: ''
+      });
+      setEmailCode('');
+      setIsEmailCodeSent(false);
+      setIsEmailVerified(false);
+      setError(null);
+      setInfoMessage(null);
+    }
+    return () => { document.body.style.overflow = 'unset'; };
+  }, [isOpen]);
+
+  useEffect(() => {
+    if (!isOpen) {
+      setEmailCooldownSeconds(0);
+      return;
+    }
+
+    const getRemainingSeconds = () => {
+      const cooldownUntil = Number(sessionStorage.getItem(OFFLINE_EMAIL_COOLDOWN_KEY) || '0');
+      if (!cooldownUntil) return 0;
+      return Math.max(0, Math.ceil((cooldownUntil - Date.now()) / 1000));
+    };
+
+    setEmailCooldownSeconds(getRemainingSeconds());
+
+    const interval = window.setInterval(() => {
+      const remaining = getRemainingSeconds();
+      setEmailCooldownSeconds(remaining);
+      if (remaining <= 0) {
+        sessionStorage.removeItem(OFFLINE_EMAIL_COOLDOWN_KEY);
+      }
+    }, 1000);
+
+    return () => {
+      window.clearInterval(interval);
+    };
+  }, [isOpen]);
+
+  const startEmailCooldown = () => {
+    const cooldownUntil = Date.now() + 60_000;
+    sessionStorage.setItem(OFFLINE_EMAIL_COOLDOWN_KEY, cooldownUntil.toString());
+    setEmailCooldownSeconds(60);
+  };
+
+  const handleInputChange = (field: keyof OfflineCustomerProfile, value: string) => {
+    setFormData((current) => ({
+      ...current,
+      [field]: field === 'email' ? value.trimStart() : value
+    }));
+  };
+
+  const handleSendEmailVerification = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (emailCooldownSeconds > 0) {
+      setError('Too many email requests. Please wait 1 minute and try again.');
+      setInfoMessage(null);
+      return;
+    }
+
+    setLoading(true);
+    setError(null);
+    setInfoMessage(null);
+
+    try {
+      const email = formData.email.trim().toLowerCase();
+      supabase.auth.clearEmailOtpSession();
+      sessionStorage.removeItem(OFFLINE_PORTAL_ACCESS_KEY);
+      sessionStorage.setItem(
+        OFFLINE_EMAIL_PENDING_KEY,
+        JSON.stringify({
+          ...formData,
+          email,
+        }),
+      );
+      const { error } = await supabase.auth.signInWithOtp({
+        email,
+        options: {
+          shouldCreateUser: true,
+          emailRedirectTo: `${window.location.origin}/?offlineEmail=1`,
+        },
+      });
+
+      if (error) throw error;
+
+      setIsEmailCodeSent(true);
+      startEmailCooldown();
+      setInfoMessage(`Verification OTP sent to ${email}. Enter the 6-digit code below to continue to the special offers portal.`);
+    } catch (err: any) {
+      const normalizedMessage = typeof err?.message === 'string' ? err.message.toLowerCase() : '';
+      if (normalizedMessage.includes('email rate limit exceeded') || normalizedMessage.includes('rate limit')) {
+        startEmailCooldown();
+        setError('Too many email requests. Please wait 1 minute and try again.');
+      } else {
+        setError(err.message);
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleVerifyEmailCode = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    setError(null);
+    setInfoMessage(null);
+
+    try {
+      const email = formData.email.trim().toLowerCase();
+      const { error } = await supabase.auth.verifyOtp({
+        email,
+        token: emailCode,
+        type: 'email',
+      });
+
+      if (error) throw error;
+
+      const memberKey = email;
+      const localLoginKey = `noize_offline_login_${memberKey}`;
+      const previousVisits = parseInt(localStorage.getItem(localLoginKey) || '0', 10);
+      const repeatVisits = previousVisits + 1;
+      localStorage.setItem(localLoginKey, repeatVisits.toString());
+
+      try {
+        await supabase.from('offline_members').upsert([{
+          phone_number: memberKey,
+          full_name: formData.fullName.trim(),
+          age: Number(formData.age),
+          dob: formData.dob,
+          email,
+          email_verified_at: new Date().toISOString(),
+          login_count: repeatVisits,
+          last_login_at: new Date().toISOString()
+        }], { onConflict: 'phone_number' });
+      } catch (persistError) {
+        console.warn('Offline member persistence unavailable, continuing with local storage only.', persistError);
+      }
+
+      setIsEmailVerified(true);
+      setIsEmailCodeSent(true);
+      setInfoMessage(`Email ${email} verified. Opening the special offers portal now.`);
+      sessionStorage.removeItem(OFFLINE_EMAIL_PENDING_KEY);
+      sessionStorage.setItem(
+        OFFLINE_PORTAL_ACCESS_KEY,
+        JSON.stringify({
+          email,
+          verifiedAt: new Date().toISOString(),
+        }),
+      );
+
+      onSuccess(
+        {
+          ...formData,
+          email,
+          phoneNumber: '',
+        },
+        repeatVisits
+      );
+    } catch (err: any) {
+      const errorCode = typeof err?.code === 'string' ? err.code : '';
+
+      if (errorCode === 'otp_invalid') {
+        setError('Invalid OTP. Please try again.');
+        setEmailCode('');
+      } else if (errorCode === 'otp_expired') {
+        supabase.auth.clearEmailOtpSession();
+        sessionStorage.removeItem(OFFLINE_PORTAL_ACCESS_KEY);
+        setIsEmailCodeSent(false);
+        setIsEmailVerified(false);
+        setEmailCode('');
+        sessionStorage.removeItem(OFFLINE_EMAIL_PENDING_KEY);
+        setError('OTP expired. Resend OTP.');
+      } else if (errorCode === 'otp_attempts_exceeded') {
+        supabase.auth.clearEmailOtpSession();
+        sessionStorage.removeItem(OFFLINE_PORTAL_ACCESS_KEY);
+        setIsEmailCodeSent(false);
+        setIsEmailVerified(false);
+        setEmailCode('');
+        sessionStorage.removeItem(OFFLINE_EMAIL_PENDING_KEY);
+        setError('Too many wrong attempts. Please request a new OTP.');
+      } else {
+        setError(err.message);
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 z-[150] flex items-center justify-center p-4 bg-black/95 backdrop-blur-xl animate-fade-in" onClick={onClose}>
+      <div className="relative w-full max-w-md glass rounded-[32px] border border-white/10 p-8 md:p-10 animate-fade-in-up" onClick={e => e.stopPropagation()}>
+        <button onClick={onClose} className="absolute top-6 right-6 text-neutral-500 hover:text-white transition-colors">
+          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>
+        </button>
+
+        <div className="text-center mb-10">
+          <div className="w-16 h-16 bg-gold/10 rounded-2xl flex items-center justify-center mx-auto mb-6">
+            <svg className="w-8 h-8 text-gold" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
+          </div>
+          <h2 className="text-2xl font-black text-white mb-2 uppercase tracking-tight">Offline <span className="text-gold">Login Portal</span></h2>
+          <p className="text-neutral-400 text-sm">Enter member details, verify your email OTP, then unlock the special offers portal.</p>
+        </div>
+
+        {error && (
+          <div className="mb-6 p-4 bg-red-500/10 border border-red-500/50 rounded-xl text-red-500 text-xs font-bold flex items-center gap-2">
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+            {error}
+          </div>
+        )}
+
+        {infoMessage && (
+          <div className="mb-6 p-4 bg-gold/10 border border-gold/30 rounded-xl text-gold text-xs font-bold">
+            {infoMessage}
+          </div>
+        )}
+
+        {!isEmailCodeSent ? (
+          <form onSubmit={handleSendEmailVerification} className="space-y-6">
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div className="sm:col-span-2">
+                <label className="block text-[10px] font-black text-neutral-500 uppercase mb-2 tracking-[0.2em] ml-1">Name</label>
+                <input
+                  type="text"
+                  required
+                  className="w-full bg-white/5 border border-white/10 rounded-2xl px-5 py-4 text-white focus:border-gold outline-none transition-all"
+                  placeholder="Enter full name"
+                  value={formData.fullName}
+                  onChange={(e) => handleInputChange('fullName', e.target.value)}
+                />
+              </div>
+
+              <div>
+                <label className="block text-[10px] font-black text-neutral-500 uppercase mb-2 tracking-[0.2em] ml-1">Age</label>
+                <input
+                  type="number"
+                  required
+                  min="10"
+                  max="100"
+                  className="w-full bg-white/5 border border-white/10 rounded-2xl px-5 py-4 text-white focus:border-gold outline-none transition-all"
+                  placeholder="Age"
+                  value={formData.age}
+                  onChange={(e) => handleInputChange('age', e.target.value)}
+                />
+              </div>
+
+              <div>
+                <label className="block text-[10px] font-black text-neutral-500 uppercase mb-2 tracking-[0.2em] ml-1">DOB</label>
+                <input
+                  type="date"
+                  required
+                  className="w-full bg-white/5 border border-white/10 rounded-2xl px-5 py-4 text-white focus:border-gold outline-none transition-all"
+                  value={formData.dob}
+                  onChange={(e) => handleInputChange('dob', e.target.value)}
+                />
+              </div>
+
+              <div className="sm:col-span-2">
+                <label className="block text-[10px] font-black text-neutral-500 uppercase mb-2 tracking-[0.2em] ml-1">Email</label>
+                <input
+                  type="email"
+                  required
+                  className="w-full bg-white/5 border border-white/10 rounded-2xl px-5 py-4 text-white focus:border-gold outline-none transition-all"
+                  placeholder="you@example.com"
+                  value={formData.email}
+                  onChange={(e) => handleInputChange('email', e.target.value)}
+                />
+              </div>
+            </div>
+
+            <button
+              type="submit"
+              disabled={loading || emailCooldownSeconds > 0}
+              className="w-full gold-gradient text-black font-black py-4 rounded-2xl text-sm uppercase tracking-widest hover:shadow-[0_0_30px_rgba(229,192,123,0.3)] transition-all disabled:opacity-50"
+            >
+              {loading ? 'SENDING...' : emailCooldownSeconds > 0 ? `Resend in ${emailCooldownSeconds}s` : 'SEND EMAIL OTP'}
+            </button>
+          </form>
+        ) : !isEmailVerified ? (
+          <form onSubmit={handleVerifyEmailCode} className="space-y-6">
+            <div>
+              <label className="block text-[10px] font-black text-neutral-500 uppercase mb-2 tracking-[0.2em] ml-1">Email OTP</label>
+              <input
+                type="text"
+                required
+                pattern="[0-9]{6}"
+                className="w-full bg-white/5 border border-white/10 rounded-2xl px-5 py-4 text-white focus:border-gold outline-none transition-all text-center text-2xl tracking-[0.5em] font-black"
+                placeholder="000000"
+                value={emailCode}
+                onChange={(e) => setEmailCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
+              />
+              <p className="mt-4 text-xs text-neutral-500 leading-relaxed">
+                Enter the 6-digit OTP sent to your email. After the OTP matches, you will continue to the special offers flow.
+              </p>
+              <button
+                type="button"
+                onClick={() => {
+                  supabase.auth.clearEmailOtpSession();
+                  sessionStorage.removeItem(OFFLINE_PORTAL_ACCESS_KEY);
+                  setIsEmailCodeSent(false);
+                  setIsEmailVerified(false);
+                  setEmailCode('');
+                  setInfoMessage(null);
+                  sessionStorage.removeItem(OFFLINE_EMAIL_PENDING_KEY);
+                }}
+                className="text-xs text-gold font-bold mt-4 block mx-auto hover:underline"
+              >
+                Change Email Address?
+              </button>
+            </div>
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full gold-gradient text-black font-black py-4 rounded-2xl text-sm uppercase tracking-widest hover:shadow-[0_0_30px_rgba(229,192,123,0.3)] transition-all disabled:opacity-50"
+            >
+              {loading ? 'VERIFYING...' : 'VERIFY EMAIL OTP'}
+            </button>
+          </form>
+        ) : null}
+
+        <div className="mt-10 pt-8 border-t border-white/5 text-center">
+          <p className="text-[10px] text-neutral-600 font-bold uppercase tracking-widest leading-relaxed">
+            By continuing, you agree to our <br/>
+            <span className="text-neutral-400">Terms of Service</span> & <span className="text-neutral-400">Privacy Policy</span>
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 const FloatingButtons: React.FC = () => (
   <div className="fixed bottom-4 md:bottom-8 right-4 md:right-8 z-[100] flex flex-col gap-3 md:gap-4">
     <a
@@ -1791,10 +2480,253 @@ const FloatingButtons: React.FC = () => (
   </div>
 );
 
+const OffersListModal: React.FC<{
+  isOpen: boolean;
+  onClose: () => void;
+  onContinue: () => void;
+  customerName: string;
+  customerPhone: string;
+  repeatVisits: number;
+}> = ({ isOpen, onClose, onContinue, customerName, customerPhone, repeatVisits }) => {
+  const [offers, setOffers] = useState<Offer[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (isOpen) {
+      const fetchOffers = async () => {
+        setLoading(true);
+        try {
+          const { data, error } = await supabase
+            .from('offers')
+            .select('*')
+            .eq('is_active', true)
+            .order('valid_till', { ascending: true })
+            .gte('valid_till', new Date().toISOString().split('T')[0]);
+
+          if (!error && data) {
+            setOffers(data);
+          }
+        } catch (err) {
+          console.error('Error fetching offers:', err);
+        } finally {
+          setLoading(false);
+        }
+      };
+      fetchOffers();
+    }
+  }, [isOpen]);
+
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 z-[160] flex items-center justify-center p-4 bg-black/90 backdrop-blur-xl animate-fade-in" onClick={onClose}>
+      <div className="relative w-full max-w-2xl glass rounded-[40px] border-2 border-gold/40 p-8 md:p-12 animate-fade-in-up shadow-[0_0_100px_rgba(229,192,123,0.2)]" onClick={e => e.stopPropagation()}>
+        <button
+          onClick={onClose}
+          className="absolute top-6 right-6 w-12 h-12 flex items-center justify-center rounded-full bg-white/5 hover:bg-red-500/20 text-white hover:text-red-500 transition-all duration-300"
+        >
+          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+
+        {loading ? (
+          <div className="py-20 text-center">
+            <div className="w-12 h-12 border-4 border-gold border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+            <p className="text-gold font-bold animate-pulse">Loading your available offers...</p>
+          </div>
+        ) : offers.length > 0 ? (
+          <div>
+            <div className="text-center mb-8">
+              <div className="inline-flex items-center gap-3 mb-6 px-4 py-2 bg-red-500/10 border border-red-500/30 rounded-full">
+                <span className="relative flex h-2 w-2">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-500 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
+                </span>
+                <span className="text-red-500 text-[10px] font-black uppercase tracking-[0.2em]">Authenticated Offline Offers</span>
+              </div>
+
+              <h2 className="text-3xl md:text-5xl font-black mb-4 leading-tight">
+                Welcome, <span className="text-gold">{customerName}</span>
+              </h2>
+              <p className="text-neutral-400 text-lg">
+                {repeatVisits > 1
+                  ? `Returning member login detected. This is visit ${repeatVisits}, so we are showing the latest active offers without creating duplicate customer records.`
+                  : 'Your phone number is verified. Here are the active offers available for offline gym workouts.'}
+              </p>
+            </div>
+
+            <div className="grid gap-4 mb-8 max-h-[50vh] overflow-y-auto pr-1">
+              {offers.map((offer) => (
+                <div key={offer.id} className="bg-white/5 border border-gold/20 rounded-3xl p-6 md:p-7">
+                  <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
+                    <div>
+                      <p className="text-gold text-[10px] font-black uppercase tracking-[0.25em] mb-2">Limited Offer</p>
+                      <h3 className="text-2xl font-black text-white mb-2">{offer.title}</h3>
+                      <p className="text-neutral-300 mb-4">{offer.description}</p>
+                      <p className="text-neutral-500 text-xs font-bold uppercase tracking-widest">
+                        Valid till {new Date(offer.valid_till).toLocaleDateString()}
+                      </p>
+                    </div>
+                    <div className="md:text-right">
+                      <div className="text-3xl font-black text-gold mb-4">{offer.price_text}</div>
+                      <button
+                        onClick={() => handleWhatsApp(`Hi NOIZE Team! 👋\n\nI'd like to claim this exclusive offer:\n\n📌 Offer: ${offer.title}\n💰 Price: ₹${offer.price_text}\n\n👤 Name: ${customerName}\n📧 Email: ${customerName}\n\nPlease assist me. Thank you!`)}
+                        className="gold-gradient text-black font-black py-3 px-6 rounded-full text-xs uppercase tracking-widest hover:shadow-[0_8px_30px_rgba(229,192,123,0.4)] transition-all"
+                      >
+                        Claim Offer
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div className="flex flex-col sm:flex-row gap-4">
+              <button
+                onClick={onContinue}
+                className="flex-1 gold-gradient text-black font-black py-4 px-8 rounded-full text-sm uppercase tracking-widest hover:shadow-[0_8px_30px_rgba(229,192,123,0.4)] hover:-translate-y-1 transition-all"
+              >
+                Continue to Membership
+              </button>
+              <button
+                onClick={onClose}
+                className="flex-1 glass text-white font-black py-4 px-8 rounded-full text-sm uppercase tracking-widest border border-white/10 hover:bg-white/5 transition-all"
+              >
+                Close Offers
+              </button>
+            </div>
+          </div>
+        ) : (
+          <div className="text-center py-10">
+            <h2 className="text-2xl font-black mb-4">NO ACTIVE <span className="text-gold">OFFERS</span></h2>
+            <p className="text-neutral-400 mb-8">Your login is verified. There are no live offers right now, so you can continue directly to membership plans.</p>
+            <button
+              onClick={onContinue}
+              className="gold-gradient text-black font-black py-4 px-12 rounded-full text-sm uppercase tracking-widest hover:shadow-[0_8px_30px_rgba(229,192,123,0.4)] transition-all"
+            >
+              Continue to Membership
+            </button>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
 const App: React.FC = () => {
+  const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(true);
   const [loadingProgress, setLoadingProgress] = useState(0);
   const [siteImages, setSiteImages] = useState<Record<string, string>>({});
+  const [portalContent, setPortalContent] = useState<Record<string, PortalContentSection>>(PORTAL_CONTENT_DEFAULT_MAP);
+  const [user, setUser] = useState<any>(null);
+  
+  // Modal Flow State
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  const [isOptionsModalOpen, setIsOptionsModalOpen] = useState(false);
+  const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
+  const [selectedBookingType, setSelectedBookingType] = useState<string | null>(null);
+  const [pendingType, setPendingType] = useState<string | null>(null);
+  const [offlineCustomer, setOfflineCustomer] = useState<OfflineCustomerProfile | null>(null);
+  const [offlineRepeatVisits, setOfflineRepeatVisits] = useState(0);
+  const trainingTypes = buildTrainingTypes(portalContent);
+
+  const handleGetStarted = () => {
+    setIsOptionsModalOpen(true);
+  };
+
+  const openOfflineOffersPortal = (profile: OfflineCustomerProfile) => {
+    sessionStorage.setItem(OFFLINE_PORTAL_CUSTOMER_KEY, JSON.stringify(profile));
+    setIsOptionsModalOpen(false);
+    setIsAuthModalOpen(false);
+    setIsBookingModalOpen(false);
+    navigate('/offline-offers');
+  };
+
+  const handleAuthSuccess = (profile: OfflineCustomerProfile, repeatVisits: number) => {
+    setIsAuthModalOpen(false);
+    setOfflineCustomer(profile);
+    setOfflineRepeatVisits(repeatVisits);
+
+    if (pendingType === 'offline') {
+      setPendingType(null);
+      openOfflineOffersPortal(profile);
+      return;
+    }
+
+    setPendingType(null);
+    setIsBookingModalOpen(true);
+  };
+
+  const handleOfflineEmailCallbackState = () => {
+    const pendingProfile = sessionStorage.getItem(OFFLINE_EMAIL_PENDING_KEY);
+    if (!pendingProfile) {
+      return;
+    }
+
+    const hashParams = new URLSearchParams(window.location.hash.replace(/^#/, ''));
+    const searchParams = new URLSearchParams(window.location.search);
+    const errorCode = hashParams.get('error_code');
+    const errorDescription = hashParams.get('error_description');
+    const hasOfflineFlag = searchParams.get('offlineEmail') === '1';
+
+    if (errorCode && hasOfflineFlag) {
+      let nextError = decodeURIComponent(errorDescription || 'Email verification failed. Please request a new link.');
+      if (errorCode === 'otp_expired') {
+        nextError = 'This email verification link is invalid or expired. Please request a new link and use it within 1 minute.';
+      }
+
+      sessionStorage.setItem(OFFLINE_EMAIL_ERROR_KEY, nextError);
+      setPendingType('offline');
+      setIsAuthModalOpen(true);
+      window.history.replaceState({}, document.title, window.location.pathname);
+      return;
+    }
+
+    if (hasOfflineFlag) {
+      setPendingType('offline');
+      setIsAuthModalOpen(true);
+      window.history.replaceState({}, document.title, window.location.pathname);
+    }
+  };
+
+  const handleExclusiveOffersEntryState = () => {
+    const searchParams = new URLSearchParams(window.location.search);
+    const shouldOpenExclusiveOffers = searchParams.get('exclusiveOffers') === '1';
+
+    if (!shouldOpenExclusiveOffers) {
+      return;
+    }
+
+    setPendingType('offline');
+    setIsOptionsModalOpen(false);
+    setIsBookingModalOpen(false);
+    setIsAuthModalOpen(true);
+    window.history.replaceState({}, document.title, window.location.pathname);
+  };
+
+  const handleOptionSelect = (typeId: string) => {
+    setSelectedBookingType(typeId);
+    setIsOptionsModalOpen(false);
+    
+    if (typeId === 'offline') {
+      setIsBookingModalOpen(false);
+      setPendingType('offline');
+      setIsAuthModalOpen(true);
+    } else if (typeId === 'online') {
+      smoothScrollToId('online-classes');
+    } else if (typeId === 'home') {
+      smoothScrollToId('programs');
+    } else {
+      setIsBookingModalOpen(true);
+    }
+  };
+
+  useEffect(() => {
+    handleOfflineEmailCallbackState();
+    handleExclusiveOffersEntryState();
+  }, []);
 
   useEffect(() => {
     const fetchImages = async () => {
@@ -1808,6 +2740,48 @@ const App: React.FC = () => {
       }
     };
     fetchImages();
+  }, []);
+
+  useEffect(() => {
+    const fetchPortalContent = async () => {
+      const { data, error } = await supabase
+        .from('portal_content')
+        .select('section_key, title, description, features');
+
+      if (error) {
+        console.warn('portal_content table is unavailable. Falling back to default portal content.', error.message);
+        setPortalContent(PORTAL_CONTENT_DEFAULT_MAP);
+        return;
+      }
+
+      if (data && data.length > 0) {
+        const nextPortalContent = { ...PORTAL_CONTENT_DEFAULT_MAP };
+        data.forEach((section: PortalContent) => {
+          nextPortalContent[section.section_key] = {
+            section_key: section.section_key,
+            title: section.title,
+            description: section.description,
+            features: Array.isArray(section.features) ? section.features : [],
+          };
+        });
+        setPortalContent(nextPortalContent);
+      } else {
+        setPortalContent(PORTAL_CONTENT_DEFAULT_MAP);
+      }
+    };
+
+    fetchPortalContent();
+
+    const channel = supabase
+      .channel('public:portal_content')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'portal_content' }, () => {
+        fetchPortalContent();
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, []);
 
   useEffect(() => {
@@ -1857,17 +2831,17 @@ const App: React.FC = () => {
   return (
     <SiteImagesContext.Provider value={siteImages}>
       <div className="min-h-screen bg-[#050505] text-white">
-        <Navbar />
+        <Navbar onJoinNow={handleGetStarted} />
         <main>
-          <Hero />
-          <TrainingTypes />
-          <SpecialOffers />
+          <Hero onStart={handleGetStarted} />
+          <TrainingTypes onTypeSelect={handleOptionSelect} trainingTypes={trainingTypes} />
+          <SpecialOffers sectionContent={portalContent.special_offers} />
           <BrandStory />
           <ProgramsGrid />
           <WhyChooseUs />
           <Membership />
           <Transformations />
-          <OnlineClasses />
+          <OnlineClasses sectionContent={portalContent.online_workout} />
           <WeeklyHighlights />
           <Gallery />
           <Testimonials />
@@ -1876,6 +2850,79 @@ const App: React.FC = () => {
         <Footer />
 
         <FloatingButtons />
+
+        <OfflineLoginModal 
+          isOpen={isAuthModalOpen}
+          onClose={() => setIsAuthModalOpen(false)}
+          onSuccess={handleAuthSuccess}
+        />
+
+        <TrainingBookingModal 
+          isOpen={isBookingModalOpen}
+          onClose={() => setIsBookingModalOpen(false)}
+          selectedType={selectedBookingType}
+          trainingTypes={trainingTypes}
+        />
+
+        {/* Re-using Options Modal from Hero logic but controlled globally */}
+        {isOptionsModalOpen && (
+          <div className="fixed inset-0 z-[140] flex items-center justify-center p-4 bg-black/90 backdrop-blur-xl animate-fade-in" onClick={() => setIsOptionsModalOpen(false)}>
+            <div className="relative w-full max-w-5xl glass rounded-[40px] border border-white/10 p-8 md:p-12 animate-fade-in-up shadow-[0_0_100px_rgba(229,192,123,0.15)]" onClick={e => e.stopPropagation()}>
+              <button
+                onClick={() => setIsOptionsModalOpen(false)}
+                className="absolute top-6 right-6 w-12 h-12 flex items-center justify-center rounded-full bg-white/5 hover:bg-red-500/20 text-white hover:text-red-500 transition-all duration-300"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+
+              <div className="text-center mb-10">
+                <h2 className="text-3xl md:text-5xl font-black mb-4">CHOOSE YOUR <span className="text-gold">FITNESS PATH</span></h2>
+                <p className="text-neutral-400 text-lg">Choose offline, online, or home workout to continue</p>
+              </div>
+
+              <div className="grid md:grid-cols-3 gap-6">
+                {[
+                  {
+                    id: 'offline',
+                    title: portalContent.offline_workout.title,
+                    description: portalContent.offline_workout.description,
+                    icon: portalSectionIcons.offline_workout
+                  },
+                  {
+                    id: 'online',
+                    title: portalContent.online_workout.title,
+                    description: portalContent.online_workout.description,
+                    icon: portalSectionIcons.online_workout
+                  },
+                  {
+                    id: 'home',
+                    title: portalContent.home_workout.title,
+                    description: portalContent.home_workout.description,
+                    icon: portalSectionIcons.home_workout
+                  }
+                ].map((type) => (
+                  <button
+                    key={type.id}
+                    type="button"
+                    onClick={() => handleOptionSelect(type.id)}
+                    className="glass group w-full p-8 rounded-3xl border border-white/5 hover:border-gold/50 transition-all duration-500 cursor-pointer hover:-translate-y-2 hover:shadow-[0_20px_50px_rgba(229,192,123,0.1)] flex flex-col items-center text-center"
+                  >
+                    <div className="w-20 h-20 rounded-2xl bg-white/5 flex items-center justify-center mb-6 group-hover:bg-gold/10 group-hover:scale-110 transition-all duration-500">
+                      <span className="text-gold transform scale-125">{type.icon}</span>
+                    </div>
+                    <h3 className="text-xl font-bold mb-3 group-hover:text-gold transition-colors">{type.title}</h3>
+                    <p className="text-neutral-500 text-sm mb-6 leading-relaxed">{type.description}</p>
+                    <span className="gold-gradient text-black text-xs font-black py-3 px-8 rounded-full opacity-100 md:opacity-90 md:group-hover:opacity-100 transition-all duration-500 tracking-widest">
+                      GET STARTED
+                    </span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </SiteImagesContext.Provider>
   );

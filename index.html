@@ -10,24 +10,61 @@
     <link rel="icon" type="image/png" href="/images/logo.png" />
     
     <!-- Preload Critical Assets -->
-    <link rel="preload" href="/images/bodybuilding.jpg" as="image" />
-    <link rel="preload" href="/images/logo.png" as="image" />
+    <link rel="preload" href="/images/bodybuilding.jpg" as="image" fetchpriority="high" />
+    <link rel="preload" href="/images/logo.png" as="image" fetchpriority="high" />
     <link rel="dns-prefetch" href="https://cdn.tailwindcss.com" />
     <link rel="dns-prefetch" href="https://fonts.googleapis.com" />
     
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
     <style>
+      html {
+        scroll-behavior: smooth;
+        scroll-padding-top: 96px;
+        overscroll-behavior-y: none;
+      }
       body {
         font-family: 'Inter', sans-serif;
         background-color: #0E0E0E;
         color: #FFFFFF;
         scroll-behavior: smooth;
+        overflow-x: hidden;
+        position: relative;
+      }
+      body::before,
+      body::after {
+        content: '';
+        position: fixed;
+        inset: auto;
+        pointer-events: none;
+        z-index: 0;
+        border-radius: 999px;
+        filter: blur(80px);
+        opacity: 0.16;
+        transform: translateZ(0);
+      }
+      body::before {
+        top: 10vh;
+        left: -120px;
+        width: 320px;
+        height: 320px;
+        background: radial-gradient(circle, rgba(229, 192, 123, 0.9) 0%, rgba(229, 192, 123, 0) 72%);
+      }
+      body::after {
+        right: -140px;
+        bottom: 12vh;
+        width: 360px;
+        height: 360px;
+        background: radial-gradient(circle, rgba(255, 255, 255, 0.22) 0%, rgba(255, 255, 255, 0) 70%);
+      }
+      #root {
+        position: relative;
+        z-index: 1;
       }
       .glass {
         background: rgba(18, 18, 18, 0.65);
-        backdrop-filter: blur(16px);
-        -webkit-backdrop-filter: blur(16px);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
         border: 1px solid rgba(229, 192, 123, 0.15);
         box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5);
       }
@@ -53,8 +90,8 @@
       }
       .glass:hover {
         border-color: rgba(229, 192, 123, 0.4) !important;
-        box-shadow: 0 15px 45px -10px rgba(229, 192, 123, 0.25) !important;
-        transform: translateY(-4px);
+        box-shadow: 0 12px 36px -12px rgba(229, 192, 123, 0.22) !important;
+        transform: translateY(-2px);
       }
       
       /* GPU Acceleration for background blurs to stop scroll lag */
@@ -102,6 +139,18 @@
       }
       .scrollbar-hide::-webkit-scrollbar {
         display: none;
+      }
+      @media (prefers-reduced-motion: reduce) {
+        html, body {
+          scroll-behavior: auto;
+        }
+        *,
+        *::before,
+        *::after {
+          animation-duration: 0.01ms !important;
+          animation-iteration-count: 1 !important;
+          transition-duration: 0.01ms !important;
+        }
       }
       @keyframes scroll-desktop {
         0% { transform: translateX(0); }
@@ -217,6 +266,10 @@
       img {
         content-visibility: auto;
       }
+      main section {
+        content-visibility: auto;
+        contain-intrinsic-size: 900px;
+      }
       img[loading="lazy"] {
         background: rgba(26, 26, 26, 0.4);
       }
@@ -225,6 +278,23 @@
       img, video {
         max-width: 100%;
         height: auto;
+      }
+      video {
+        background: #090909;
+      }
+      @media (max-width: 768px) {
+        body::before {
+          width: 220px;
+          height: 220px;
+          left: -80px;
+          opacity: 0.14;
+        }
+        body::after {
+          width: 240px;
+          height: 240px;
+          right: -90px;
+          opacity: 0.12;
+        }
       }
     </style>
   <script type="importmap">

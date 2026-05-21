@@ -54,6 +54,7 @@ CREATE TABLE IF NOT EXISTS public.membership_plans (
     duration TEXT NOT NULL,
     tagline TEXT NOT NULL,
     features JSONB NOT NULL DEFAULT '[]'::jsonb,
+    category TEXT NOT NULL DEFAULT 'offline' CHECK (category IN ('offline', 'online', 'home_workout')),
     is_popular BOOLEAN DEFAULT false,
     is_active BOOLEAN DEFAULT true,
     display_order INTEGER DEFAULT 0,
@@ -142,11 +143,11 @@ WHERE is_active = true;
 
 -- Sample Membership Plans
 /*
-INSERT INTO public.membership_plans (name, price, duration, tagline, features, is_popular, is_active, display_order) VALUES
-('Basic', 2460, '1 Month', 'Perfect for beginners', '["All Equipment Access", "Personal Training Session", "Locker Facility", "Free Assessment"]', false, true, 1),
-('Standard', 4990, 'Pay 3M Train 6M', 'Best value for money', '["6 Months Training", "All Equipment Access", "Personal Training", "Diet Plan Included", "Weekend Activities"]', false, true, 2),
-('Pro Choice', 7499, 'Pay 6M Train 9M', 'Most popular plan', '["9 Months Training", "All Equipment Access", "Personal Training", "Custom Diet Plan", "Weekend Activities", "Priority Support"]', true, true, 3),
-('Elite Annual', 12260, 'Pay 1Y Train 1.5Y', 'Ultimate transformation', '["1.5 Years Training", "All Equipment Access", "Dedicated Trainer", "Custom Diet Plan", "Weekend Activities", "Priority Support", "Free Supplements"]', false, true, 4);
+INSERT INTO public.membership_plans (name, price, duration, tagline, features, category, is_popular, is_active, display_order) VALUES
+('Basic', 2460, '1 Month', 'Perfect for beginners', '["All Equipment Access", "Personal Training Session", "Locker Facility", "Free Assessment"]', 'offline', false, true, 1),
+('Standard', 4990, 'Pay 3M Train 6M', 'Best value for money', '["6 Months Training", "All Equipment Access", "Personal Training", "Diet Plan Included", "Weekend Activities"]', 'offline', false, true, 2),
+('Pro Choice', 7499, 'Pay 6M Train 9M', 'Most popular plan', '["9 Months Training", "All Equipment Access", "Personal Training", "Custom Diet Plan", "Weekend Activities", "Priority Support"]', 'online', true, true, 3),
+('Elite Annual', 12260, 'Pay 1Y Train 1.5Y', 'Ultimate transformation', '["1.5 Years Training", "All Equipment Access", "Dedicated Trainer", "Custom Diet Plan", "Weekend Activities", "Priority Support", "Free Supplements"]', 'home_workout', false, true, 4);
 */
 
 -- Sample Offers

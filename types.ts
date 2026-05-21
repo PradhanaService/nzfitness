@@ -33,3 +33,20 @@ export interface Review {
   text: string;
   rating: number;
 }
+
+export interface TrainingType {
+  id: string;
+  title: string;
+  icon: React.ReactNode;
+  description: string;
+  features: string[];
+}
+
+export interface PortalContentSection {
+  section_key: 'offline_workout' | 'special_offers' | 'online_workout' | 'home_workout';
+  title: string;
+  description: string;
+  features: string[];
+}
+
+export type MembershipCategory = 'offline' | 'online' | 'home_workout';

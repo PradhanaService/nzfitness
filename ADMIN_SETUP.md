@@ -1,36 +1,39 @@
 # NOIZE Fitness - Admin System Setup Guide
 
-This guide will help you set up the complete admin system for managing offers and membership plans.
+This guide will help you set up the complete admin system for managing offers and membership plans with Firebase Authentication and Firestore/Storage.
 
 ## 📋 Overview
 
-- **Backend**: Supabase (Free Tier)
-- **Authentication**: Supabase Auth (Owner Login Only)
-- **Database**: PostgreSQL (Supabase)
+- **Backend**: Firebase
+- **Authentication**: Firebase Authentication
+- **Database**: Firestore
+- **Storage**: Firebase Storage
 - **Deployment**: Vercel (Free Tier)
 - **Cost**: $0/month (completely free)
 
-## 🚀 Step 1: Create Supabase Project
+## 🚀 Step 1: Create Firebase Project
 
-1. Go to [https://supabase.com](https://supabase.com) and sign up
-2. Click "New Project"
+1. Go to [https://console.firebase.google.com](https://console.firebase.google.com) and sign up
+2. Click **Create a project**
 3. Fill in project details:
-   - Name: `noize-fitness`
-   - Database Password: (save this securely)
-   - Region: Choose closest to your location
-4. Wait 2-3 minutes for project creation
+   - Name: `noizefitness-coimbatore` (or your preferred project name)
+4. Enable Google Analytics only if you want it
+5. Wait 1-2 minutes for project creation
 
 ## 🔑 Step 2: Get Your API Keys
 
-1. In your Supabase project dashboard, go to **Settings** → **API**
-2. Copy these two values:
-   - **Project URL** (looks like: `https://xxxxx.supabase.co`)
-   - **anon/public key** (long string starting with `eyJ...`)
-3. Open your `.env` file in the project and paste:
+1. In Firebase console, go to **Project settings** → **General**
+2. Under **Your apps**, create a **Web app** if you have not already
+3. Copy the Firebase web config values into `.env.local`:
 
 ```env
-VITE_SUPABASE_URL=https://xxxxx.supabase.co
-VITE_SUPABASE_ANON_KEY=eyJhbGc...your-key-here
+VITE_FIREBASE_API_KEY=your_firebase_api_key
+VITE_FIREBASE_AUTH_DOMAIN=your-project.firebaseapp.com
+VITE_FIREBASE_PROJECT_ID=your-project-id
+VITE_FIREBASE_STORAGE_BUCKET=your-project.firebasestorage.app
+VITE_FIREBASE_MESSAGING_SENDER_ID=your_sender_id
+VITE_FIREBASE_APP_ID=your_app_id
+VITE_FIREBASE_MEASUREMENT_ID=your_measurement_id
 ```
 
 ## 🗄️ Step 3: Create Database Tables
@@ -127,18 +130,28 @@ CREATE TRIGGER enforce_offer_limit
   EXECUTE FUNCTION check_offer_limit();
 ```
 
-## 👤 Step 4: Create Owner Account
+## 🔐 Step 4: Enable Firebase Sign-In Methods
 
-1. Go to **Authentication** → **Users** in Supabase dashboard
-2. Click **Add user** → **Create new user**
-3. Fill in:
-   - Email: `owner@noizegym.com` (or your email)
-   - Password: (create a strong password)
-   - Auto Confirm User: ✅ (check this box)
-4. Click **Create user**
-5. **Save your login credentials securely!**
+1. Open **Firebase Console** → **Authentication** → **Sign-in method**
+2. Enable **Email/Password**
+3. Enable **Phone**
+4. Save both changes
 
-## 📊 Step 5: Add Sample Data (Optional)
+This project uses:
+- **Email/Password** for admin login at `/admin`
+- **Phone** for member OTP login on the website
+
+## 👤 Step 5: Create Admin User
+
+1. Open **Firebase Console** → **Authentication** → **Users**
+2. Click **Add user**
+3. Enter:
+   - Email: `owner@noizegym.com` (or your real admin email)
+   - Password: create a strong password
+4. Click **Add user**
+5. Save the admin credentials securely
+
+## 📊 Step 6: Add Sample Data (Optional)
 
 Run this in SQL Editor to add sample membership plans:
 
@@ -150,26 +163,29 @@ INSERT INTO membership_plans (name, price, duration, tagline, features, is_popul
 ('Elite Annual', 12260, 'Pay 1Y Train 1.5Y', 'Maximum savings', '["Full Gym Access", "All Classes", "Personal Training", "Nutrition Coaching", "Priority Support", "Locker Facility"]', false, 4);
 ```
 
-## 🔐 Step 6: Configure Authentication Settings
+## 🌐 Step 7: Configure Authorized Domains
 
-1. Go to **Authentication** → **Providers** in Supabase
-2. Make sure **Email** provider is enabled
-3. Go to **Authentication** → **URL Configuration**
-4. Set Site URL to: `http://localhost:5173` (for development)
-5. After deploying to Vercel, update to: `https://your-domain.vercel.app`
+1. Open **Firebase Console** → **Authentication** → **Settings** → **Authorized domains**
+2. Make sure `localhost` is present for development
+3. After deploying, add your production domain, for example `your-domain.vercel.app`
 
-## 🚀 Step 7: Deploy to Vercel
+## 🚀 Step 8: Deploy to Vercel
 
 1. Push your code to GitHub
 2. Go to [https://vercel.com](https://vercel.com) and sign in
 3. Click **New Project** → Import your GitHub repository
-4. Add environment variables:
-   - `VITE_SUPABASE_URL`: Your Supabase URL
-   - `VITE_SUPABASE_ANON_KEY`: Your anon key
+4. Add environment variables from `.env.local`:
+   - `VITE_FIREBASE_API_KEY`
+   - `VITE_FIREBASE_AUTH_DOMAIN`
+   - `VITE_FIREBASE_PROJECT_ID`
+   - `VITE_FIREBASE_STORAGE_BUCKET`
+   - `VITE_FIREBASE_MESSAGING_SENDER_ID`
+   - `VITE_FIREBASE_APP_ID`
+   - `VITE_FIREBASE_MEASUREMENT_ID`
 5. Click **Deploy**
-6. After deployment, update Supabase Site URL (Step 6) with your Vercel URL
+6. After deployment, add the Vercel domain to Firebase authorized domains
 
-## 🎯 Step 8: Access Admin Panel
+## 🎯 Step 9: Access Admin Panel
 
 1. Open your website
 2. Go to `/admin` route (e.g., `http://localhost:5173/admin`)
@@ -217,7 +233,14 @@ INSERT INTO membership_plans (name, price, duration, tagline, features, is_popul
 
 ### Can't login?
 - Check email and password are correct
-- Verify user is created in Supabase Auth
+- Verify the user exists in Firebase Authentication → Users
+- Verify **Authentication** → **Sign-in method** has **Email/Password** enabled
+- Verify the current domain is added in **Authorized domains**
+
+### OTP not sending?
+- Verify **Authentication** → **Sign-in method** has **Phone** enabled
+- Verify the current domain is added in **Authorized domains**
+- If testing locally, use `localhost`
 - Check Site URL is configured correctly
 
 ### No data showing?

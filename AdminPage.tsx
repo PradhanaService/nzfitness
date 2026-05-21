@@ -1,6 +1,39 @@
 import React, { useState, useEffect } from 'react';
-import { supabase, Offer, MembershipPlan, AppImage } from './supabaseClient';
-import type { User } from '@supabase/supabase-js';
+import { supabase, Offer, MembershipPlan, AppImage, PortalContent, MembershipCategory } from './supabaseClient';
+import type { User } from './supabaseClient';
+
+const MEMBERSHIP_CATEGORY_OPTIONS: { value: MembershipCategory; label: string }[] = [
+  { value: 'offline', label: 'Offline' },
+  { value: 'online', label: 'Online' },
+  { value: 'home_workout', label: 'Home Workout' },
+];
+
+const getMembershipCategoryLabel = (category?: MembershipCategory | null) =>
+  MEMBERSHIP_CATEGORY_OPTIONS.find((option) => option.value === category)?.label || 'Offline';
+
+const normalizeMembershipCategory = (category?: string | null): MembershipCategory => {
+  if (category === 'online' || category === 'home_workout') {
+    return category;
+  }
+  return 'offline';
+};
+
+const isPortalContentTableMissing = (message?: string) =>
+  typeof message === 'string' && message.toLowerCase().includes("could not find the table 'public.portal_content'");
+
+const getRlsFixMessage = (tableName: 'membership_plans' | 'section_images', message?: string) => {
+  if (typeof message !== 'string') return message || 'Request failed.';
+  if (!message.toLowerCase().includes('row-level security policy')) return message;
+
+  return `Supabase blocked this ${tableName.replace('_', ' ')} write because the table RLS policy is incomplete. Run SUPABASE_RLS_FIX.sql in the Supabase SQL Editor, then try the admin update again.`;
+};
+
+const scrollToEditor = (element: HTMLFormElement | null) => {
+  if (!element || typeof window === 'undefined') return;
+  window.requestAnimationFrame(() => {
+    element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  });
+};
 
 // Login Component
 const AdminLogin: React.FC = () => {
@@ -77,6 +110,7 @@ const AdminLogin: React.FC = () => {
 
 // Offers Management Component
 const OffersManagement: React.FC = () => {
+  const formRef = React.useRef<HTMLFormElement | null>(null);
   const [offers, setOffers] = useState<Offer[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -121,7 +155,7 @@ const OffersManagement: React.FC = () => {
         .eq('id', editingOffer.id);
 
       if (error) {
-        setErrorMessage(error.message);
+        setErrorMessage(getRlsFixMessage('membership_plans', error.message));
         setSaving(false);
         return;
       }
@@ -158,6 +192,7 @@ const OffersManagement: React.FC = () => {
       is_active: offer.is_active,
     });
     setShowForm(true);
+    scrollToEditor(formRef.current);
   };
 
   const handleDelete = async (id: string) => {
@@ -195,19 +230,35 @@ const OffersManagement: React.FC = () => {
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-black text-white">Manage Offers</h2>
-        <button
-          onClick={() => {
-            setShowForm(!showForm);
-            setEditingOffer(null);
-            setErrorMessage('');
-            setSuccessMessage('');
-            setFormData({ title: '', description: '', price_text: '', valid_till: '2099-12-31', is_active: true });
-          }}
-          className="gold-gradient text-black font-bold py-2 px-6 rounded-full hover:scale-105 transition-all"
-        >
-          {showForm ? 'Cancel' : '+ Add Offer'}
-        </button>
+        <div>
+          <h2 className="text-2xl font-black text-white">Manage Specific Offers</h2>
+          <p className="text-neutral-400 text-sm mt-2">
+            These offers feed the verified offline specific-offers portal and can also be previewed from admin.
+          </p>
+        </div>
+        <div className="flex gap-3">
+          <button
+            onClick={() => window.open('/offline-offers?preview=admin', '_blank')}
+            className="px-5 py-2 rounded-full border border-gold/30 text-gold font-bold hover:bg-gold hover:text-black transition-all"
+          >
+            Open Specific Offers Portal
+          </button>
+          <button
+            onClick={() => {
+              setShowForm(!showForm);
+              setEditingOffer(null);
+              setErrorMessage('');
+              setSuccessMessage('');
+              setFormData({ title: '', description: '', price_text: '', valid_till: '2099-12-31', is_active: true });
+              if (!showForm) {
+                scrollToEditor(formRef.current);
+              }
+            }}
+            className="gold-gradient text-black font-bold py-2 px-6 rounded-full hover:scale-105 transition-all"
+          >
+            {showForm ? 'Cancel' : '+ Add Offer'}
+          </button>
+        </div>
       </div>
 
       {errorMessage && (
@@ -222,8 +273,10 @@ const OffersManagement: React.FC = () => {
         </div>
       )}
 
+      <MembershipPortalContentManagement />
+
       {showForm && (
-        <form onSubmit={handleSubmit} className="glass rounded-2xl p-6 border border-gold/30 space-y-4">
+        <form ref={formRef} onSubmit={handleSubmit} className="glass rounded-2xl p-6 border border-gold/30 space-y-4">
           <h3 className="text-xl font-bold text-white">{editingOffer ? 'Edit Offer' : 'New Offer'}</h3>
           
           <div>
@@ -341,6 +394,7 @@ const PlansManagement: React.FC = () => {
     duration: '',
     tagline: '',
     features: [''],
+    category: 'offline' as MembershipCategory,
     is_popular: false,
     is_active: true,
     display_order: 0,
@@ -379,7 +433,7 @@ const PlansManagement: React.FC = () => {
         .eq('id', editingPlan.id);
 
       if (error) {
-        setErrorMessage(error.message);
+        setErrorMessage(getRlsFixMessage('membership_plans', error.message));
         setSaving(false);
         return;
       }
@@ -396,7 +450,7 @@ const PlansManagement: React.FC = () => {
     }
 
     setSuccessMessage(editingPlan ? 'Plan updated.' : 'Plan created.');
-    setFormData({ name: '', price: 0, duration: '', tagline: '', features: [''], is_popular: false, is_active: true, display_order: 0 });
+    setFormData({ name: '', price: 0, duration: '', tagline: '', features: [''], category: 'offline', is_popular: false, is_active: true, display_order: 0 });
     setEditingPlan(null);
     setShowForm(false);
     await fetchPlans();
@@ -412,12 +466,13 @@ const PlansManagement: React.FC = () => {
       price: plan.price,
       duration: plan.duration,
       tagline: plan.tagline,
-      features: plan.features,
+      features: Array.isArray(plan.features) ? plan.features : [''],
+      category: plan.category || 'offline',
       is_popular: plan.is_popular,
       is_active: plan.is_active,
       display_order: plan.display_order,
     });
-    setShowForm(true);
+    setShowForm(false);
   };
 
   const handleDelete = async (id: string) => {
@@ -426,7 +481,7 @@ const PlansManagement: React.FC = () => {
       setSuccessMessage('');
       const { error } = await supabase.from('membership_plans').delete().eq('id', id);
       if (error) {
-        setErrorMessage(error.message);
+        setErrorMessage(getRlsFixMessage('membership_plans', error.message));
         return;
       }
       setSuccessMessage('Plan deleted.');
@@ -442,7 +497,7 @@ const PlansManagement: React.FC = () => {
       .update({ is_active: !plan.is_active })
       .eq('id', plan.id);
     if (error) {
-      setErrorMessage(error.message);
+      setErrorMessage(getRlsFixMessage('membership_plans', error.message));
       return;
     }
     fetchPlans();
@@ -463,6 +518,186 @@ const PlansManagement: React.FC = () => {
     setFormData({ ...formData, features: newFeatures });
   };
 
+  const openCreateForm = (category: MembershipCategory = 'offline') => {
+    setShowForm(true);
+    setEditingPlan(null);
+    setErrorMessage('');
+    setSuccessMessage('');
+    setFormData({
+      name: '',
+      price: 0,
+      duration: '',
+      tagline: '',
+      features: [''],
+      category,
+      is_popular: false,
+      is_active: true,
+      display_order: 0,
+    });
+  };
+
+  const closeEditor = () => {
+    setShowForm(false);
+    setEditingPlan(null);
+    setErrorMessage('');
+    setSuccessMessage('');
+  };
+
+  const renderPlanForm = () => (
+    <>
+      <div className="grid md:grid-cols-2 gap-4">
+        <div>
+          <label className="block text-white font-bold mb-2">Plan Name *</label>
+          <input
+            type="text"
+            value={formData.name}
+            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+            className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-gold focus:outline-none"
+            required
+          />
+        </div>
+
+        <div>
+          <label className="block text-white font-bold mb-2">Price (Rs.) *</label>
+          <input
+            type="number"
+            value={formData.price}
+            onChange={(e) => setFormData({ ...formData, price: Number(e.target.value) })}
+            className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-gold focus:outline-none"
+            required
+          />
+        </div>
+      </div>
+
+      <div className="grid md:grid-cols-2 gap-4">
+        <div>
+          <label className="block text-white font-bold mb-2">Duration *</label>
+          <input
+            type="text"
+            value={formData.duration}
+            onChange={(e) => setFormData({ ...formData, duration: e.target.value })}
+            className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-gold focus:outline-none"
+            placeholder="e.g., 1 Month, Pay 3M Train 6M"
+            required
+          />
+        </div>
+
+        <div>
+          <label className="block text-white font-bold mb-2">Membership Type *</label>
+          <select
+            value={formData.category}
+            onChange={(e) => setFormData({ ...formData, category: e.target.value as MembershipCategory })}
+            className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-gold focus:outline-none"
+            required
+          >
+            {MEMBERSHIP_CATEGORY_OPTIONS.map((option) => (
+              <option key={option.value} value={option.value} className="bg-[#0E0E0E] text-white">
+                {option.label}
+              </option>
+            ))}
+          </select>
+        </div>
+      </div>
+
+      <div className="grid md:grid-cols-2 gap-4">
+        <div>
+          <label className="block text-white font-bold mb-2">Display Order</label>
+          <input
+            type="number"
+            value={formData.display_order}
+            onChange={(e) => setFormData({ ...formData, display_order: Number(e.target.value) })}
+            className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-gold focus:outline-none"
+          />
+        </div>
+      </div>
+
+      <div>
+        <label className="block text-white font-bold mb-2">Tagline *</label>
+        <input
+          type="text"
+          value={formData.tagline}
+          onChange={(e) => setFormData({ ...formData, tagline: e.target.value })}
+          className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-gold focus:outline-none"
+          placeholder="e.g., Perfect for beginners"
+          required
+        />
+      </div>
+
+      <div>
+        <label className="block text-white font-bold mb-2">Features</label>
+        {formData.features.map((feature, index) => (
+          <div key={index} className="flex gap-2 mb-2">
+            <input
+              type="text"
+              value={feature}
+              onChange={(e) => updateFeature(index, e.target.value)}
+              className="flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-gold focus:outline-none"
+              placeholder="Feature description"
+            />
+            <button
+              type="button"
+              onClick={() => removeFeature(index)}
+              className="px-4 py-2 bg-red-500/20 text-red-500 rounded-xl font-bold hover:bg-red-500/30 transition-all"
+            >
+              X
+            </button>
+          </div>
+        ))}
+        <button
+          type="button"
+          onClick={addFeature}
+          className="text-gold font-bold hover:underline"
+        >
+          + Add Feature
+        </button>
+      </div>
+
+      <div className="flex items-center gap-6">
+        <div className="flex items-center gap-3">
+          <input
+            type="checkbox"
+            checked={formData.is_popular}
+            onChange={(e) => setFormData({ ...formData, is_popular: e.target.checked })}
+            className="w-5 h-5"
+          />
+          <label className="text-white font-bold">Mark as Popular</label>
+        </div>
+
+        <div className="flex items-center gap-3">
+          <input
+            type="checkbox"
+            checked={formData.is_active}
+            onChange={(e) => setFormData({ ...formData, is_active: e.target.checked })}
+            className="w-5 h-5"
+          />
+          <label className="text-white font-bold">Active</label>
+        </div>
+      </div>
+
+      <div className="flex gap-3">
+        <button
+          type="submit"
+          disabled={saving}
+          className="flex-1 gold-gradient text-black font-black py-3 rounded-full hover:shadow-[0_0_30px_rgba(229,192,123,0.6)] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          {saving ? 'SAVING...' : editingPlan ? 'Update Plan' : 'Create Plan'}
+        </button>
+        <button
+          type="button"
+          onClick={closeEditor}
+          className="px-6 py-3 rounded-full border border-white/10 text-white font-bold hover:bg-white/5 transition-all"
+        >
+          Cancel
+        </button>
+      </div>
+    </>
+  );
+
+  const groupedPlans = MEMBERSHIP_CATEGORY_OPTIONS.map((option) => ({
+    ...option,
+    plans: plans.filter((plan) => normalizeMembershipCategory(plan.category) === option.value),
+  }));
+
   if (loading) {
     return <div className="text-white text-center p-8">Loading...</div>;
   }
@@ -473,11 +708,11 @@ const PlansManagement: React.FC = () => {
         <h2 className="text-2xl font-black text-white">Manage Membership Plans</h2>
         <button
           onClick={() => {
-            setShowForm(!showForm);
-            setEditingPlan(null);
-            setErrorMessage('');
-            setSuccessMessage('');
-            setFormData({ name: '', price: 0, duration: '', tagline: '', features: [''], is_popular: false, is_active: true, display_order: 0 });
+            if (showForm || editingPlan) {
+              closeEditor();
+            } else {
+              openCreateForm('offline');
+            }
           }}
           className="gold-gradient text-black font-bold py-2 px-6 rounded-full hover:scale-105 transition-all"
         >
@@ -497,188 +732,113 @@ const PlansManagement: React.FC = () => {
         </div>
       )}
 
-      {showForm && (
+      {showForm && !editingPlan && (
         <form onSubmit={handleSubmit} className="glass rounded-2xl p-6 border border-gold/30 space-y-4">
           <h3 className="text-xl font-bold text-white">{editingPlan ? 'Edit Plan' : 'New Plan'}</h3>
-          
-          <div className="grid md:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-white font-bold mb-2">Plan Name *</label>
-              <input
-                type="text"
-                value={formData.name}
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-gold focus:outline-none"
-                required
-              />
-            </div>
-
-            <div>
-              <label className="block text-white font-bold mb-2">Price (Rs.) *</label>
-              <input
-                type="number"
-                value={formData.price}
-                onChange={(e) => setFormData({ ...formData, price: Number(e.target.value) })}
-                className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-gold focus:outline-none"
-                required
-              />
-            </div>
-          </div>
-
-          <div className="grid md:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-white font-bold mb-2">Duration *</label>
-              <input
-                type="text"
-                value={formData.duration}
-                onChange={(e) => setFormData({ ...formData, duration: e.target.value })}
-                className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-gold focus:outline-none"
-                placeholder="e.g., 1 Month, Pay 3M Train 6M"
-                required
-              />
-            </div>
-
-            <div>
-              <label className="block text-white font-bold mb-2">Display Order</label>
-              <input
-                type="number"
-                value={formData.display_order}
-                onChange={(e) => setFormData({ ...formData, display_order: Number(e.target.value) })}
-                className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-gold focus:outline-none"
-              />
-            </div>
-          </div>
-
-          <div>
-            <label className="block text-white font-bold mb-2">Tagline *</label>
-            <input
-              type="text"
-              value={formData.tagline}
-              onChange={(e) => setFormData({ ...formData, tagline: e.target.value })}
-              className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-gold focus:outline-none"
-              placeholder="e.g., Perfect for beginners"
-              required
-            />
-          </div>
-
-          <div>
-            <label className="block text-white font-bold mb-2">Features</label>
-            {formData.features.map((feature, index) => (
-              <div key={index} className="flex gap-2 mb-2">
-                <input
-                  type="text"
-                  value={feature}
-                  onChange={(e) => updateFeature(index, e.target.value)}
-                  className="flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-gold focus:outline-none"
-                  placeholder="Feature description"
-                />
-                <button
-                  type="button"
-                  onClick={() => removeFeature(index)}
-                  className="px-4 py-2 bg-red-500/20 text-red-500 rounded-xl font-bold hover:bg-red-500/30 transition-all"
-                >
-                  X
-                </button>
-              </div>
-            ))}
-            <button
-              type="button"
-              onClick={addFeature}
-              className="text-gold font-bold hover:underline"
-            >
-              + Add Feature
-            </button>
-          </div>
-
-          <div className="flex items-center gap-6">
-            <div className="flex items-center gap-3">
-              <input
-                type="checkbox"
-                checked={formData.is_popular}
-                onChange={(e) => setFormData({ ...formData, is_popular: e.target.checked })}
-                className="w-5 h-5"
-              />
-              <label className="text-white font-bold">Mark as Popular</label>
-            </div>
-
-            <div className="flex items-center gap-3">
-              <input
-                type="checkbox"
-                checked={formData.is_active}
-                onChange={(e) => setFormData({ ...formData, is_active: e.target.checked })}
-                className="w-5 h-5"
-              />
-              <label className="text-white font-bold">Active</label>
-            </div>
-          </div>
-
-          <button
-            type="submit"
-            disabled={saving}
-            className="w-full gold-gradient text-black font-black py-3 rounded-full hover:shadow-[0_0_30px_rgba(229,192,123,0.6)] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {saving ? 'SAVING...' : editingPlan ? 'Update Plan' : 'Create Plan'}
-          </button>
+          {renderPlanForm()}
         </form>
       )}
 
-      <div className="grid gap-4">
-        {plans.map((plan) => (
-          <div key={plan.id} className="glass rounded-2xl p-6 border border-white/10">
-            <div className="flex justify-between items-start mb-4">
+      <div className="grid gap-6">
+        {groupedPlans.map((section) => (
+          <div key={section.value} className="glass rounded-3xl p-6 border border-gold/20">
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
               <div>
-                <h3 className="text-xl font-bold text-white mb-1">{plan.name}</h3>
-                <p className="text-gold text-2xl font-black mb-2">Rs. {plan.price}</p>
-                <p className="text-neutral-400 text-sm mb-1">{plan.duration}</p>
-                <p className="text-neutral-300 mb-3">Current Tagline: {plan.tagline}</p>
-                <ul className="space-y-1">
-                  {plan.features.map((feature, idx) => (
-                    <li key={idx} className="text-neutral-400 text-sm flex items-center gap-2">
-                      <span className="text-gold">&#10003;</span>
-                      {feature}
-                    </li>
-                  ))}
-                </ul>
+                <p className="text-gold text-xs font-black uppercase tracking-[0.3em] mb-2">Plan Portal</p>
+                <h3 className="text-2xl md:text-3xl font-black text-white">{section.label}</h3>
+                <p className="text-neutral-400 text-sm mt-2">
+                  Manage all {section.label.toLowerCase()} membership plans from this section.
+                </p>
               </div>
-              <div className="flex flex-col gap-2">
-                <span className={`px-3 py-1 rounded-full text-xs font-bold text-center ${plan.is_active ? 'bg-green-500/20 text-green-500' : 'bg-red-500/20 text-red-500'}`}>
-                  {plan.is_active ? 'Active' : 'Inactive'}
+              <div className="flex items-center gap-3">
+                <span className="px-4 py-2 rounded-full bg-white/5 border border-white/10 text-neutral-300 text-xs font-bold uppercase tracking-widest">
+                  {section.plans.length} Plan{section.plans.length === 1 ? '' : 's'}
                 </span>
-                {plan.is_popular && (
-                  <span className="px-3 py-1 rounded-full text-xs font-bold bg-gold/20 text-gold text-center">
-                    Popular
-                  </span>
-                )}
-                <span className="px-3 py-1 rounded-full text-xs font-bold bg-blue-500/20 text-blue-500 text-center">
-                  Order: {plan.display_order}
-                </span>
+                <button
+                  onClick={() => openCreateForm(section.value)}
+                  className="gold-gradient text-black font-bold py-2.5 px-5 rounded-full hover:scale-105 transition-all"
+                >
+                  + Add {section.label} Plan
+                </button>
               </div>
             </div>
-            <div className="flex gap-2">
-              <button
-                onClick={() => handleEdit(plan)}
-                className="px-4 py-2 bg-blue-500/20 text-blue-500 rounded-lg font-bold hover:bg-blue-500/30 transition-all"
-              >
-                Edit
-              </button>
-              <button
-                onClick={() => toggleActive(plan)}
-                className="px-4 py-2 bg-yellow-500/20 text-yellow-500 rounded-lg font-bold hover:bg-yellow-500/30 transition-all"
-              >
-                {plan.is_active ? 'Deactivate' : 'Activate'}
-              </button>
-              <button
-                onClick={() => handleDelete(plan.id)}
-                className="px-4 py-2 bg-red-500/20 text-red-500 rounded-lg font-bold hover:bg-red-500/30 transition-all"
-              >
-                Delete
-              </button>
+
+            <div className="grid gap-4">
+              {section.plans.length > 0 ? (
+                section.plans.map((plan) => (
+                  <div key={plan.id} className="rounded-2xl p-6 border border-white/10 bg-black/20">
+                    <div className="flex justify-between items-start mb-4">
+                      <div>
+                        <h4 className="text-xl font-bold text-white mb-1">{plan.name}</h4>
+                        <p className="text-gold text-2xl font-black mb-2">Rs. {plan.price}</p>
+                        <p className="text-neutral-400 text-sm mb-1">{plan.duration}</p>
+                        <p className="text-neutral-500 text-xs font-bold uppercase tracking-wider mb-1">
+                          Type: {getMembershipCategoryLabel(plan.category)}
+                        </p>
+                        <p className="text-neutral-300 mb-3">Current Tagline: {plan.tagline}</p>
+                        <ul className="space-y-1">
+                          {plan.features.map((feature, idx) => (
+                            <li key={idx} className="text-neutral-400 text-sm flex items-center gap-2">
+                              <span className="text-gold">&#10003;</span>
+                              {feature}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                      <div className="flex flex-col gap-2">
+                        <span className={`px-3 py-1 rounded-full text-xs font-bold text-center ${plan.is_active ? 'bg-green-500/20 text-green-500' : 'bg-red-500/20 text-red-500'}`}>
+                          {plan.is_active ? 'Active' : 'Inactive'}
+                        </span>
+                        {plan.is_popular && (
+                          <span className="px-3 py-1 rounded-full text-xs font-bold bg-gold/20 text-gold text-center">
+                            Popular
+                          </span>
+                        )}
+                        <span className="px-3 py-1 rounded-full text-xs font-bold bg-blue-500/20 text-blue-500 text-center">
+                          Order: {plan.display_order}
+                        </span>
+                      </div>
+                    </div>
+                    <div className="flex gap-2 flex-wrap">
+                      <button
+                        onClick={() => handleEdit(plan)}
+                        className="px-4 py-2 bg-blue-500/20 text-blue-500 rounded-lg font-bold hover:bg-blue-500/30 transition-all"
+                      >
+                        Edit
+                      </button>
+                      <button
+                        onClick={() => toggleActive(plan)}
+                        className="px-4 py-2 bg-yellow-500/20 text-yellow-500 rounded-lg font-bold hover:bg-yellow-500/30 transition-all"
+                      >
+                        {plan.is_active ? 'Deactivate' : 'Activate'}
+                      </button>
+                      <button
+                        onClick={() => handleDelete(plan.id)}
+                        className="px-4 py-2 bg-red-500/20 text-red-500 rounded-lg font-bold hover:bg-red-500/30 transition-all"
+                      >
+                        Delete
+                      </button>
+                    </div>
+                    {editingPlan?.id === plan.id && (
+                      <form onSubmit={handleSubmit} className="mt-6 rounded-2xl border border-gold/30 bg-white/[0.03] p-6 space-y-4">
+                        <h4 className="text-lg font-bold text-white">Edit {plan.name}</h4>
+                        {renderPlanForm()}
+                      </form>
+                    )}
+                  </div>
+                ))
+              ) : (
+                <div className="rounded-2xl border border-dashed border-white/10 p-8 text-center text-neutral-400">
+                  No {section.label.toLowerCase()} plans yet. Use <span className="text-white font-bold">Add {section.label} Plan</span> to create one.
+                </div>
+              )}
             </div>
           </div>
         ))}
+
         {plans.length === 0 && (
-          <div className="text-center text-neutral-400 py-12">
-            No plans yet. Click "Add Plan" to create one.
+          <div className="text-center text-neutral-400 py-6">
+            No plans yet. Start by adding an offline, online, or home workout plan.
           </div>
         )}
       </div>
@@ -717,36 +877,107 @@ const GalleryManagement: React.FC = () => {
     image_data: '',
   });
 
+  const MAX_INLINE_IMAGE_DATA_URL_LENGTH = 850000;
+
+  const readFileAsDataUrl = (file: File) =>
+    new Promise<string>((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onloadend = () => resolve(reader.result as string);
+      reader.onerror = () => reject(new Error('Failed to read the selected file.'));
+      reader.readAsDataURL(file);
+    });
+
+  const loadImageElement = (dataUrl: string) =>
+    new Promise<HTMLImageElement>((resolve, reject) => {
+      const image = new Image();
+      image.onload = () => resolve(image);
+      image.onerror = () => reject(new Error('Failed to process the selected image.'));
+      image.src = dataUrl;
+    });
+
+  const prepareImageForDatabase = async (file: File) => {
+    const originalDataUrl = await readFileAsDataUrl(file);
+    if (originalDataUrl.length <= MAX_INLINE_IMAGE_DATA_URL_LENGTH) {
+      return originalDataUrl;
+    }
+
+    const image = await loadImageElement(originalDataUrl);
+    const canvas = document.createElement('canvas');
+    const context = canvas.getContext('2d');
+    if (!context) {
+      throw new Error('This browser could not prepare the image for upload.');
+    }
+
+    const maxDimension = 1600;
+    const scale = Math.min(1, maxDimension / Math.max(image.width, image.height));
+    canvas.width = Math.max(1, Math.round(image.width * scale));
+    canvas.height = Math.max(1, Math.round(image.height * scale));
+    context.drawImage(image, 0, 0, canvas.width, canvas.height);
+
+    let quality = 0.82;
+    let compressedDataUrl = canvas.toDataURL('image/jpeg', quality);
+
+    while (compressedDataUrl.length > MAX_INLINE_IMAGE_DATA_URL_LENGTH && quality > 0.4) {
+      quality -= 0.08;
+      compressedDataUrl = canvas.toDataURL('image/jpeg', quality);
+    }
+
+    if (compressedDataUrl.length > MAX_INLINE_IMAGE_DATA_URL_LENGTH) {
+      throw new Error('This image is still too large for free Firestore upload. Try a smaller image.');
+    }
+
+    return compressedDataUrl;
+  };
+
   const fetchImages = async () => {
-    const { data, error } = await supabase
-      .from('section_images')
-      .select('*')
-      .order('updated_at', { ascending: false });
-    
-    if (data) setImages(data);
-    if (error) setErrorMessage(error.message);
-    setLoading(false);
+    try {
+      const { data, error } = await supabase
+        .from('section_images')
+        .select('*')
+        .order('updated_at', { ascending: false });
+
+      if (data) setImages(data);
+      if (error) {
+        setErrorMessage(getRlsFixMessage('section_images', error.message));
+      }
+    } catch (error: any) {
+      setErrorMessage(error?.message || 'Failed to load site images.');
+      setImages([]);
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => {
     fetchImages();
   }, []);
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    if (file.size > 25 * 1024 * 1024) { // 25MB limit for base64
-      setErrorMessage('File size must be under 25MB for direct database storage.');
+    if (file.size > 10 * 1024 * 1024) {
+      setErrorMessage('File size must be under 10MB for database-backed uploads.');
       e.target.value = '';
       return;
     }
 
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      setFormData(prev => ({ ...prev, image_data: reader.result as string }));
-    };
-    reader.readAsDataURL(file);
+    setErrorMessage('');
+    setSuccessMessage('');
+
+    try {
+      if (file.type.startsWith('video/')) {
+        setErrorMessage('Video uploads are disabled in database-only mode. Use image uploads here, or host videos separately.');
+        e.target.value = '';
+        return;
+      }
+
+      const imageData = await prepareImageForDatabase(file);
+      setFormData(prev => ({ ...prev, image_data: imageData }));
+    } catch (error: any) {
+      setErrorMessage(error?.message || 'Failed to prepare the selected image.');
+      e.target.value = '';
+    }
   };
 
   const clearSelection = () => {
@@ -779,7 +1010,7 @@ const GalleryManagement: React.FC = () => {
       }, { onConflict: 'section_key' });
 
     if (error) {
-      setErrorMessage(error.message);
+      setErrorMessage(getRlsFixMessage('section_images', error.message));
     } else {
       setSuccessMessage('Image successfully added to gallery. Live website updated!');
       setFormData(prev => ({ ...prev, image_data: '' }));
@@ -793,7 +1024,7 @@ const GalleryManagement: React.FC = () => {
   const handleDelete = async (section_key: string) => {
     if (confirm('Are you sure you want to completely delete this image?')) {
       const { error } = await supabase.from('section_images').delete().eq('section_key', section_key);
-      if (error) setErrorMessage(error.message);
+      if (error) setErrorMessage(getRlsFixMessage('section_images', error.message));
       else {
         setSuccessMessage('Image deleted from gallery.');
         fetchImages();
@@ -829,6 +1060,9 @@ const GalleryManagement: React.FC = () => {
 
           <div>
             <label className="block text-white font-bold mb-2">Media File (JPG, PNG, WEBP, MP4 - Max 10MB) *</label>
+            <p className="text-xs text-neutral-500 mb-3">
+              This setup stores compressed images directly in Supabase. Video uploads are disabled in this database-only mode.
+            </p>
             
             {!formData.image_data && (
               <input
@@ -1020,7 +1254,7 @@ const ReviewsManagement: React.FC = () => {
       {successMessage && <div className="bg-green-500/10 border border-green-500/30 rounded-xl p-3 text-green-500 text-sm">{successMessage}</div>}
 
       {showForm && (
-        <form onSubmit={handleSubmit} className="glass rounded-2xl p-6 border border-gold/30 space-y-4">
+        <form ref={formRef} onSubmit={handleSubmit} className="glass rounded-2xl p-6 border border-gold/30 space-y-4">
           <h3 className="text-xl font-bold text-white">{editingReview ? 'Edit Review' : 'New Review'}</h3>
           <div>
             <label className="block text-white font-bold mb-2">Reviewer Name *</label>
@@ -1079,6 +1313,260 @@ const ReviewsManagement: React.FC = () => {
   );
 };
 
+const MEMBERSHIP_PORTAL_SECTIONS: Array<{
+  section_key: PortalContent['section_key'];
+  label: string;
+}> = [
+  { section_key: 'offline_workout', label: 'Offline Workout' },
+  { section_key: 'online_workout', label: 'Online Workout' },
+  { section_key: 'home_workout', label: 'Home Workout' },
+];
+
+const MembershipPortalContentManagement: React.FC = () => {
+  const [sections, setSections] = useState<Record<string, PortalContent>>({});
+  const [loading, setLoading] = useState(true);
+  const [savingKey, setSavingKey] = useState<string | null>(null);
+  const [errorMessage, setErrorMessage] = useState('');
+  const [successMessage, setSuccessMessage] = useState('');
+
+  const fetchSections = async () => {
+    setLoading(true);
+    const { data, error } = await supabase
+      .from('portal_content')
+      .select('*')
+      .order('section_key', { ascending: true });
+
+    if (error) {
+      if (isPortalContentTableMissing(error.message)) {
+        const fallbackSections = MEMBERSHIP_PORTAL_SECTIONS.reduce<Record<string, PortalContent>>((acc, section) => {
+          acc[section.section_key] = {
+            section_key: section.section_key,
+            title: section.label,
+            description: '',
+            features: [''],
+          };
+          return acc;
+        }, {});
+        setSections(fallbackSections);
+        setErrorMessage('The `portal_content` table is missing in Supabase. Run `PORTAL_CONTENT_SCHEMA.sql` once, then refresh.');
+      } else {
+        setErrorMessage(error.message);
+      }
+      setLoading(false);
+      return;
+    }
+
+    const nextSections = MEMBERSHIP_PORTAL_SECTIONS.reduce<Record<string, PortalContent>>((acc, section) => {
+      acc[section.section_key] = {
+        section_key: section.section_key,
+        title: section.label,
+        description: '',
+        features: [''],
+      };
+      return acc;
+    }, {});
+
+    (data || []).forEach((section: PortalContent) => {
+      nextSections[section.section_key] = {
+        ...section,
+        features: Array.isArray(section.features) && section.features.length > 0 ? section.features : [''],
+      };
+    });
+
+    setSections(nextSections);
+    setLoading(false);
+  };
+
+  useEffect(() => {
+    fetchSections();
+
+    const channel = supabase
+      .channel('public:portal_content')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'portal_content' }, () => {
+        fetchSections();
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, []);
+
+  const updateSection = (sectionKey: PortalContent['section_key'], field: 'title' | 'description', value: string) => {
+    setSections((prev) => ({
+      ...prev,
+      [sectionKey]: {
+        ...prev[sectionKey],
+        [field]: value,
+      },
+    }));
+  };
+
+  const updateFeature = (sectionKey: PortalContent['section_key'], featureIndex: number, value: string) => {
+    setSections((prev) => {
+      const currentFeatures = [...(prev[sectionKey]?.features || [''])];
+      currentFeatures[featureIndex] = value;
+      return {
+        ...prev,
+        [sectionKey]: {
+          ...prev[sectionKey],
+          features: currentFeatures,
+        },
+      };
+    });
+  };
+
+  const addFeature = (sectionKey: PortalContent['section_key']) => {
+    setSections((prev) => ({
+      ...prev,
+      [sectionKey]: {
+        ...prev[sectionKey],
+        features: [...(prev[sectionKey]?.features || []), ''],
+      },
+    }));
+  };
+
+  const removeFeature = (sectionKey: PortalContent['section_key'], featureIndex: number) => {
+    setSections((prev) => {
+      const nextFeatures = (prev[sectionKey]?.features || []).filter((_, index) => index !== featureIndex);
+      return {
+        ...prev,
+        [sectionKey]: {
+          ...prev[sectionKey],
+          features: nextFeatures.length > 0 ? nextFeatures : [''],
+        },
+      };
+    });
+  };
+
+  const saveSection = async (sectionKey: PortalContent['section_key']) => {
+    const section = sections[sectionKey];
+    if (!section) return;
+
+    setSavingKey(sectionKey);
+    setErrorMessage('');
+    setSuccessMessage('');
+
+    const payload = {
+      section_key: sectionKey,
+      title: section.title.trim(),
+      description: section.description.trim(),
+      features: (section.features || []).map((feature) => feature.trim()).filter(Boolean),
+      updated_at: new Date().toISOString(),
+    };
+
+    const { error } = await supabase
+      .from('portal_content')
+      .upsert(payload, { onConflict: 'section_key' });
+
+    if (error) {
+      if (isPortalContentTableMissing(error.message)) {
+        setErrorMessage('The `portal_content` table is missing in Supabase. Run `PORTAL_CONTENT_SCHEMA.sql` once, then try saving again.');
+      } else {
+        setErrorMessage(error.message);
+      }
+    } else {
+      setSuccessMessage(`${MEMBERSHIP_PORTAL_SECTIONS.find((item) => item.section_key === sectionKey)?.label} updated in realtime.`);
+      await fetchSections();
+    }
+
+    setSavingKey(null);
+  };
+
+  if (loading) {
+    return <div className="text-white text-center p-8">Loading...</div>;
+  }
+
+  return (
+    <div className="space-y-6">
+      <div>
+        <h2 className="text-2xl font-black text-white mb-2">Manage Membership Portals</h2>
+        <p className="text-neutral-400 text-sm">Edit offline, online, and home workout section content here. Changes apply on the live site in realtime.</p>
+      </div>
+
+      {errorMessage && <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-3 text-red-400 text-sm">{errorMessage}</div>}
+      {successMessage && <div className="bg-green-500/10 border border-green-500/30 rounded-xl p-3 text-green-400 text-sm">{successMessage}</div>}
+
+      <div className="grid gap-6">
+        {MEMBERSHIP_PORTAL_SECTIONS.map(({ section_key, label }) => {
+          const section = sections[section_key];
+          if (!section) return null;
+
+          return (
+            <div key={section_key} className="glass rounded-2xl p-6 border border-gold/20 space-y-4">
+              <div className="flex justify-between items-center gap-4">
+                <div>
+                  <h3 className="text-xl font-black text-white">{label}</h3>
+                  <p className="text-neutral-500 text-xs uppercase tracking-widest mt-1">{section_key}</p>
+                </div>
+                <button
+                  onClick={() => saveSection(section_key)}
+                  disabled={savingKey === section_key}
+                  className="gold-gradient text-black font-black py-3 px-6 rounded-full hover:shadow-[0_0_30px_rgba(229,192,123,0.6)] transition-all disabled:opacity-50"
+                >
+                  {savingKey === section_key ? 'SAVING...' : 'Save Section'}
+                </button>
+              </div>
+
+              <div>
+                <label className="block text-white font-bold mb-2">Title *</label>
+                <input
+                  type="text"
+                  value={section.title}
+                  onChange={(e) => updateSection(section_key, 'title', e.target.value)}
+                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-gold outline-none"
+                />
+              </div>
+
+              <div>
+                <label className="block text-white font-bold mb-2">Description *</label>
+                <textarea
+                  value={section.description}
+                  onChange={(e) => updateSection(section_key, 'description', e.target.value)}
+                  rows={3}
+                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-gold outline-none"
+                />
+              </div>
+
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <label className="block text-white font-bold">Features</label>
+                  <button
+                    type="button"
+                    onClick={() => addFeature(section_key)}
+                    className="px-4 py-2 bg-white/5 border border-white/10 rounded-full text-white text-xs font-bold hover:border-gold/30 transition-all"
+                  >
+                    + Add Feature
+                  </button>
+                </div>
+
+                {section.features.map((feature, index) => (
+                  <div key={`${section_key}-${index}`} className="flex gap-2">
+                    <input
+                      type="text"
+                      value={feature}
+                      onChange={(e) => updateFeature(section_key, index, e.target.value)}
+                      className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-gold outline-none"
+                      placeholder={`Feature ${index + 1}`}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => removeFeature(section_key, index)}
+                      className="px-4 py-3 bg-red-500/10 text-red-400 rounded-xl font-bold hover:bg-red-500/20 transition-all"
+                    >
+                      Remove
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+};
+
 // Main Admin Dashboard
 
 const AdminDashboard: React.FC<{ user: User }> = ({ user }) => {
@@ -1116,16 +1604,16 @@ const AdminDashboard: React.FC<{ user: User }> = ({ user }) => {
 
       <div className="container mx-auto px-4 md:px-6 py-8">
         <div className="flex flex-wrap gap-4 mb-8">
-          <button
-            onClick={() => setActiveTab('offers')}
-            className={`px-6 py-3 rounded-full font-bold transition-all ${
-              activeTab === 'offers'
-                ? 'gold-gradient text-black'
-                : 'glass text-white hover:border-gold border border-white/10'
-            }`}
-          >
-            Offers
-          </button>
+              <button
+                onClick={() => setActiveTab('offers')}
+                className={`px-6 py-3 rounded-full font-bold transition-all ${
+                  activeTab === 'offers'
+                    ? 'gold-gradient text-black'
+                    : 'glass text-white hover:border-gold border border-white/10'
+                }`}
+              >
+                Specific Offers
+              </button>
           <button
             onClick={() => setActiveTab('plans')}
             className={`px-6 py-3 rounded-full font-bold transition-all ${
@@ -1193,7 +1681,7 @@ const Admin: React.FC = () => {
     );
   }
 
-  if (!user) {
+  if (!user?.email) {
     return <AdminLogin />;
   }
 
