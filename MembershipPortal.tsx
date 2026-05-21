@@ -86,6 +86,10 @@ const WHATSAPP_1 = "918122390693";
 const WHATSAPP_2 = "918296890693";
 const PAYMENT_QR_IMAGE = "/images/payment-qr.jpg";
 const PAYMENT_WHATSAPP_NUMBER = "+91 81223 90693";
+const PORTAL_TIME_SLOTS = {
+  morning: ['5:30 AM - 6:30 AM', '6:30 AM - 7:30 AM', '7:30 AM - 8:30 AM'],
+  evening: ['5:30 PM - 6:30 PM', '6:30 PM - 7:30 PM', '7:30 PM - 8:30 PM'],
+};
 
 const handlePortalWhatsApp = (message: string) => {
   const target = Math.random() > 0.5 ? WHATSAPP_1 : WHATSAPP_2;
@@ -97,16 +101,16 @@ const openPortalWhatsAppNumber = (plan?: MembershipPlan | null) => {
   const savedSlotType = sessionStorage.getItem('noize_slot_type');
 
   if (plan && savedSlot && (savedSlotType === 'online' || savedSlotType === 'home')) {
-    const message = `Hi NOIZE Team! 👋
+    const message = `Hi NOIZE Team! ðŸ‘‹
 
 I'd like to confirm my membership:
 
-🏋️ Training Type: ${savedSlotType === 'online' ? 'Online Training' : 'Home Training'}
-⏰ Preferred Slot: ${savedSlot}
+ðŸ‹ï¸ Training Type: ${savedSlotType === 'online' ? 'Online Training' : 'Home Training'}
+â° Preferred Slot: ${savedSlot}
 
-📋 Plan: ${plan.name}
-💰 Price: ₹${plan.price}
-⏳ Duration: ${plan.duration}
+ðŸ“‹ Plan: ${plan.name}
+ðŸ’° Price: â‚¹${plan.price}
+â³ Duration: ${plan.duration}
 
 Please confirm my booking. Thank you!`;
 
@@ -120,12 +124,12 @@ Please confirm my booking. Thank you!`;
 const openPortalWhatsAppForPlan = (plan: MembershipPlan) => {
   const savedSlot = sessionStorage.getItem('noize_selected_slot');
   const message =
-    `Hi NOIZE Team! 👋\n\n` +
+    `Hi NOIZE Team! ðŸ‘‹\n\n` +
     `Membership Confirmation:\n\n` +
-    `🏋️ Plan: ${plan.name}\n` +
-    `💰 Price: ₹${plan.price.toLocaleString()}\n` +
-    `⏳ Duration: ${plan.duration}\n` +
-    (savedSlot ? `⏰ Preferred Slot: ${savedSlot}\n` : '') +
+    `ðŸ‹ï¸ Plan: ${plan.name}\n` +
+    `ðŸ’° Price: â‚¹${plan.price.toLocaleString()}\n` +
+    `â³ Duration: ${plan.duration}\n` +
+    (savedSlot ? `â° Preferred Slot: ${savedSlot}\n` : '') +
     `\nPlease confirm my booking. Thank you!`;
 
   handlePortalWhatsApp(message);
@@ -161,12 +165,16 @@ const MembershipPortal: React.FC = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const tabFromUrl = searchParams.get('tab');
+  const existingSlot = sessionStorage.getItem('noize_selected_slot') || '';
   const [plans, setPlans] = useState<MembershipPlan[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedPlan, setSelectedPlan] = useState<MembershipPlan | null>(null);
   const [activeCategory, setActiveCategory] = useState<MembershipCategory>(
     (tabFromUrl as MembershipCategory) || 'offline'
   );
+  const [portalSlotModal, setPortalSlotModal] = useState<'online' | 'home_workout' | null>(null);
+  const [pendingPlan, setPendingPlan] = useState<MembershipPlan | null>(null);
+  const [portalSelectedSlot, setPortalSelectedSlot] = useState(existingSlot);
   const isOfflineUser = !!sessionStorage.getItem(OFFLINE_PORTAL_ACCESS_KEY);
 
   const openExclusiveOffersLogin = () => {
@@ -243,6 +251,54 @@ const MembershipPortal: React.FC = () => {
 
   const closePaymentModal = () => {
     setSelectedPlan(null);
+  };
+
+  const sendPlanWhatsApp = (plan: MembershipPlan) => {
+    if (plan.category === 'offline') {
+      openPortalWhatsAppForPlan(plan);
+      return;
+    }
+
+    const savedSlot = sessionStorage.getItem('noize_selected_slot') || '';
+    const slotType = sessionStorage.getItem('noize_slot_type') || '';
+    const message =
+      `Hi NOIZE Team! 👋\n\n` +
+      `Membership Enquiry:\n\n` +
+      `🏋️ Plan: ${plan.name}\n` +
+      `📂 Type: ${slotType === 'online' ? 'Online Training' : 'Home Training'}\n` +
+      `💰 Price: ₹${plan.price.toLocaleString()}\n` +
+      `⏳ Duration: ${plan.duration}\n` +
+      `⏰ Preferred Slot: ${savedSlot}\n\n` +
+      `Please confirm my booking. Thank you!`;
+
+    handlePortalWhatsApp(message);
+  };
+
+  const handlePlanWhatsAppClick = (plan: MembershipPlan) => {
+    if (plan.category === 'offline') {
+      sendPlanWhatsApp(plan);
+      return;
+    }
+
+    const savedSlot = sessionStorage.getItem('noize_selected_slot');
+    if (savedSlot) {
+      sendPlanWhatsApp(plan);
+      return;
+    }
+
+    setPendingPlan(plan);
+    setPortalSlotModal(plan.category);
+  };
+
+  const handlePortalSlotConfirm = () => {
+    if (!portalSlotModal || !portalSelectedSlot || !pendingPlan) {
+      return;
+    }
+
+    sessionStorage.setItem('noize_selected_slot', portalSelectedSlot);
+    sessionStorage.setItem('noize_slot_type', portalSlotModal === 'online' ? 'online' : 'home');
+    setPortalSlotModal(null);
+    sendPlanWhatsApp(pendingPlan);
   };
 
   return (
@@ -416,7 +472,7 @@ const MembershipPortal: React.FC = () => {
                             <div className="grid sm:grid-cols-2 gap-4 mb-8">
                               <div className="bg-white/5 border border-white/10 rounded-2xl p-4">
                                 <p className="text-neutral-500 text-[10px] font-black uppercase tracking-widest mb-1">Price</p>
-                                <p className="text-2xl font-black text-white"><span className="text-gold">₹</span> {plan.price.toLocaleString()}</p>
+                                <p className="text-2xl font-black text-white"><span className="text-gold">â‚¹</span> {plan.price.toLocaleString()}</p>
                               </div>
                               <div className="bg-white/5 border border-white/10 rounded-2xl p-4">
                                 <p className="text-neutral-500 text-[10px] font-black uppercase tracking-widest mb-1">Duration</p>
@@ -446,7 +502,7 @@ const MembershipPortal: React.FC = () => {
                               <ul className="space-y-3 flex-grow">
                                 {plan.features.map((feature, index) => (
                                   <li key={`${plan.id}-${index}`} className="flex items-start gap-3 text-sm text-neutral-300 md:text-base">
-                                    <span className="mt-0.5 text-gold">✦</span>
+                                    <span className="mt-0.5 text-gold">âœ¦</span>
                                     <span>{feature}</span>
                                   </li>
                                 ))}
@@ -464,6 +520,65 @@ const MembershipPortal: React.FC = () => {
         )}
       </div>
 
+      {portalSlotModal && (
+        <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/90 backdrop-blur-md px-4" onClick={() => { setPortalSlotModal(null); setPendingPlan(null); setPortalSelectedSlot(''); }}>
+          <div className="w-full max-w-md glass rounded-[32px] border border-gold/20 p-8" onClick={(e) => e.stopPropagation()}>
+            <p className="text-xs font-black uppercase tracking-[0.3em] text-gold mb-2">
+              {portalSlotModal === 'online' ? 'Online Training' : 'Home Training'}
+            </p>
+            <h2 className="text-2xl font-black text-white mb-1">
+              Choose Your Batch
+            </h2>
+            <p className="text-neutral-400 text-sm mb-8">
+              Select a preferred time slot to continue
+            </p>
+
+            <p className="text-xs font-black uppercase tracking-widest text-gold/70 mb-3">{'ðŸŒ… Morning Batch'}</p>
+            <div className="flex flex-col gap-3 mb-6">
+              {PORTAL_TIME_SLOTS.morning.map(slot => (
+                <button
+                  key={slot}
+                  onClick={() => setPortalSelectedSlot(slot)}
+                  className={`w-full rounded-full px-5 py-3 text-sm font-black uppercase tracking-widest transition-all ${portalSelectedSlot === slot
+                    ? 'gold-gradient text-black shadow-[0_0_20px_rgba(229,192,123,0.3)]'
+                    : 'border border-white/10 bg-white/5 text-white hover:border-gold/40'
+                    }`}
+                >{slot}</button>
+              ))}
+            </div>
+
+            <p className="text-xs font-black uppercase tracking-widest text-gold/70 mb-3">{'ðŸŒ† Evening Batch'}</p>
+            <div className="flex flex-col gap-3 mb-8">
+              {PORTAL_TIME_SLOTS.evening.map(slot => (
+                <button
+                  key={slot}
+                  onClick={() => setPortalSelectedSlot(slot)}
+                  className={`w-full rounded-full px-5 py-3 text-sm font-black uppercase tracking-widest transition-all ${portalSelectedSlot === slot
+                    ? 'gold-gradient text-black shadow-[0_0_20px_rgba(229,192,123,0.3)]'
+                    : 'border border-white/10 bg-white/5 text-white hover:border-gold/40'
+                    }`}
+                >{slot}</button>
+              ))}
+            </div>
+
+            <button
+              disabled={!portalSelectedSlot}
+              onClick={handlePortalSlotConfirm}
+              className="w-full gold-gradient text-black font-black py-4 rounded-full text-sm uppercase tracking-widest disabled:opacity-40 disabled:cursor-not-allowed hover:shadow-[0_0_30px_rgba(229,192,123,0.4)] transition-all"
+            >
+              Confirm Slot & View Plans â†’
+            </button>
+
+            <button
+              onClick={() => { setPortalSlotModal(null); setPendingPlan(null); setPortalSelectedSlot(''); }}
+              className="w-full mt-4 text-neutral-500 text-xs font-bold uppercase tracking-widest hover:text-white transition-colors"
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
+
       {selectedPlan && (
         <div className="fixed inset-0 z-[160] bg-black/85 backdrop-blur-md flex items-center justify-center p-4" onClick={closePaymentModal}>
           <div className="w-full max-w-[320px] sm:max-w-[360px] md:max-w-[390px] max-h-[90vh] overflow-y-auto glass rounded-[24px] border border-gold/30 p-3 sm:p-4 md:p-5 relative" onClick={(e) => e.stopPropagation()}>
@@ -476,7 +591,7 @@ const MembershipPortal: React.FC = () => {
             <p className="text-gold text-[9px] sm:text-[10px] font-black uppercase tracking-[0.2em] mb-1.5">Scan And Pay</p>
             <h3 className="mb-1.5 pr-8 text-lg font-black uppercase tracking-tight text-white sm:text-xl md:text-2xl">{selectedPlan.name}</h3>
             <p className="mb-3 text-sm leading-relaxed text-neutral-400">
-              Scan this QR code to pay for <span className="text-white font-bold">{selectedPlan.name}</span>. Amount: <span className="font-bold text-gold">₹ {selectedPlan.price.toLocaleString()}</span>
+              Scan this QR code to pay for <span className="text-white font-bold">{selectedPlan.name}</span>. Amount: <span className="font-bold text-gold">â‚¹ {selectedPlan.price.toLocaleString()}</span>
             </p>
             <div className="rounded-[20px] overflow-hidden border border-white/10 bg-white p-2 mb-3">
               <img src={PAYMENT_QR_IMAGE} alt="NOIZE payment QR code" className="w-full h-auto max-h-[42vh] object-contain rounded-[14px]" />
@@ -488,7 +603,7 @@ const MembershipPortal: React.FC = () => {
             </div>
             <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
               <button
-                onClick={() => openPortalWhatsAppForPlan(selectedPlan)}
+                onClick={() => handlePlanWhatsAppClick(selectedPlan)}
                 className="flex-1 py-2.5 px-3 rounded-full gold-gradient text-black font-black text-[9px] sm:text-[10px] uppercase tracking-[0.08em] hover:scale-[1.02] transition-all"
               >
                 Open WhatsApp
@@ -508,3 +623,6 @@ const MembershipPortal: React.FC = () => {
 };
 
 export default MembershipPortal;
+
+
+

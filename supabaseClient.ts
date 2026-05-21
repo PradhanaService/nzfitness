@@ -60,6 +60,17 @@ export interface Offer {
   created_at: string;
 }
 
+export interface FestiveOffer {
+  id: string;
+  title: string;
+  tagline: string;
+  description: string;
+  price_text: string;
+  valid_till: string;
+  is_active: boolean;
+  created_at: string;
+}
+
 export type MembershipCategory = 'offline' | 'online' | 'home_workout';
 
 export interface MembershipPlan {

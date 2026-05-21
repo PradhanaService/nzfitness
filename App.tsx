@@ -304,7 +304,7 @@ const Hero: React.FC<{ onStart: () => void }> = ({ onStart }) => {
           LET THE RESULTS MAKE A <span className="text-gold" style={{ animationDelay: '0.2s' }}>NOIZE</span>
         </h1>
         <p className="text-lg sm:text-lg md:text-xl text-neutral-300 max-w-2xl mx-auto mb-8 md:mb-10 font-light tracking-wide px-4 animate-fade-in opacity-90" style={{ animationDelay: '0.6s' }}>
-          Premium Fitness • Real Transformations • Lifestyle Training
+          Premium Fitness â€¢ Real Transformations â€¢ Lifestyle Training
           <br />
           <span className="text-xs sm:text-sm mt-3 block text-neutral-400">Train in a high-energy, women-friendly, results-driven fitness environment.</span>
         </p>
@@ -551,11 +551,11 @@ const TrainingTypes: React.FC<{ onTypeSelect: (typeId: string) => void; training
   const TIME_SLOTS = {
     morning: [
       '5:30 AM – 6:30 AM',
-      '6:00 AM – 7:30 AM',
-      '7:30 AM - 8.30 AM',
+      '6:30 AM – 7:30 AM',
+      '7:30 AM – 8:30 AM',
     ],
     evening: [
-      '5:30 PM - 6:30 PM',
+      '5:30 PM – 6:30 PM',
       '6:30 PM – 7:30 PM',
       '7:30 PM – 8:30 PM',
     ],
@@ -574,6 +574,7 @@ const TrainingTypes: React.FC<{ onTypeSelect: (typeId: string) => void; training
     sessionStorage.setItem('noize_selected_slot', selectedSlot);
     sessionStorage.setItem('noize_slot_type', slotModal);
     setSlotModal(null);
+    setSelectedSlot('');
     window.location.href = `/portal?tab=${tab}`;
   };
 
@@ -618,7 +619,7 @@ const TrainingTypes: React.FC<{ onTypeSelect: (typeId: string) => void; training
               <ul className="space-y-3 mb-8">
                 {type.features.map((feature, idx) => (
                   <li key={idx} className="flex items-center gap-3 text-sm text-neutral-300 font-light">
-                    <span className="text-gold text-xs">◆</span>
+                    <span className="text-gold text-xs">â—†</span>
                     {feature}
                   </li>
                 ))}
@@ -639,7 +640,7 @@ const TrainingTypes: React.FC<{ onTypeSelect: (typeId: string) => void; training
 
                   onTypeSelect('offline');
                 }}
-                className="w-full mt-auto bg-transparent border-2 border-gold/40 text-gold font-black py-4 px-6 rounded-full group-hover:bg-gold group-hover:text-black group-hover:shadow-[0_0_20px_rgba(229,192,123,0.4)] transition-all duration-500 uppercase tracking-widest text-sm relative overflow-hidden z-10 before:absolute before:inset-0 before:bg-white/20 before:-translate-x-full hover:before:translate-x-0 before:transition-transform before:duration-500 before:-z-10"
+                className="w-full mt-auto bg-transparent border-2 border-gold/40 text-gold font-black py-4 px-6 rounded-full transition-all duration-300 uppercase tracking-widest text-sm hover:border-gold hover:bg-gold/10 hover:text-gold hover:shadow-[0_0_20px_rgba(229,192,123,0.25)] hover:-translate-y-0.5 active:scale-95"
               >
                 Select Option
               </button>
@@ -649,30 +650,37 @@ const TrainingTypes: React.FC<{ onTypeSelect: (typeId: string) => void; training
 
         {slotModal && (
           <div
-            className="fixed inset-0 z-[150] flex items-center justify-center bg-black/85 p-4 backdrop-blur-md"
-            onClick={() => setSlotModal(null)}
+            className="fixed inset-0 z-[200] flex items-center justify-center bg-black/90 backdrop-blur-md px-4"
+            onClick={() => {
+              setSlotModal(null);
+              setSelectedSlot('');
+            }}
           >
             <div
-              className="glass w-full max-w-md rounded-[32px] border border-white/10 p-6 md:p-8"
+              className="w-full max-w-md glass rounded-[32px] border border-gold/20 p-8"
               onClick={(e) => e.stopPropagation()}
             >
-              <div className="mb-8 text-center">
-                <h3 className="text-2xl font-black tracking-tight text-white md:text-3xl">Choose Your Batch Time</h3>
-                <p className="mt-3 text-sm text-neutral-400">Select a preferred slot to continue</p>
-              </div>
+              <p className="text-xs font-black uppercase tracking-[0.3em] text-gold mb-2">
+                {slotModal === 'online' ? 'Online Training' : 'Home Training'}
+              </p>
+              <h2 className="text-2xl font-black text-white mb-1">
+                Choose Your Batch
+              </h2>
+              <p className="text-neutral-400 text-sm mb-8">
+                Select a preferred time slot to continue
+              </p>
 
               <div className="space-y-6">
                 <div>
-                  <p className="mb-3 text-sm font-black text-gold">🌅 Morning Batch</p>
-                  <div className="space-y-3">
+                  <p className="mb-3 text-sm font-black text-gold">ðŸŒ… Morning Batch</p>
+                  <div className="flex flex-col gap-3 mb-6">
                     {TIME_SLOTS.morning.map((slot) => (
                       <button
                         key={slot}
-                        type="button"
                         onClick={() => setSelectedSlot(slot)}
                         className={`w-full rounded-full px-5 py-3 text-sm font-black uppercase tracking-widest transition-all ${
                           selectedSlot === slot
-                            ? 'gold-gradient text-black'
+                            ? 'gold-gradient text-black shadow-[0_0_20px_rgba(229,192,123,0.3)]'
                             : 'border border-white/10 bg-white/5 text-white hover:border-gold/40'
                         }`}
                       >
@@ -683,16 +691,15 @@ const TrainingTypes: React.FC<{ onTypeSelect: (typeId: string) => void; training
                 </div>
 
                 <div>
-                  <p className="mb-3 text-sm font-black text-gold">🌆 Evening Batch</p>
-                  <div className="space-y-3">
+                  <p className="mb-3 text-sm font-black text-gold">ðŸŒ† Evening Batch</p>
+                  <div className="flex flex-col gap-3 mb-8">
                     {TIME_SLOTS.evening.map((slot) => (
                       <button
                         key={slot}
-                        type="button"
                         onClick={() => setSelectedSlot(slot)}
                         className={`w-full rounded-full px-5 py-3 text-sm font-black uppercase tracking-widest transition-all ${
                           selectedSlot === slot
-                            ? 'gold-gradient text-black'
+                            ? 'gold-gradient text-black shadow-[0_0_20px_rgba(229,192,123,0.3)]'
                             : 'border border-white/10 bg-white/5 text-white hover:border-gold/40'
                         }`}
                       >
@@ -704,12 +711,18 @@ const TrainingTypes: React.FC<{ onTypeSelect: (typeId: string) => void; training
               </div>
 
               <button
-                type="button"
                 disabled={!selectedSlot}
                 onClick={handleSlotConfirm}
-                className="mt-8 w-full rounded-full px-5 py-3 text-sm font-black uppercase tracking-widest transition-all disabled:cursor-not-allowed disabled:opacity-50 gold-gradient text-black"
+                className="w-full gold-gradient text-black font-black py-4 rounded-full text-sm uppercase tracking-widest disabled:opacity-40 disabled:cursor-not-allowed hover:shadow-[0_0_30px_rgba(229,192,123,0.4)] transition-all"
               >
-                Confirm Slot
+                Confirm Slot & View Plans â†’
+              </button>
+
+              <button
+                onClick={() => { setSlotModal(null); setSelectedSlot(''); }}
+                className="w-full mt-4 text-neutral-500 text-xs font-bold uppercase tracking-widest hover:text-white transition-colors"
+              >
+                Cancel
               </button>
             </div>
           </div>
@@ -722,7 +735,7 @@ const TrainingTypes: React.FC<{ onTypeSelect: (typeId: string) => void; training
 // Module-level guard to prevent double-rotation in React Strict Mode during development
 let offerRotatedInThisSession = false;
 
-const SpecialOffers: React.FC<{ sectionContent: PortalContentSection }> = ({ sectionContent }) => {
+const SpecialOffers: React.FC<{ sectionContent: PortalContentSection; onUnlockExclusiveOffers: () => void }> = ({ sectionContent, onUnlockExclusiveOffers }) => {
   const [offers, setOffers] = useState<Offer[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -730,7 +743,7 @@ const SpecialOffers: React.FC<{ sectionContent: PortalContentSection }> = ({ sec
     const fetchOffers = async () => {
       try {
         const { data, error } = await supabase
-          .from('offers')
+          .from('festive_offers')
           .select('*')
           .eq('is_active', true)
           .gte('valid_till', new Date().toISOString().split('T')[0])
@@ -780,7 +793,38 @@ const SpecialOffers: React.FC<{ sectionContent: PortalContentSection }> = ({ sec
   }
 
   if (offers.length === 0) {
-    return null; // Return nothing if there are no active offers, satisfying "not other things shouldnt show"
+    return (
+      <section id="offers" className="py-16 md:py-24 relative overflow-hidden">
+        <div className="container mx-auto px-4 md:px-6 relative z-10 max-w-3xl text-center">
+          <div className="flex items-center justify-center gap-3 mb-4">
+            <div className="h-px w-12 bg-gradient-to-r from-transparent to-gold/50"></div>
+            <span className="text-gold font-bold text-sm uppercase tracking-[0.3em]">
+              Festive Deals
+            </span>
+            <div className="h-px w-12 bg-gradient-to-l from-transparent to-gold/50"></div>
+          </div>
+          <h2 className="text-4xl md:text-5xl font-black text-white mb-4 tracking-tight">
+            FESTIVE / SEASONAL <span className="text-gold">OFFERS</span>
+          </h2>
+          <div className="mt-10 glass rounded-[32px] border border-white/10 p-12 md:p-16 flex flex-col items-center gap-5">
+            <div className="text-5xl">ðŸŽ‰</div>
+            <h3 className="text-xl font-black text-white uppercase tracking-wide">
+              No Ongoing Offers Right Now
+            </h3>
+            <p className="text-neutral-400 text-sm md:text-base max-w-md leading-relaxed">
+              We're cooking up something special! Check back soon for
+              exclusive festive and seasonal deals.
+            </p>
+            <div className="flex items-center gap-2 mt-2 px-4 py-2 rounded-full border border-gold/20 bg-gold/5">
+              <span className="h-2 w-2 rounded-full bg-gold/60 animate-pulse"></span>
+              <span className="text-gold text-xs font-black uppercase tracking-widest">
+                New offers dropping soon
+              </span>
+            </div>
+          </div>
+        </div>
+      </section>
+    );
   }
 
   return (
@@ -799,12 +843,12 @@ const SpecialOffers: React.FC<{ sectionContent: PortalContentSection }> = ({ sec
           <div className="flex items-center justify-center gap-3 mb-4">
             <div className="h-px w-12 md:w-20 bg-gradient-to-r from-transparent to-gold/50"></div>
             <div className="flex items-center gap-2">
-              <span className="text-gold font-bold text-sm uppercase tracking-[0.3em]">Exclusive Deals</span>
+              <span className="text-gold font-bold text-sm uppercase tracking-[0.3em]">Festive Deals</span>
             </div>
             <div className="h-px w-12 md:w-20 bg-gradient-to-l from-transparent to-gold/50"></div>
           </div>
           <h2 className="text-4xl md:text-5xl lg:text-6xl font-black mb-4 md:mb-6 text-white tracking-tight">
-            {sectionContent.title.toUpperCase()}
+            FESTIVE / SEASONAL OFFERS
           </h2>
           <p className="text-neutral-400 text-base md:text-xl max-w-2xl mx-auto font-light">
             {sectionContent.description}
@@ -874,6 +918,12 @@ const SpecialOffers: React.FC<{ sectionContent: PortalContentSection }> = ({ sec
                         <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.372s-1.04 1.016-1.04 2.479 1.065 2.876 1.213 3.074c.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z" />
                       </svg>
                       <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent translate-x-[-100%] group-hover/btn:translate-x-[100%] transition-transform duration-700"></div>
+                    </button>
+                    <button
+                      onClick={onUnlockExclusiveOffers}
+                      className="mt-4 w-full rounded-full border border-gold/30 bg-gold/5 text-gold font-black py-3 px-6 text-xs uppercase tracking-widest hover:bg-gold/10 transition-all"
+                    >
+                      ðŸ”’ Unlock Exclusive Mystery Offers
                     </button>
                   </div>
                 </div>
@@ -988,17 +1038,17 @@ const BrandStory: React.FC = () => {
         <div className="relative z-10">
           <h2 className="text-3xl md:text-4xl lg:text-5xl font-black mb-4 md:mb-8 leading-tight tracking-tight">THE NOIZE <br /><span className="text-gold">PHILOSOPHY</span></h2>
           <p className="text-neutral-400 text-base md:text-lg mb-6 md:mb-8 font-light leading-relaxed">
-            Noize Fitness & Lifestyle is not just a gym — it’s a movement. We blend bodybuilding, crossfit, and functional lifestyle training to create real transformations for every body type.
+            Noize Fitness & Lifestyle is not just a gym â€” itâ€™s a movement. We blend bodybuilding, crossfit, and functional lifestyle training to create real transformations for every body type.
           </p>
 
           <div className="grid grid-cols-2 gap-4 md:gap-6">
             {[
-              { title: "Certified Coaches", icon: "◆" },
-              { title: "Women-Friendly", icon: "◆" },
-              { title: "Premium Gear", icon: "◆" },
-              { title: "Lifestyle Focus", icon: "◆" },
-              { title: "Free Assessments", icon: "◆" },
-              { title: "Free Diet Plan", icon: "◆" }
+              { title: "Certified Coaches", icon: "â—†" },
+              { title: "Women-Friendly", icon: "â—†" },
+              { title: "Premium Gear", icon: "â—†" },
+              { title: "Lifestyle Focus", icon: "â—†" },
+              { title: "Free Assessments", icon: "â—†" },
+              { title: "Free Diet Plan", icon: "â—†" }
             ].map((item, idx) => (
               <div key={idx} className="glass p-5 rounded-2xl border border-white/5 hover:border-gold/30 hover:-translate-y-1 transition-all duration-300">
                 <span className="text-gold text-lg mb-3 block">{item.icon}</span>
@@ -1199,6 +1249,12 @@ const Membership: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
   const [activeCategory, setActiveCategory] = useState<MembershipCategory>('offline');
+  const [slotModal, setSlotModal] = useState<'online' | 'home' | null>(null);
+  const [selectedSlot, setSelectedSlot] = useState('');
+  const TIME_SLOTS = {
+    morning: ['5:30 AM – 6:30 AM', '6:30 AM – 7:30 AM', '7:30 AM – 8:30 AM'],
+    evening: ['5:30 PM – 6:30 PM', '6:30 PM – 7:30 PM', '7:30 PM – 8:30 PM'],
+  };
 
   useEffect(() => {
     const fetchPlans = async () => {
@@ -1328,7 +1384,20 @@ const Membership: React.FC = () => {
                     </ul>
 
                     <button
-                      onClick={() => window.location.href = '/portal'}
+                      onClick={() => {
+                        if (plan.category === 'offline') {
+                          window.location.href = '/portal';
+                          return;
+                        }
+
+                        const tab = plan.category === 'online' ? 'online' : 'home_workout';
+                        const saved = sessionStorage.getItem('noize_selected_slot');
+                        if (saved) {
+                          window.location.href = `/portal?tab=${tab}`;
+                        } else {
+                          setSlotModal(plan.category === 'online' ? 'online' : 'home');
+                        }
+                      }}
                       className={`w-full py-3 md:py-4 rounded-full font-black text-xs md:text-sm transition-all text-center block ${plan.is_popular ? 'gold-gradient text-black hover:shadow-lg' : 'glass text-white hover:bg-white/10'}`}
                     >
                       VIEW DETAILS
@@ -1350,7 +1419,7 @@ const Membership: React.FC = () => {
               )}
               <h3 className="text-2xl md:text-2xl font-black mb-2">{plan.name}</h3>
               <p className="text-gold text-sm md:text-sm font-bold mb-6 md:mb-6">{plan.tagline}</p>
-              <div className="text-4xl md:text-4xl font-black mb-8 md:mb-8">₹{plan.price.toLocaleString()}<span className="text-sm font-light text-neutral-400">/-</span></div>
+              <div className="text-4xl md:text-4xl font-black mb-8 md:mb-8">â‚¹{plan.price.toLocaleString()}<span className="text-sm font-light text-neutral-400">/-</span></div>
               <p className="text-neutral-400 text-xs mb-4">{plan.duration}</p>
 
               <ul className="space-y-3 md:space-y-4 mb-6 md:mb-10 flex-grow">
@@ -1372,6 +1441,72 @@ const Membership: React.FC = () => {
           ))}
         </div>
       </div>
+
+      {slotModal && (
+        <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/90 backdrop-blur-md px-4">
+          <div className="w-full max-w-md glass rounded-[32px] border border-gold/20 p-8" onClick={(e) => e.stopPropagation()}>
+            <p className="text-xs font-black uppercase tracking-[0.3em] text-gold mb-2">
+              {slotModal === 'online' ? 'Online Training' : 'Home Training'}
+            </p>
+            <h2 className="text-2xl font-black text-white mb-1">
+              Choose Your Batch
+            </h2>
+            <p className="text-neutral-400 text-sm mb-8">
+              Select a preferred time slot to continue
+            </p>
+
+            <p className="text-xs font-black uppercase tracking-widest text-gold/70 mb-3">{'ðŸŒ… Morning Batch'}</p>
+            <div className="flex flex-col gap-3 mb-6">
+              {TIME_SLOTS.morning.map(slot => (
+                <button
+                  key={slot}
+                  onClick={() => setSelectedSlot(slot)}
+                  className={`w-full rounded-full px-5 py-3 text-sm font-black uppercase tracking-widest transition-all ${selectedSlot === slot
+                    ? 'gold-gradient text-black shadow-[0_0_20px_rgba(229,192,123,0.3)]'
+                    : 'border border-white/10 bg-white/5 text-white hover:border-gold/40'
+                    }`}
+                >{slot}</button>
+              ))}
+            </div>
+
+            <p className="text-xs font-black uppercase tracking-widest text-gold/70 mb-3">{'ðŸŒ† Evening Batch'}</p>
+            <div className="flex flex-col gap-3 mb-8">
+              {TIME_SLOTS.evening.map(slot => (
+                <button
+                  key={slot}
+                  onClick={() => setSelectedSlot(slot)}
+                  className={`w-full rounded-full px-5 py-3 text-sm font-black uppercase tracking-widest transition-all ${selectedSlot === slot
+                    ? 'gold-gradient text-black shadow-[0_0_20px_rgba(229,192,123,0.3)]'
+                    : 'border border-white/10 bg-white/5 text-white hover:border-gold/40'
+                    }`}
+                >{slot}</button>
+              ))}
+            </div>
+
+            <button
+              disabled={!selectedSlot}
+              onClick={() => {
+                const tab = slotModal === 'online' ? 'online' : 'home_workout';
+                sessionStorage.setItem('noize_selected_slot', selectedSlot);
+                sessionStorage.setItem('noize_slot_type', slotModal ?? '');
+                setSlotModal(null);
+                setSelectedSlot('');
+                window.location.href = `/portal?tab=${tab}`;
+              }}
+              className="w-full gold-gradient text-black font-black py-4 rounded-full text-sm uppercase tracking-widest disabled:opacity-40 disabled:cursor-not-allowed hover:shadow-[0_0_30px_rgba(229,192,123,0.4)] transition-all"
+            >
+              Confirm Slot & View Plans â†’
+            </button>
+
+            <button
+              onClick={() => { setSlotModal(null); setSelectedSlot(''); }}
+              className="w-full mt-4 text-neutral-500 text-xs font-bold uppercase tracking-widest hover:text-white transition-colors"
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
 
     </section>
   );
@@ -1727,7 +1862,7 @@ const Gallery: React.FC = () => {
                         <div className="w-2 h-2 bg-gold rounded-full animate-pulse"></div>
                         <span className="text-white text-xs font-bold uppercase tracking-wider">Live Session</span>
                       </div>
-                      <p className="text-white/80 text-xs">Swipe to see more →</p>
+                      <p className="text-white/80 text-xs">Swipe to see more â†’</p>
                     </div>
                   </div>
                 </div>
@@ -2052,7 +2187,7 @@ const Footer: React.FC = () => (
       </div>
 
       <div className="flex flex-col md:flex-row justify-center items-center pt-6 md:pt-10 border-t border-white/5 text-[10px] md:text-xs font-bold text-neutral-600 tracking-widest text-center">
-        <p className="px-4">© 2026 NOIZE FITNESS & LIFESTYLE. ALL RIGHTS RESERVED.</p>
+        <p className="px-4">Â© 2026 NOIZE FITNESS & LIFESTYLE. ALL RIGHTS RESERVED.</p>
       </div>
 
       <div className="text-center mt-4 md:mt-6 text-[10px] text-neutral-700">
@@ -2571,7 +2706,7 @@ const OffersListModal: React.FC<{
                     <div className="md:text-right">
                       <div className="text-3xl font-black text-gold mb-4">{offer.price_text}</div>
                       <button
-                        onClick={() => handleWhatsApp(`Hi NOIZE Team! 👋\n\nI'd like to claim this exclusive offer:\n\n📌 Offer: ${offer.title}\n💰 Price: ₹${offer.price_text}\n\n👤 Name: ${customerName}\n📧 Email: ${customerName}\n\nPlease assist me. Thank you!`)}
+                        onClick={() => handleWhatsApp(`Hi NOIZE Team! ðŸ‘‹\n\nI'd like to claim this exclusive offer:\n\nðŸ“Œ Offer: ${offer.title}\nðŸ’° Price: â‚¹${offer.price_text}\n\nðŸ‘¤ Name: ${customerName}\nðŸ“§ Email: ${customerName}\n\nPlease assist me. Thank you!`)}
                         className="gold-gradient text-black font-black py-3 px-6 rounded-full text-xs uppercase tracking-widest hover:shadow-[0_8px_30px_rgba(229,192,123,0.4)] transition-all"
                       >
                         Claim Offer
@@ -2628,12 +2763,33 @@ const App: React.FC = () => {
   const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
   const [selectedBookingType, setSelectedBookingType] = useState<string | null>(null);
   const [pendingType, setPendingType] = useState<string | null>(null);
+  const [slotModal, setSlotModal] = useState<'online' | 'home' | null>(null);
+  const [selectedSlot, setSelectedSlot] = useState('');
   const [offlineCustomer, setOfflineCustomer] = useState<OfflineCustomerProfile | null>(null);
   const [offlineRepeatVisits, setOfflineRepeatVisits] = useState(0);
   const trainingTypes = buildTrainingTypes(portalContent);
+  const TIME_SLOTS = {
+    morning: [
+      '5:30 AM – 6:30 AM',
+      '6:30 AM – 7:30 AM',
+      '7:30 AM – 8:30 AM',
+    ],
+    evening: [
+      '5:30 PM – 6:30 PM',
+      '6:30 PM – 7:30 PM',
+      '7:30 PM – 8:30 PM',
+    ],
+  };
 
   const handleGetStarted = () => {
     setIsOptionsModalOpen(true);
+  };
+
+  const openExclusiveMysteryOffers = () => {
+    setPendingType('offline');
+    setIsOptionsModalOpen(false);
+    setIsBookingModalOpen(false);
+    setIsAuthModalOpen(true);
   };
 
   const openOfflineOffersPortal = (profile: OfflineCustomerProfile) => {
@@ -2835,7 +2991,7 @@ const App: React.FC = () => {
         <main>
           <Hero onStart={handleGetStarted} />
           <TrainingTypes onTypeSelect={handleOptionSelect} trainingTypes={trainingTypes} />
-          <SpecialOffers sectionContent={portalContent.special_offers} />
+          <SpecialOffers sectionContent={portalContent.special_offers} onUnlockExclusiveOffers={openExclusiveMysteryOffers} />
           <BrandStory />
           <ProgramsGrid />
           <WhyChooseUs />
@@ -2906,7 +3062,18 @@ const App: React.FC = () => {
                   <button
                     key={type.id}
                     type="button"
-                    onClick={() => handleOptionSelect(type.id)}
+                    onClick={() => {
+                      if (type.id === 'offline') {
+                        setIsOptionsModalOpen(false);
+                        setPendingType('offline');
+                        setIsAuthModalOpen(true);
+                        return;
+                      }
+
+                      setIsOptionsModalOpen(false);
+                      setSelectedSlot('');
+                      setSlotModal(type.id === 'online' ? 'online' : 'home');
+                    }}
                     className="glass group w-full p-8 rounded-3xl border border-white/5 hover:border-gold/50 transition-all duration-500 cursor-pointer hover:-translate-y-2 hover:shadow-[0_20px_50px_rgba(229,192,123,0.1)] flex flex-col items-center text-center"
                   >
                     <div className="w-20 h-20 rounded-2xl bg-white/5 flex items-center justify-center mb-6 group-hover:bg-gold/10 group-hover:scale-110 transition-all duration-500">
@@ -2923,9 +3090,95 @@ const App: React.FC = () => {
             </div>
           </div>
         )}
+
+        {slotModal && (
+          <div
+            className="fixed inset-0 z-[200] flex items-center justify-center bg-black/90 backdrop-blur-md px-4"
+            onClick={() => {
+              setSlotModal(null);
+              setSelectedSlot('');
+            }}
+          >
+            <div
+              className="w-full max-w-md glass rounded-[32px] border border-gold/20 p-8"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <p className="text-xs font-black uppercase tracking-[0.3em] text-gold mb-2">
+                {slotModal === 'online' ? '🖥 Online Training' : '🏠 Home Training'}
+              </p>
+              <h2 className="text-2xl font-black text-white mb-1">
+                Choose Your Batch
+              </h2>
+              <p className="text-neutral-400 text-sm mb-8">
+                Select a preferred time slot to continue to membership
+              </p>
+
+              <p className="text-[10px] font-black uppercase tracking-widest text-gold/70 mb-3">🌅 Morning Batch</p>
+              <div className="flex flex-col gap-3 mb-6">
+                {TIME_SLOTS.morning.map((slot) => (
+                  <button
+                    key={slot}
+                    onClick={() => setSelectedSlot(slot)}
+                    className={`w-full rounded-full px-5 py-3 text-sm font-black uppercase tracking-widest transition-all ${selectedSlot === slot
+                      ? 'gold-gradient text-black shadow-[0_0_20px_rgba(229,192,123,0.3)]'
+                      : 'border border-white/10 bg-white/5 text-white hover:border-gold/40'
+                      }`}
+                  >
+                    {slot}
+                  </button>
+                ))}
+              </div>
+
+              <p className="text-[10px] font-black uppercase tracking-widest text-gold/70 mb-3">🌆 Evening Batch</p>
+              <div className="flex flex-col gap-3 mb-8">
+                {TIME_SLOTS.evening.map((slot) => (
+                  <button
+                    key={slot}
+                    onClick={() => setSelectedSlot(slot)}
+                    className={`w-full rounded-full px-5 py-3 text-sm font-black uppercase tracking-widest transition-all ${selectedSlot === slot
+                      ? 'gold-gradient text-black shadow-[0_0_20px_rgba(229,192,123,0.3)]'
+                      : 'border border-white/10 bg-white/5 text-white hover:border-gold/40'
+                      }`}
+                  >
+                    {slot}
+                  </button>
+                ))}
+              </div>
+
+              <button
+                disabled={!selectedSlot}
+                onClick={() => {
+                  const tab = slotModal === 'online' ? 'online' : 'home_workout';
+                  sessionStorage.setItem('noize_selected_slot', selectedSlot);
+                  sessionStorage.setItem('noize_slot_type', slotModal);
+                  setSlotModal(null);
+                  setSelectedSlot('');
+                  window.location.href = `/portal?tab=${tab}`;
+                }}
+                className="w-full gold-gradient text-black font-black py-4 rounded-full text-sm uppercase tracking-widest transition-all hover:shadow-[0_0_30px_rgba(229,192,123,0.4)] disabled:opacity-40 disabled:cursor-not-allowed"
+              >
+                Confirm Slot & View Plans →
+              </button>
+
+              <button
+                onClick={() => {
+                  setSlotModal(null);
+                  setSelectedSlot('');
+                }}
+                className="w-full mt-4 text-neutral-500 text-xs font-bold uppercase tracking-widest hover:text-white transition-colors"
+              >
+                ← Go Back
+              </button>
+            </div>
+          </div>
+        )}
       </div>
     </SiteImagesContext.Provider>
   );
 };
 
 export default App;
+
+
+
+

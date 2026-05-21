@@ -180,7 +180,7 @@ const OfflineOffersPortal: React.FC = () => {
   if (!customer) return null;
 
   return (
-    <div className="min-h-screen bg-[#0A0A0A] px-4 py-8 text-white md:px-8 md:py-12">
+    <div className="min-h-screen bg-[#0A0A0A] px-4 py-8 text-white md:px-8 md:py-12 w-full overflow-x-hidden">
       <style>{`
         @keyframes giftPulse {
           0%, 100% { transform: scale(1); box-shadow: 0 0 0 rgba(229,192,123,0); }
@@ -223,7 +223,7 @@ const OfflineOffersPortal: React.FC = () => {
         }
       `}</style>
 
-      <div className="mx-auto max-w-6xl space-y-8">
+      <div className="mx-auto w-full max-w-6xl space-y-8">
         <div className="glass rounded-[36px] border border-gold/20 p-6 md:p-10">
           <div className="mb-5 flex justify-end">
             <button
@@ -233,20 +233,20 @@ const OfflineOffersPortal: React.FC = () => {
               Logout
             </button>
           </div>
-          <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between lg:gap-10">
-            <div className="min-w-0 flex-1">
+          <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between lg:gap-10 w-full">
+            <div className="min-w-0 flex-1 w-full">
               <p className="mb-3 text-xs font-black uppercase tracking-[0.3em] text-gold">Mystery Offline Access</p>
               <h1 className="text-3xl font-black uppercase tracking-tight md:text-5xl">
                 Tap To <span className="text-gold">Unwrap</span>
               </h1>
-              <p className="mt-4 max-w-3xl text-sm text-neutral-400 md:text-base">
+              <p className="mt-4 w-full max-w-3xl text-sm text-neutral-400 md:text-base leading-relaxed">
                 {isPreviewMode
                   ? 'Admin preview mode for the mystery reveal flow.'
                   : `Welcome ${customer.fullName}. You have 4 mystery chances. Every tap unwraps one hidden offer. After all 4 chances are used, only membership remains claimable.`}
               </p>
             </div>
 
-            <div className="grid w-full gap-3 md:grid-cols-3 lg:w-auto lg:min-w-[620px]">
+            <div className="grid w-full gap-3 grid-cols-1 md:grid-cols-3 lg:min-w-[500px]">
               <div className="min-w-0 rounded-2xl border border-white/10 bg-white/5 px-4 py-3">
                 <p className="mb-1 text-[10px] font-black uppercase tracking-widest text-neutral-500">Member</p>
                 <p className="truncate font-bold text-white">{customer.fullName}</p>

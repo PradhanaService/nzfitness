@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { supabase, Offer, MembershipPlan, AppImage, PortalContent, MembershipCategory } from './supabaseClient';
+import { supabase, Offer, FestiveOffer, MembershipPlan, AppImage, PortalContent, MembershipCategory } from './supabaseClient';
 import type { User } from './supabaseClient';
 
 const MEMBERSHIP_CATEGORY_OPTIONS: { value: MembershipCategory; label: string }[] = [
@@ -34,6 +34,10 @@ const scrollToEditor = (element: HTMLFormElement | null) => {
     element.scrollIntoView({ behavior: 'smooth', block: 'start' });
   });
 };
+
+const getTodayDateString = () => new Date().toISOString().split('T')[0];
+
+const isFutureOrTodayDate = (dateValue: string) => Boolean(dateValue) && dateValue >= getTodayDateString();
 
 // Login Component
 const AdminLogin: React.FC = () => {
@@ -846,6 +850,426 @@ const PlansManagement: React.FC = () => {
   );
 };
 
+const FestiveOffersManagement: React.FC = () => {
+  const [offers, setOffers] = useState<FestiveOffer[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
+  const [successMessage, setSuccessMessage] = useState('');
+  const [validationError, setValidationError] = useState('');
+  const [editingOfferId, setEditingOfferId] = useState<string | null>(null);
+  const [formData, setFormData] = useState({
+    title: '',
+    tagline: '',
+    description: '',
+    price_text: '',
+    valid_till: '',
+    is_active: true,
+  });
+  const [editFormData, setEditFormData] = useState({
+    title: '',
+    tagline: '',
+    description: '',
+    price_text: '',
+    valid_till: '',
+    is_active: true,
+  });
+
+  const fetchFestiveOffers = async () => {
+    setLoading(true);
+    const { data, error } = await supabase
+      .from('festive_offers')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      setErrorMessage(error.message);
+    } else {
+      setOffers(data || []);
+    }
+
+    setLoading(false);
+  };
+
+  useEffect(() => {
+    fetchFestiveOffers();
+  }, []);
+
+  const validateOffer = (offer: { title: string; price_text: string; valid_till: string }) => {
+    if (!offer.title.trim()) return 'Title is required.';
+    if (!offer.price_text.trim()) return 'Price text is required.';
+    if (!offer.valid_till) return 'Valid till date is required.';
+    if (!isFutureOrTodayDate(offer.valid_till)) return 'Valid till date must be today or a future date.';
+    return '';
+  };
+
+  const resetAddForm = () => {
+    setFormData({
+      title: '',
+      tagline: '',
+      description: '',
+      price_text: '',
+      valid_till: '',
+      is_active: true,
+    });
+  };
+
+  const handleAddOffer = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSaving(true);
+    setErrorMessage('');
+    setSuccessMessage('');
+    const nextValidationError = validateOffer(formData);
+    setValidationError(nextValidationError);
+
+    if (nextValidationError) {
+      setSaving(false);
+      return;
+    }
+
+    const { error } = await supabase.from('festive_offers').insert([{
+      title: formData.title.trim(),
+      tagline: formData.tagline.trim(),
+      description: formData.description.trim(),
+      price_text: formData.price_text.trim(),
+      valid_till: formData.valid_till,
+      is_active: formData.is_active,
+      created_at: new Date().toISOString(),
+    }]);
+
+    if (error) {
+      setErrorMessage(error.message);
+      setSaving(false);
+      return;
+    }
+
+    setSuccessMessage('Offer saved successfully');
+    setValidationError('');
+    resetAddForm();
+    await fetchFestiveOffers();
+    setSaving(false);
+  };
+
+  const startEditing = (offer: FestiveOffer) => {
+    setEditingOfferId(offer.id);
+    setErrorMessage('');
+    setSuccessMessage('');
+    setValidationError('');
+    setEditFormData({
+      title: offer.title,
+      tagline: offer.tagline || '',
+      description: offer.description || '',
+      price_text: offer.price_text,
+      valid_till: offer.valid_till,
+      is_active: offer.is_active,
+    });
+  };
+
+  const handleEditSave = async (offerId: string) => {
+    setSaving(true);
+    setErrorMessage('');
+    setSuccessMessage('');
+    const nextValidationError = validateOffer(editFormData);
+    setValidationError(nextValidationError);
+
+    if (nextValidationError) {
+      setSaving(false);
+      return;
+    }
+
+    const { error } = await supabase
+      .from('festive_offers')
+      .update({
+        title: editFormData.title.trim(),
+        tagline: editFormData.tagline.trim(),
+        description: editFormData.description.trim(),
+        price_text: editFormData.price_text.trim(),
+        valid_till: editFormData.valid_till,
+        is_active: editFormData.is_active,
+      })
+      .eq('id', offerId);
+
+    if (error) {
+      setErrorMessage(error.message);
+      setSaving(false);
+      return;
+    }
+
+    setSuccessMessage('Offer saved successfully');
+    setValidationError('');
+    setEditingOfferId(null);
+    await fetchFestiveOffers();
+    setSaving(false);
+  };
+
+  const handleDelete = async (offerId: string) => {
+    if (!confirm('Are you sure you want to delete this festive offer?')) {
+      return;
+    }
+
+    setErrorMessage('');
+    setSuccessMessage('');
+    setValidationError('');
+    const { error } = await supabase.from('festive_offers').delete().eq('id', offerId);
+
+    if (error) {
+      setErrorMessage(error.message);
+      return;
+    }
+
+    setSuccessMessage('Offer saved successfully');
+    setEditingOfferId(null);
+    await fetchFestiveOffers();
+  };
+
+  if (loading) {
+    return <div className="text-white text-center p-8">Loading...</div>;
+  }
+
+  return (
+    <div className="space-y-6">
+      <div>
+        <h2 className="text-2xl font-black text-white">Manage Festive Offers</h2>
+        <p className="text-neutral-400 text-sm mt-2">
+          Create and manage festive or seasonal homepage offers without changing the existing specific offers flow.
+        </p>
+      </div>
+
+      {errorMessage && (
+        <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-3 text-red-400 text-sm">
+          {errorMessage}
+        </div>
+      )}
+
+      {successMessage && (
+        <div className="bg-green-500/10 border border-green-500/30 rounded-xl p-3 text-green-400 text-sm">
+          {successMessage}
+        </div>
+      )}
+
+      <form onSubmit={handleAddOffer} className="glass rounded-2xl p-6 border border-gold/30 space-y-4">
+        <h3 className="text-xl font-bold text-white">Add New Festive Offer</h3>
+
+        <div>
+          <label className="block text-white font-bold mb-2">Title</label>
+          <input
+            type="text"
+            value={formData.title}
+            onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+            placeholder="Diwali Special Offer"
+            className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-gold focus:outline-none"
+          />
+        </div>
+
+        <div>
+          <label className="block text-white font-bold mb-2">Tagline</label>
+          <input
+            type="text"
+            value={formData.tagline}
+            onChange={(e) => setFormData({ ...formData, tagline: e.target.value })}
+            placeholder="Limited time festive deal"
+            className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-gold focus:outline-none"
+          />
+        </div>
+
+        <div>
+          <label className="block text-white font-bold mb-2">Description</label>
+          <textarea
+            value={formData.description}
+            onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+            placeholder="Offer details..."
+            className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-gold focus:outline-none"
+            rows={4}
+          />
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label className="block text-white font-bold mb-2">Price Text</label>
+            <input
+              type="text"
+              value={formData.price_text}
+              onChange={(e) => setFormData({ ...formData, price_text: e.target.value })}
+              placeholder="₹2,999"
+              className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-gold focus:outline-none"
+            />
+          </div>
+
+          <div>
+            <label className="block text-white font-bold mb-2">Valid Till</label>
+            <input
+              type="date"
+              value={formData.valid_till}
+              onChange={(e) => setFormData({ ...formData, valid_till: e.target.value })}
+              className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-gold focus:outline-none"
+            />
+          </div>
+        </div>
+
+        <div className="flex items-center gap-3 mt-4">
+          <input
+            type="checkbox"
+            checked={formData.is_active}
+            onChange={(e) => setFormData({ ...formData, is_active: e.target.checked })}
+            className="w-5 h-5"
+          />
+          <label className="text-white font-bold">Is Active</label>
+        </div>
+
+        {validationError && (
+          <p className="text-sm text-red-400">{validationError}</p>
+        )}
+
+        <button
+          type="submit"
+          disabled={saving}
+          className="w-full gold-gradient text-black font-black py-3 rounded-full hover:shadow-[0_0_30px_rgba(229,192,123,0.6)] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          {saving ? 'SAVING...' : 'ADD FESTIVE OFFER'}
+        </button>
+      </form>
+
+      <div className="grid gap-4">
+        {offers.map((offer) => {
+          const isEditing = editingOfferId === offer.id;
+          return (
+            <div key={offer.id} className="glass rounded-2xl p-6 border border-white/10">
+              {isEditing ? (
+                <div className="space-y-4">
+                  <h3 className="text-xl font-bold text-white">Edit Festive Offer</h3>
+
+                  <div>
+                    <label className="block text-white font-bold mb-2">Title</label>
+                    <input
+                      type="text"
+                      value={editFormData.title}
+                      onChange={(e) => setEditFormData({ ...editFormData, title: e.target.value })}
+                      className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-gold focus:outline-none"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-white font-bold mb-2">Tagline</label>
+                    <input
+                      type="text"
+                      value={editFormData.tagline}
+                      onChange={(e) => setEditFormData({ ...editFormData, tagline: e.target.value })}
+                      className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-gold focus:outline-none"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-white font-bold mb-2">Description</label>
+                    <textarea
+                      value={editFormData.description}
+                      onChange={(e) => setEditFormData({ ...editFormData, description: e.target.value })}
+                      className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-gold focus:outline-none"
+                      rows={4}
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-white font-bold mb-2">Price Text</label>
+                      <input
+                        type="text"
+                        value={editFormData.price_text}
+                        onChange={(e) => setEditFormData({ ...editFormData, price_text: e.target.value })}
+                        className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-gold focus:outline-none"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-white font-bold mb-2">Valid Till</label>
+                      <input
+                        type="date"
+                        value={editFormData.valid_till}
+                        onChange={(e) => setEditFormData({ ...editFormData, valid_till: e.target.value })}
+                        className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-gold focus:outline-none"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-3 mt-4">
+                    <input
+                      type="checkbox"
+                      checked={editFormData.is_active}
+                      onChange={(e) => setEditFormData({ ...editFormData, is_active: e.target.checked })}
+                      className="w-5 h-5"
+                    />
+                    <label className="text-white font-bold">Is Active</label>
+                  </div>
+
+                  {validationError && (
+                    <p className="text-sm text-red-400">{validationError}</p>
+                  )}
+
+                  <div className="flex flex-wrap gap-2">
+                    <button
+                      type="button"
+                      onClick={() => handleEditSave(offer.id)}
+                      disabled={saving}
+                      className="px-4 py-2 gold-gradient text-black rounded-lg font-black hover:scale-105 transition-all disabled:opacity-50"
+                    >
+                      SAVE
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setEditingOfferId(null);
+                        setValidationError('');
+                      }}
+                      className="px-4 py-2 border border-white/10 text-white rounded-lg font-bold hover:border-gold transition-all"
+                    >
+                      CANCEL
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <>
+                  <div className="flex justify-between items-start mb-4 gap-4">
+                    <div>
+                      <h3 className="text-xl font-bold text-white mb-2">{offer.title}</h3>
+                      {offer.tagline && <p className="text-gold font-semibold mb-2">{offer.tagline}</p>}
+                      <p className="text-neutral-400 mb-2">{offer.description}</p>
+                      <p className="text-gold font-bold">{offer.price_text}</p>
+                      <p className="text-sm text-neutral-500 mt-2">Valid till: {new Date(offer.valid_till).toLocaleDateString()}</p>
+                    </div>
+                    <span className={`px-3 py-1 rounded-full text-xs font-bold ${offer.is_active ? 'bg-green-500/20 text-green-500' : 'bg-red-500/20 text-red-500'}`}>
+                      {offer.is_active ? 'Active' : 'Inactive'}
+                    </span>
+                  </div>
+
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => startEditing(offer)}
+                      className="px-4 py-2 bg-blue-500/20 text-blue-500 rounded-lg font-bold hover:bg-blue-500/30 transition-all"
+                    >
+                      EDIT
+                    </button>
+                    <button
+                      onClick={() => handleDelete(offer.id)}
+                      className="px-4 py-2 bg-red-500/20 text-red-500 rounded-lg font-bold hover:bg-red-500/30 transition-all"
+                    >
+                      DELETE
+                    </button>
+                  </div>
+                </>
+              )}
+            </div>
+          );
+        })}
+
+        {offers.length === 0 && (
+          <div className="text-center text-neutral-400 py-12">
+            No festive offers yet.
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
 // Gallery Management Component
 const GalleryManagement: React.FC = () => {
   const [images, setImages] = useState<AppImage[]>([]);
@@ -1570,7 +1994,7 @@ const MembershipPortalContentManagement: React.FC = () => {
 // Main Admin Dashboard
 
 const AdminDashboard: React.FC<{ user: User }> = ({ user }) => {
-  const [activeTab, setActiveTab] = useState<'offers' | 'plans' | 'images' | 'reviews'>('offers');
+  const [activeTab, setActiveTab] = useState<'offers' | 'festive' | 'plans' | 'images' | 'reviews'>('offers');
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
@@ -1608,18 +2032,28 @@ const AdminDashboard: React.FC<{ user: User }> = ({ user }) => {
                 onClick={() => setActiveTab('offers')}
                 className={`px-6 py-3 rounded-full font-bold transition-all ${
                   activeTab === 'offers'
-                    ? 'gold-gradient text-black'
-                    : 'glass text-white hover:border-gold border border-white/10'
+                    ? 'gold-gradient text-black font-black'
+                    : 'glass border border-white/10 text-white'
                 }`}
               >
                 Specific Offers
               </button>
           <button
+            onClick={() => setActiveTab('festive')}
+            className={`px-6 py-3 rounded-full font-bold transition-all ${
+              activeTab === 'festive'
+                ? 'gold-gradient text-black font-black'
+                : 'glass border border-white/10 text-white'
+            }`}
+          >
+            Festive Offers
+          </button>
+          <button
             onClick={() => setActiveTab('plans')}
             className={`px-6 py-3 rounded-full font-bold transition-all ${
               activeTab === 'plans'
-                ? 'gold-gradient text-black'
-                : 'glass text-white hover:border-gold border border-white/10'
+                ? 'gold-gradient text-black font-black'
+                : 'glass border border-white/10 text-white'
             }`}
           >
             Membership Plans
@@ -1628,8 +2062,8 @@ const AdminDashboard: React.FC<{ user: User }> = ({ user }) => {
             onClick={() => setActiveTab('images')}
             className={`px-6 py-3 rounded-full font-bold transition-all ${
               activeTab === 'images'
-                ? 'gold-gradient text-black'
-                : 'glass text-white hover:border-gold border border-white/10'
+                ? 'gold-gradient text-black font-black'
+                : 'glass border border-white/10 text-white'
             }`}
           >
             Site Images
@@ -1638,15 +2072,15 @@ const AdminDashboard: React.FC<{ user: User }> = ({ user }) => {
             onClick={() => setActiveTab('reviews')}
             className={`px-6 py-3 rounded-full font-bold transition-all ${
               activeTab === 'reviews'
-                ? 'gold-gradient text-black'
-                : 'glass text-white hover:border-gold border border-white/10'
+                ? 'gold-gradient text-black font-black'
+                : 'glass border border-white/10 text-white'
             }`}
           >
             Reviews
           </button>
         </div>
 
-        {activeTab === 'offers' ? <OffersManagement /> : activeTab === 'plans' ? <PlansManagement /> : activeTab === 'images' ? <GalleryManagement /> : <ReviewsManagement />}
+        {activeTab === 'offers' ? <OffersManagement /> : activeTab === 'festive' ? <FestiveOffersManagement /> : activeTab === 'plans' ? <PlansManagement /> : activeTab === 'images' ? <GalleryManagement /> : <ReviewsManagement />}
       </div>
     </div>
   );
