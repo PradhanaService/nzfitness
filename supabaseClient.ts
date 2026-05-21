@@ -19,12 +19,18 @@ import {
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || '';
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
+const hasSupabaseConfig = Boolean(supabaseUrl && supabaseAnonKey);
 
-if (!supabaseUrl || !supabaseAnonKey) {
+if (!hasSupabaseConfig) {
   console.warn('Supabase environment variables are missing. Set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY.');
 }
 
-const supabaseData = createClient(supabaseUrl, supabaseAnonKey);
+// Keep the app mountable in production even when env vars are absent.
+// Netlify can otherwise crash the bundle before React renders anything.
+const supabaseData = createClient(
+  hasSupabaseConfig ? supabaseUrl : 'https://placeholder.supabase.co',
+  hasSupabaseConfig ? supabaseAnonKey : 'placeholder-anon-key',
+);
 
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY || 'AIzaSyCNnGN-CWG0oMxi5Ds2oJzvp5rStPCKGpQ',
