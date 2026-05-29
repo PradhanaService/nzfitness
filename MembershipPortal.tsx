@@ -101,16 +101,16 @@ const openPortalWhatsAppNumber = (plan?: MembershipPlan | null) => {
   const savedSlotType = sessionStorage.getItem('noize_slot_type');
 
   if (plan && savedSlot && (savedSlotType === 'online' || savedSlotType === 'home')) {
-    const message = `Hi NOIZE Team! ðŸ‘‹
+    const message = `Hi NOIZE Team! \uD83D\uDC4B
 
 I'd like to confirm my membership:
 
-ðŸ‹ï¸ Training Type: ${savedSlotType === 'online' ? 'Online Training' : 'Home Training'}
-â° Preferred Slot: ${savedSlot}
+\uD83C\uDFCB\uFE0F Training Type: ${savedSlotType === 'online' ? 'Online Training' : 'Home Training'}
+\u23F0 Preferred Slot: ${savedSlot}
 
-ðŸ“‹ Plan: ${plan.name}
-ðŸ’° Price: â‚¹${plan.price}
-â³ Duration: ${plan.duration}
+\uD83D\uDCCB Plan: ${plan.name}
+\uD83D\uDCB0 Price: \u20B9${plan.price}
+\u23F3 Duration: ${plan.duration}
 
 Please confirm my booking. Thank you!`;
 
@@ -124,12 +124,12 @@ Please confirm my booking. Thank you!`;
 const openPortalWhatsAppForPlan = (plan: MembershipPlan) => {
   const savedSlot = sessionStorage.getItem('noize_selected_slot');
   const message =
-    `Hi NOIZE Team! ðŸ‘‹\n\n` +
+    `Hi NOIZE Team! \uD83D\uDC4B\n\n` +
     `Membership Confirmation:\n\n` +
-    `ðŸ‹ï¸ Plan: ${plan.name}\n` +
-    `ðŸ’° Price: â‚¹${plan.price.toLocaleString()}\n` +
-    `â³ Duration: ${plan.duration}\n` +
-    (savedSlot ? `â° Preferred Slot: ${savedSlot}\n` : '') +
+    `\uD83C\uDFCB\uFE0F Plan: ${plan.name}\n` +
+    `\uD83D\uDCB0 Price: \u20B9${plan.price.toLocaleString()}\n` +
+    `\u23F3 Duration: ${plan.duration}\n` +
+    (savedSlot ? `\u23F0 Preferred Slot: ${savedSlot}\n` : '') +
     `\nPlease confirm my booking. Thank you!`;
 
   handlePortalWhatsApp(message);
@@ -262,13 +262,13 @@ const MembershipPortal: React.FC = () => {
     const savedSlot = sessionStorage.getItem('noize_selected_slot') || '';
     const slotType = sessionStorage.getItem('noize_slot_type') || '';
     const message =
-      `Hi NOIZE Team! 👋\n\n` +
+      `Hi NOIZE Team! \uD83D\uDC4B\n\n` +
       `Membership Enquiry:\n\n` +
-      `🏋️ Plan: ${plan.name}\n` +
-      `📂 Type: ${slotType === 'online' ? 'Online Training' : 'Home Training'}\n` +
-      `💰 Price: ₹${plan.price.toLocaleString()}\n` +
-      `⏳ Duration: ${plan.duration}\n` +
-      `⏰ Preferred Slot: ${savedSlot}\n\n` +
+      `\uD83C\uDFCB\uFE0F Plan: ${plan.name}\n` +
+      `\uD83D\uDCC2 Type: ${slotType === 'online' ? 'Online Training' : 'Home Training'}\n` +
+      `\uD83D\uDCB0 Price: \u20B9${plan.price.toLocaleString()}\n` +
+      `\u23F3 Duration: ${plan.duration}\n` +
+      `\u23F0 Preferred Slot: ${savedSlot}\n\n` +
       `Please confirm my booking. Thank you!`;
 
     handlePortalWhatsApp(message);
@@ -302,7 +302,7 @@ const MembershipPortal: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#0E0E0E] pb-16 px-4 md:px-8">
+    <div className="min-h-screen bg-[#0A0A0A] px-4 py-10 md:px-8 md:py-16">
       <style>{`
         @keyframes offersShake {
           0%, 100% { transform: translateX(0) rotate(0deg); }
@@ -312,20 +312,20 @@ const MembershipPortal: React.FC = () => {
           80% { transform: translateX(0.5px) rotate(0.6deg); }
         }
       `}</style>
-      <div className="max-w-4xl mx-auto">
-        <div className="mb-6 flex items-center justify-between">
+      <div className="mx-auto max-w-5xl">
+        <div className="mb-8 flex items-center justify-between gap-3">
           <button
             onClick={() => navigate('/')}
-            className="rounded-full border border-white/10 bg-transparent px-5 py-2.5 text-xs font-black uppercase tracking-[0.2em] text-white transition-all hover:border-gold/40 hover:text-gold"
+            className="rounded-full border border-white/15 px-4 py-2 text-xs font-bold uppercase tracking-[0.14em] text-white transition-all hover:border-gold/40 hover:text-gold"
           >
             Back To Home
           </button>
           {isOfflineUser && (
             <button
               onClick={() => navigate('/?exclusiveOffers=1')}
-              className="flex items-center gap-3 rounded-full border border-white/40 bg-black px-6 py-3 text-xs font-black uppercase tracking-[0.22em] text-[#b79a61] transition-all duration-300 hover:border-gold hover:text-gold shadow-[0_0_15px_rgba(229,192,123,0.22),inset_0_0_0_1px_rgba(255,255,255,0.04)] hover:shadow-[0_0_30px_rgba(229,192,123,0.45)] animate-pulse"
+              className="flex items-center gap-2 rounded-full border border-white/20 px-4 py-2 text-[10px] font-black uppercase tracking-[0.16em] text-gold transition-all duration-300 hover:border-gold/50"
             >
-              <span className="h-2.5 w-2.5 rounded-full bg-red-500 shadow-[0_0_10px_rgba(239,68,68,0.7)] animate-pulse"></span>
+              <span className="h-1.5 w-1.5 rounded-full bg-gold"></span>
               <span>EXCLUSIVE</span>
               <span className="inline-block text-gold" style={{ animation: 'offersShake 1.15s ease-in-out infinite' }}>
                 OFFERS
@@ -333,34 +333,36 @@ const MembershipPortal: React.FC = () => {
             </button>
           )}
         </div>
-        <div className="mb-12 text-center md:text-left">
-          <p className="text-gold text-xs font-black uppercase tracking-[0.3em] mb-3">Live from Admin Portal</p>
-          <h2 className="text-3xl md:text-5xl font-black text-white uppercase tracking-tighter">
+        <div className="mb-8 text-center md:mb-10">
+          <p className="mb-3 inline-flex rounded-full border border-gold/20 px-3 py-1 text-[10px] font-black uppercase tracking-[0.22em] text-gold">
+            Live from Admin Portal
+          </p>
+          <h2 className="text-2xl font-black uppercase tracking-tighter text-white md:text-5xl">
             Membership <span className="text-gold">Plans</span>
           </h2>
-          <p className="mt-3 max-w-2xl mx-auto text-sm text-neutral-400 md:mx-0">
+          <p className="mx-auto mt-3 max-w-2xl text-sm text-neutral-400">
             Choose your training style, compare plans clearly, and complete your membership in one place.
           </p>
         </div>
 
-        <div className="mb-10 grid gap-4 md:grid-cols-2">
-          <div className="rounded-[28px] border border-gold/20 bg-gradient-to-br from-[#17140f] to-[#0f0f0f] p-6 shadow-[0_20px_60px_rgba(0,0,0,0.25)]">
-            <p className="mb-2 text-[10px] font-black uppercase tracking-[0.28em] text-gold">Exclusive Offers Portal</p>
-            <h3 className="text-2xl font-black uppercase tracking-tight text-white">Executive Offer Access</h3>
+        <div className="mb-8 grid gap-4 md:mb-10 md:grid-cols-2 md:gap-6">
+          <div className="rounded-[20px] border border-white/10 bg-[#121212]/60 p-5 md:p-6">
+            <p className="mb-2 text-[10px] font-black uppercase tracking-[0.22em] text-gold">Exclusive Offers Portal</p>
+            <h3 className="text-xl font-black uppercase tracking-tight text-white">Executive Offer Access</h3>
             <p className="mt-3 text-sm text-neutral-400">
               Open the verified offer portal from here and continue through the existing login flow before unlocking offers.
             </p>
             <div className="mt-5 flex flex-wrap gap-3">
               <button
                 onClick={openExclusiveOffersLogin}
-                className="rounded-full border border-gold/30 px-5 py-3 text-xs font-black uppercase tracking-[0.18em] text-gold transition-all hover:bg-gold hover:text-black"
+                className="rounded-full border border-white/20 px-4 py-2.5 text-xs font-black uppercase tracking-[0.14em] text-white transition-all hover:border-gold/40 hover:text-gold"
               >
                 {isOfflineUser ? 'Re-Login Portal' : 'Login To Offers'}
               </button>
               {isOfflineUser && (
                 <button
                   onClick={() => navigate('/offline-offers')}
-                  className="rounded-full border border-white/10 px-5 py-3 text-xs font-black uppercase tracking-[0.18em] text-white transition-all hover:border-gold/40 hover:text-gold"
+                  className="rounded-full border border-white/20 px-4 py-2.5 text-xs font-black uppercase tracking-[0.14em] text-white transition-all hover:border-gold/40 hover:text-gold"
                 >
                   Open Offer Portal
                 </button>
@@ -368,16 +370,16 @@ const MembershipPortal: React.FC = () => {
             </div>
           </div>
 
-          <div className="rounded-[28px] border border-white/10 bg-white/[0.02] p-6">
-            <p className="mb-2 text-[10px] font-black uppercase tracking-[0.28em] text-gold">4 / 4 Chance Portal</p>
-            <h3 className="text-2xl font-black uppercase tracking-tight text-white">Mystery Chances</h3>
+          <div className="rounded-[20px] border border-white/10 bg-[#121212]/60 p-5 md:p-6">
+            <p className="mb-2 text-[10px] font-black uppercase tracking-[0.22em] text-gold">4 / 4 Chance Portal</p>
+            <h3 className="text-xl font-black uppercase tracking-tight text-white">Mystery Chances</h3>
             <p className="mt-3 text-sm text-neutral-400">
               Members can use the protected mystery portal here too. If they are not verified yet, we send them through the same OTP login first.
             </p>
             <div className="mt-5 flex flex-wrap gap-3">
               <button
                 onClick={openMysteryOffersPortal}
-                className="gold-gradient rounded-full px-5 py-3 text-xs font-black uppercase tracking-[0.18em] text-black transition-all hover:shadow-[0_0_30px_rgba(229,192,123,0.4)]"
+                className="rounded-full border border-white/20 px-4 py-2.5 text-xs font-black uppercase tracking-[0.14em] text-white transition-all hover:border-gold/40 hover:text-gold"
               >
                 {isOfflineUser ? 'Open 4/4 Chances' : 'Login For 4/4 Chances'}
               </button>
@@ -388,21 +390,21 @@ const MembershipPortal: React.FC = () => {
         {loading ? (
           <div className="text-gold animate-pulse text-center py-20 font-bold">Synchronizing with NOIZE database...</div>
         ) : plans.length === 0 ? (
-          <div className="glass p-8 md:p-20 rounded-[32px] border border-white/10 text-center">
-            <p className="text-neutral-300 font-black uppercase tracking-widest text-lg md:text-2xl">No plans available till now.</p>
+          <div className="rounded-[20px] border border-white/10 p-5 text-center md:p-12">
+            <p className="text-xl font-black uppercase tracking-tight text-neutral-300 md:text-2xl">No plans available till now.</p>
             <p className="text-sm text-neutral-500 mt-3">Add a membership plan in the Admin Portal and mark it active. It will show here automatically.</p>
           </div>
         ) : (
-          <div className="animate-fade-in-up flex flex-col gap-10">
-            <div className="flex flex-wrap gap-3">
+          <div className="animate-fade-in-up flex flex-col gap-6 md:gap-8">
+            <div className="flex flex-wrap justify-center gap-2 md:gap-3">
               {MEMBERSHIP_TYPE_SECTIONS.map((section) => (
                 <button
                   key={section.category}
                   onClick={() => setActiveCategory(section.category)}
-                  className={`inline-flex items-center gap-2 text-[11px] uppercase tracking-[0.12em] transition-all duration-300 ease-out sm:text-sm ${
+                  className={`inline-flex items-center gap-2 rounded-full px-4 py-2.5 text-[10px] font-black uppercase tracking-[0.12em] transition-all duration-300 ease-out sm:text-xs ${
                     activeCategory === section.category
-                      ? 'gold-gradient text-black font-black rounded-full px-6 py-3'
-                      : 'border border-white/15 text-white bg-transparent rounded-full px-6 py-3'
+                      ? 'gold-gradient text-black'
+                      : 'border border-white/20 bg-transparent text-white hover:border-gold/40 hover:text-gold'
                   }`}
                 >
                   <TabIcon icon={section.icon} />
@@ -418,30 +420,27 @@ const MembershipPortal: React.FC = () => {
               );
 
               return (
-                <div className="space-y-8">
-                  <div className="border-b border-white/10 pb-4 space-y-4">
-                    <div>
-                      <p className="text-gold text-xs font-black uppercase tracking-[0.3em] mb-2">Membership Type</p>
-                    </div>
-                    <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4">
-                      <div>
-                        <div className="inline-flex items-center gap-2 text-gold mb-2">
+                <div className="space-y-6 md:space-y-8">
+                  <div className="border-b border-white/10 pb-5">
+                    <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+                      <div className="border-l border-gold pl-4">
+                        <div className="mb-2 inline-flex items-center gap-2 text-gold">
                           <TabIcon icon={activeSection.icon} />
                           <span className="text-[11px] sm:text-xs font-black uppercase tracking-[0.18em]">{activeSection.tabLabel} Portal</span>
                         </div>
-                        <h3 className="text-2xl font-black uppercase tracking-tight text-white md:text-4xl">{activeSection.title}</h3>
+                        <h3 className="text-xl font-black uppercase tracking-tight text-white md:text-4xl">{activeSection.title}</h3>
                         <p className="mt-3 max-w-2xl text-sm text-neutral-400">{activeSection.description}</p>
                       </div>
                       <div className="flex flex-wrap gap-2">
                         <button
                           onClick={() => smoothScrollToId('portal-plan-list')}
-                          className="px-4 py-2 rounded-full border border-white/10 text-white text-[10px] sm:text-xs font-black uppercase tracking-[0.12em] hover:border-gold/40 hover:text-gold transition-all"
+                          className="rounded-full border border-white/20 px-4 py-2 text-[10px] font-black uppercase tracking-[0.12em] text-white transition-all hover:border-gold/40 hover:text-gold sm:text-xs"
                         >
                           View Plans
                         </button>
                         <button
                           onClick={openPortalWhatsAppNumber}
-                          className="px-4 py-2 rounded-full border border-gold/30 text-gold text-[10px] sm:text-xs font-black uppercase tracking-[0.12em] hover:bg-gold hover:text-black transition-all"
+                          className="rounded-full border border-white/20 px-4 py-2 text-[10px] font-black uppercase tracking-[0.12em] text-white transition-all hover:border-gold/40 hover:text-gold sm:text-xs"
                         >
                           WhatsApp
                         </button>
@@ -450,58 +449,53 @@ const MembershipPortal: React.FC = () => {
                   </div>
 
                   {visiblePlans.length === 0 ? (
-                    <div className="glass rounded-[28px] border border-white/10 p-8 text-center text-neutral-400">
+                    <div className="rounded-[20px] border border-white/10 p-5 text-center text-sm text-neutral-400 md:p-8">
                       No active plans available for this tab right now.
                     </div>
                   ) : (
-                    <div id="portal-plan-list" className="flex flex-col gap-10">
+                    <div id="portal-plan-list" className="flex flex-col gap-4 md:gap-6">
                       {visiblePlans.map((plan) => (
-                        <div key={plan.id} className="grid lg:grid-cols-[1.1fr_0.9fr] gap-6 md:gap-8 items-start border-b border-white/5 pb-10 last:border-b-0">
-                          <div className="glass rounded-[28px] border border-gold/30 border-t-2 border-t-gold p-7 transition-all duration-300 hover:-translate-y-1 hover:shadow-gold/20 md:p-10">
-                            <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-6">
+                        <div key={plan.id} className="grid gap-4 border-b border-white/5 pb-4 last:border-b-0 md:gap-6 md:pb-6 lg:grid-cols-[1.1fr_0.9fr]">
+                          <div className="flex h-full flex-col rounded-[20px] border border-white/10 bg-[#121212]/50 p-5 transition-all duration-300 hover:border-gold/30 md:p-8">
+                            <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                               <div>
-                                <h4 className="text-3xl font-black uppercase leading-tight tracking-tight text-white md:text-4xl">{plan.name}</h4>
+                                <h4 className="text-xl font-black uppercase leading-tight tracking-tight text-white md:text-3xl">{plan.name}</h4>
                               </div>
                               {plan.is_popular && (
-                                <span className="gold-gradient text-black text-[10px] font-black px-3 py-2 rounded-md uppercase w-fit">
+                                <span className="w-fit rounded-full border border-gold/30 px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.14em] text-gold">
                                   Most Popular
                                 </span>
                               )}
                             </div>
 
-                            <div className="grid sm:grid-cols-2 gap-4 mb-8">
-                              <div className="bg-white/5 border border-white/10 rounded-2xl p-4">
-                                <p className="text-neutral-500 text-[10px] font-black uppercase tracking-widest mb-1">Price</p>
-                                <p className="text-2xl font-black text-white"><span className="text-gold">â‚¹</span> {plan.price.toLocaleString()}</p>
-                              </div>
-                              <div className="bg-white/5 border border-white/10 rounded-2xl p-4">
-                                <p className="text-neutral-500 text-[10px] font-black uppercase tracking-widest mb-1">Duration</p>
-                                <p className="text-white text-lg font-black">{plan.duration}</p>
-                              </div>
+                            <div className="mb-5">
+                              <p className="text-[10px] font-black uppercase tracking-[0.18em] text-neutral-500">Price</p>
+                              <p className="mt-1 text-3xl font-black leading-none text-gold md:text-4xl">{'\u20B9'} {plan.price.toLocaleString()}</p>
+                              <p className="mt-2 text-xs font-bold uppercase tracking-[0.14em] text-neutral-400">{plan.duration}</p>
                             </div>
 
-                            <p className="text-gold text-sm md:text-base font-bold uppercase tracking-wider mb-8">
+                            <p className="mb-6 text-sm font-bold uppercase tracking-[0.12em] text-neutral-300">
                               {plan.tagline}
                             </p>
 
                             <button
                               onClick={() => openPaymentModal(plan)}
-                              className="w-full sm:w-auto py-4 px-10 rounded-full font-black text-sm gold-gradient text-black hover:scale-[1.02] transition-all uppercase shadow-lg shadow-gold/20"
+                              className="mt-auto w-full rounded-full gold-gradient px-6 py-3 text-xs font-black uppercase tracking-[0.14em] text-black transition-all hover:scale-[1.01]"
                             >
                               Complete Payment
                             </button>
                           </div>
 
-                          <div className="glass flex h-full flex-col rounded-[28px] border border-white/10 border-t-2 border-t-gold p-7 transition-all duration-300 hover:-translate-y-1 hover:shadow-gold/20 md:p-8">
-                            <h5 className="mb-6 text-lg font-black uppercase tracking-tight text-white md:text-xl">Plan Details</h5>
+                          <div className="flex h-full flex-col rounded-[20px] border border-white/10 bg-[#121212]/40 p-5 transition-all duration-300 hover:border-gold/30 md:p-8">
+                            <h5 className="mb-5 border-l border-gold pl-3 text-xl font-black uppercase tracking-tight text-white md:text-xl">Plan Details</h5>
                             {!Array.isArray(plan.features) || plan.features.length === 0 ? (
-                              <div className="flex-grow rounded-2xl border border-white/10 p-5 text-sm text-neutral-400">
+                              <div className="flex-grow rounded-2xl border border-white/10 p-4 text-sm text-neutral-400">
                                 No features described for this plan yet.
                               </div>
                             ) : (
                               <ul className="space-y-3 flex-grow">
                                 {plan.features.map((feature, index) => (
-                                  <li key={`${plan.id}-${index}`} className="flex items-start gap-3 text-sm text-neutral-300 md:text-base">
+                                  <li key={`${plan.id}-${index}`} className="flex items-start gap-3 text-sm text-neutral-300">
                                     <span className="mt-0.5 text-gold">âœ¦</span>
                                     <span>{feature}</span>
                                   </li>
@@ -521,41 +515,41 @@ const MembershipPortal: React.FC = () => {
       </div>
 
       {portalSlotModal && (
-        <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/90 backdrop-blur-md px-4" onClick={() => { setPortalSlotModal(null); setPendingPlan(null); setPortalSelectedSlot(''); }}>
-          <div className="w-full max-w-md glass rounded-[32px] border border-gold/20 p-8" onClick={(e) => e.stopPropagation()}>
-            <p className="text-xs font-black uppercase tracking-[0.3em] text-gold mb-2">
+        <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/90 px-4 backdrop-blur-md" onClick={() => { setPortalSlotModal(null); setPendingPlan(null); setPortalSelectedSlot(''); }}>
+          <div className="w-full max-w-md rounded-[20px] border border-white/10 bg-[#121212] p-5 md:p-8" onClick={(e) => e.stopPropagation()}>
+            <p className="mb-2 border-l border-gold pl-3 text-[10px] font-black uppercase tracking-[0.18em] text-gold">
               {portalSlotModal === 'online' ? 'Online Training' : 'Home Training'}
             </p>
-            <h2 className="text-2xl font-black text-white mb-1">
+            <h2 className="mb-1 text-xl font-black text-white md:text-2xl">
               Choose Your Batch
             </h2>
-            <p className="text-neutral-400 text-sm mb-8">
+            <p className="mb-6 text-sm text-neutral-400">
               Select a preferred time slot to continue
             </p>
 
-            <p className="text-xs font-black uppercase tracking-widest text-gold/70 mb-3">{'ðŸŒ… Morning Batch'}</p>
+            <p className="text-xs font-black uppercase tracking-widest text-gold/70 mb-3">Morning Batch</p>
             <div className="flex flex-col gap-3 mb-6">
               {PORTAL_TIME_SLOTS.morning.map(slot => (
                 <button
                   key={slot}
                   onClick={() => setPortalSelectedSlot(slot)}
-                  className={`w-full rounded-full px-5 py-3 text-sm font-black uppercase tracking-widest transition-all ${portalSelectedSlot === slot
-                    ? 'gold-gradient text-black shadow-[0_0_20px_rgba(229,192,123,0.3)]'
-                    : 'border border-white/10 bg-white/5 text-white hover:border-gold/40'
+                  className={`w-full rounded-full px-5 py-3 text-xs font-black uppercase tracking-[0.14em] transition-all ${portalSelectedSlot === slot
+                    ? 'gold-gradient text-black'
+                    : 'border border-white/20 text-white hover:border-gold/40 hover:text-gold'
                     }`}
                 >{slot}</button>
               ))}
             </div>
 
-            <p className="text-xs font-black uppercase tracking-widest text-gold/70 mb-3">{'ðŸŒ† Evening Batch'}</p>
+            <p className="text-xs font-black uppercase tracking-widest text-gold/70 mb-3">Evening Batch</p>
             <div className="flex flex-col gap-3 mb-8">
               {PORTAL_TIME_SLOTS.evening.map(slot => (
                 <button
                   key={slot}
                   onClick={() => setPortalSelectedSlot(slot)}
-                  className={`w-full rounded-full px-5 py-3 text-sm font-black uppercase tracking-widest transition-all ${portalSelectedSlot === slot
-                    ? 'gold-gradient text-black shadow-[0_0_20px_rgba(229,192,123,0.3)]'
-                    : 'border border-white/10 bg-white/5 text-white hover:border-gold/40'
+                  className={`w-full rounded-full px-5 py-3 text-xs font-black uppercase tracking-[0.14em] transition-all ${portalSelectedSlot === slot
+                    ? 'gold-gradient text-black'
+                    : 'border border-white/20 text-white hover:border-gold/40 hover:text-gold'
                     }`}
                 >{slot}</button>
               ))}
@@ -564,14 +558,14 @@ const MembershipPortal: React.FC = () => {
             <button
               disabled={!portalSelectedSlot}
               onClick={handlePortalSlotConfirm}
-              className="w-full gold-gradient text-black font-black py-4 rounded-full text-sm uppercase tracking-widest disabled:opacity-40 disabled:cursor-not-allowed hover:shadow-[0_0_30px_rgba(229,192,123,0.4)] transition-all"
+              className="w-full rounded-full gold-gradient py-3 text-xs font-black uppercase tracking-[0.14em] text-black transition-all disabled:cursor-not-allowed disabled:opacity-40"
             >
               Confirm Slot & View Plans â†’
             </button>
 
             <button
               onClick={() => { setPortalSlotModal(null); setPendingPlan(null); setPortalSelectedSlot(''); }}
-              className="w-full mt-4 text-neutral-500 text-xs font-bold uppercase tracking-widest hover:text-white transition-colors"
+              className="mt-4 w-full rounded-full border border-white/20 px-5 py-3 text-xs font-black uppercase tracking-[0.14em] text-white transition-all hover:border-gold/40 hover:text-gold"
             >
               Cancel
             </button>
@@ -580,37 +574,37 @@ const MembershipPortal: React.FC = () => {
       )}
 
       {selectedPlan && (
-        <div className="fixed inset-0 z-[160] bg-black/85 backdrop-blur-md flex items-center justify-center p-4" onClick={closePaymentModal}>
-          <div className="w-full max-w-[320px] sm:max-w-[360px] md:max-w-[390px] max-h-[90vh] overflow-y-auto glass rounded-[24px] border border-gold/30 p-3 sm:p-4 md:p-5 relative" onClick={(e) => e.stopPropagation()}>
+        <div className="fixed inset-0 z-[160] flex items-center justify-center bg-black/85 p-4 backdrop-blur-md" onClick={closePaymentModal}>
+          <div className="relative max-h-[90vh] w-full max-w-[320px] overflow-y-auto rounded-[20px] border border-white/10 bg-[#121212] p-4 sm:max-w-[360px] md:max-w-[390px] md:p-5" onClick={(e) => e.stopPropagation()}>
             <button
               onClick={closePaymentModal}
-              className="absolute top-2.5 right-2.5 w-8 h-8 rounded-full bg-white/5 text-white hover:bg-red-500/20 hover:text-red-400 transition-all text-xs"
+              className="absolute right-2.5 top-2.5 h-8 w-8 rounded-full border border-white/15 text-xs text-white transition-all hover:border-gold/40 hover:text-gold"
             >
               X
             </button>
-            <p className="text-gold text-[9px] sm:text-[10px] font-black uppercase tracking-[0.2em] mb-1.5">Scan And Pay</p>
-            <h3 className="mb-1.5 pr-8 text-lg font-black uppercase tracking-tight text-white sm:text-xl md:text-2xl">{selectedPlan.name}</h3>
+            <p className="mb-1.5 border-l border-gold pl-3 text-[9px] font-black uppercase tracking-[0.18em] text-gold sm:text-[10px]">Scan And Pay</p>
+            <h3 className="mb-1.5 pr-8 text-xl font-black uppercase tracking-tight text-white md:text-2xl">{selectedPlan.name}</h3>
             <p className="mb-3 text-sm leading-relaxed text-neutral-400">
-              Scan this QR code to pay for <span className="text-white font-bold">{selectedPlan.name}</span>. Amount: <span className="font-bold text-gold">â‚¹ {selectedPlan.price.toLocaleString()}</span>
+              Scan this QR code to pay for <span className="text-white font-bold">{selectedPlan.name}</span>. Amount: <span className="font-bold text-gold">{'\u20B9'} {selectedPlan.price.toLocaleString()}</span>
             </p>
-            <div className="rounded-[20px] overflow-hidden border border-white/10 bg-white p-2 mb-3">
+            <div className="mb-3 overflow-hidden rounded-[16px] border border-white/10 bg-white p-2">
               <img src={PAYMENT_QR_IMAGE} alt="NOIZE payment QR code" className="w-full h-auto max-h-[42vh] object-contain rounded-[14px]" />
             </div>
-            <div className="w-full rounded-2xl border border-gold/30 bg-gold/15 p-3 sm:p-4 mb-3">
-              <p className="text-white text-xs sm:text-sm md:text-base font-black leading-relaxed text-center">
+            <div className="mb-3 w-full rounded-2xl border border-white/10 p-3 sm:p-4">
+              <p className="text-center text-xs font-bold leading-relaxed text-neutral-300 sm:text-sm">
                 NOTE: After payment, send the payment screenshot to WhatsApp number {PAYMENT_WHATSAPP_NUMBER}.
               </p>
             </div>
             <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
               <button
                 onClick={() => handlePlanWhatsAppClick(selectedPlan)}
-                className="flex-1 py-2.5 px-3 rounded-full gold-gradient text-black font-black text-[9px] sm:text-[10px] uppercase tracking-[0.08em] hover:scale-[1.02] transition-all"
+                className="flex-1 rounded-full gold-gradient px-3 py-2.5 text-[10px] font-black uppercase tracking-[0.12em] text-black transition-all hover:scale-[1.01]"
               >
                 Open WhatsApp
               </button>
               <button
                 onClick={closePaymentModal}
-                className="flex-1 py-2.5 px-3 rounded-full border border-white/10 text-white font-black text-[9px] sm:text-[10px] uppercase tracking-[0.08em] hover:bg-white/5 transition-all"
+                className="flex-1 rounded-full border border-white/20 px-3 py-2.5 text-[10px] font-black uppercase tracking-[0.12em] text-white transition-all hover:border-gold/40 hover:text-gold"
               >
                 Close
               </button>
@@ -623,6 +617,3 @@ const MembershipPortal: React.FC = () => {
 };
 
 export default MembershipPortal;
-
-
-

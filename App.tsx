@@ -1,10 +1,50 @@
 import React, { useState, useEffect, useRef, useContext } from 'react';
+import { ClipboardCheck, Dumbbell, Heart, Leaf, Lock, PartyPopper, Phone, Users, Zap } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { DEFAULT_PORTAL_CONTENT, PROGRAMS, TRANSFORMATIONS, REVIEWS, TRAINING_TYPES } from './constants';
 import { PortalContentSection, Program, Transformation, Review } from './types';
 import { supabase, MembershipPlan, Offer, AppImage, PortalContent, MembershipCategory } from './supabaseClient';
 
 export const SiteImagesContext = React.createContext<Record<string, string>>({});
+
+const FeatureBulletIcon: React.FC<{ className?: string }> = ({ className = 'w-4 h-4' }) => (
+  <svg className={`${className} text-gold flex-none`} fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 12l5 5L20 7" />
+  </svg>
+);
+
+const ModalBackIcon: React.FC<{ className?: string }> = ({ className = 'w-5 h-5' }) => (
+  <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" />
+  </svg>
+);
+
+const WHY_CHOOSE_US_ITEMS = [
+  {
+    title: 'Certified Coaches',
+    icon: <Users className="text-[#C9A84C] w-5 h-5 md:w-6 md:h-6" aria-hidden="true" />,
+  },
+  {
+    title: 'Women-Friendly',
+    icon: <Heart className="text-[#C9A84C] w-5 h-5 md:w-6 md:h-6" aria-hidden="true" />,
+  },
+  {
+    title: 'Premium Gear',
+    icon: <Dumbbell className="text-[#C9A84C] w-5 h-5 md:w-6 md:h-6" aria-hidden="true" />,
+  },
+  {
+    title: 'Lifestyle Focus',
+    icon: <Zap className="text-[#C9A84C] w-5 h-5 md:w-6 md:h-6" aria-hidden="true" />,
+  },
+  {
+    title: 'Free Assessments',
+    icon: <ClipboardCheck className="text-[#C9A84C] w-5 h-5 md:w-6 md:h-6" aria-hidden="true" />,
+  },
+  {
+    title: 'Free Diet Plan',
+    icon: <Leaf className="text-[#C9A84C] w-5 h-5 md:w-6 md:h-6" aria-hidden="true" />,
+  },
+];
 
 const smoothScrollToId = (id: string, offset = 96, duration = 700) => {
   const element = document.getElementById(id);
@@ -88,7 +128,10 @@ const WHATSAPP_1 = "918122390693";
 const WHATSAPP_2 = "918296890693";
 const handleWhatsApp = (message: string) => {
   const target = Math.random() > 0.5 ? WHATSAPP_1 : WHATSAPP_2;
-  window.open(`https://wa.me/${target}?text=${encodeURIComponent(message)}`, '_blank');
+  const popup = window.open(`https://wa.me/${target}?text=${encodeURIComponent(message)}`, '_blank', 'noopener,noreferrer');
+  if (popup) {
+    popup.opener = null;
+  }
 };
 // --- Components ---
 
@@ -127,26 +170,26 @@ const Navbar: React.FC<{ onJoinNow: () => void }> = ({ onJoinNow }) => {
 
   return (
     <>
-      <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${isScrolled ? 'py-3 md:py-4 glass shadow-2xl' : 'py-4 md:py-6 bg-transparent'}`}>
-        <div className="container mx-auto px-4 md:px-6 flex justify-between items-center">
+      <nav className={`fixed top-0 left-0 right-0 z-50 pt-[env(safe-area-inset-top)] transition-all duration-300 ${isScrolled ? 'py-2 md:py-4 glass shadow-2xl' : 'py-3 md:py-6 bg-transparent'}`}>
+        <div className="container mx-auto px-3 md:px-6 flex justify-between items-center">
           <a href="#home" className="flex items-center gap-2 md:gap-3">
             <img
               src="/images/logo.png"
               alt="NOIZE Fitness"
-              className="h-8 md:h-10 w-auto"
+              className="h-6 md:h-10 w-auto"
               loading="eager"
               fetchPriority="high"
               decoding="async"
             />
-            <span className="text-xl md:text-2xl font-black tracking-tighter text-gold drop-shadow-[0_2px_8px_rgba(229,192,123,0.5)]">NOIZE</span>
+            <span className="text-lg md:text-2xl font-black tracking-tighter text-gold drop-shadow-[0_2px_8px_rgba(229,192,123,0.5)]">NOIZE</span>
           </a>
 
           <div className="hidden md:flex items-center gap-8 text-sm font-medium uppercase tracking-widest text-neutral-300">
             <a href="#home" className="hover:text-gold transition-colors">Home</a>
             <a href="#training-types" className="hover:text-gold transition-colors">Training Types</a>
             <a href="#programs" className="hover:text-gold transition-colors">Programs</a>
-            <a href="#offers" className="hover:text-gold transition-colors">Offers</a>
-            <a href="#membership" className="hover:text-gold transition-colors">Membership</a>
+            <a href="/offers" className="hover:text-gold transition-colors">Offers</a>
+            <a href="/portal" className="hover:text-gold transition-colors">Membership</a>
             <a href="#transformations" className="hover:text-gold transition-colors">Transformations</a>
             <a href="#gallery" className="hover:text-gold transition-colors">Gallery</a>
             <a href="#contact" className="hover:text-gold transition-colors">Contact</a>
@@ -157,7 +200,7 @@ const Navbar: React.FC<{ onJoinNow: () => void }> = ({ onJoinNow }) => {
             <button
               type="button"
               onClick={onJoinNow}
-              className="hidden sm:block gold-gradient text-black font-bold py-2 px-4 md:px-6 rounded-full text-xs md:text-sm hover:scale-105 transition-transform"
+              className="gold-gradient text-black font-bold min-h-0 py-1.5 md:py-2 px-3 md:px-6 rounded-full text-[10px] sm:text-xs md:text-sm hover:scale-105 transition-transform shadow-[0_0_12px_rgba(201,168,76,0.3)] md:shadow-none"
             >
               JOIN NOW
             </button>
@@ -173,7 +216,7 @@ const Navbar: React.FC<{ onJoinNow: () => void }> = ({ onJoinNow }) => {
               />
               <label
                 htmlFor="mobile-menu-toggle"
-                className="flex flex-col gap-1.5 cursor-pointer p-2"
+                className="flex min-h-10 min-w-10 flex-col items-center justify-center gap-1.5 cursor-pointer p-2"
               >
                 <span className={`w-6 h-0.5 bg-white transition-all duration-300 ${isMobileMenuOpen ? 'rotate-45 translate-y-2' : ''}`}></span>
                 <span className={`w-6 h-0.5 bg-white transition-all duration-300 ${isMobileMenuOpen ? 'opacity-0' : ''}`}></span>
@@ -187,16 +230,16 @@ const Navbar: React.FC<{ onJoinNow: () => void }> = ({ onJoinNow }) => {
       {/* Mobile Menu */}
       <div className={`fixed inset-0 z-40 md:hidden transition-all duration-300 ${isMobileMenuOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}>
         <div className="absolute inset-0 bg-black/95 backdrop-blur-lg" onClick={closeMenu}></div>
-        <div className={`absolute top-20 left-4 right-4 glass rounded-3xl p-8 transition-all duration-300 ${isMobileMenuOpen ? 'translate-y-0' : '-translate-y-4'}`}>
-          <div className="flex flex-col gap-6">
-            <a href="#home" onClick={closeMenu} className="text-lg font-bold text-white hover:text-gold transition-colors uppercase tracking-wide">Home</a>
-            <a href="#training-types" onClick={closeMenu} className="text-lg font-bold text-white hover:text-gold transition-colors uppercase tracking-wide">Training Types</a>
-            <a href="#programs" onClick={closeMenu} className="text-lg font-bold text-white hover:text-gold transition-colors uppercase tracking-wide">Programs</a>
-            <a href="#offers" onClick={closeMenu} className="text-lg font-bold text-white hover:text-gold transition-colors uppercase tracking-wide">Offers</a>
-            <a href="#membership" onClick={closeMenu} className="text-lg font-bold text-white hover:text-gold transition-colors uppercase tracking-wide">Membership</a>
-            <a href="#transformations" onClick={closeMenu} className="text-lg font-bold text-white hover:text-gold transition-colors uppercase tracking-wide">Transformations</a>
-            <a href="#gallery" onClick={closeMenu} className="text-lg font-bold text-white hover:text-gold transition-colors uppercase tracking-wide">Gallery</a>
-            <a href="#contact" onClick={closeMenu} className="text-lg font-bold text-white hover:text-gold transition-colors uppercase tracking-wide">Contact</a>
+        <div className={`absolute top-16 right-3 w-[calc(100%-1.5rem)] glass rounded-2xl p-5 transition-transform duration-300 ease-in-out ${isMobileMenuOpen ? 'translate-x-0' : 'translate-x-full'}`}>
+          <div className="flex flex-col gap-3">
+            <a href="#home" onClick={closeMenu} className="flex min-h-10 items-center border-l-[3px] border-transparent pl-2 text-base font-bold text-white hover:text-gold focus:text-gold transition-colors uppercase tracking-wide focus:border-[#C9A84C] active:border-[#C9A84C]">Home</a>
+            <a href="#training-types" onClick={closeMenu} className="flex min-h-10 items-center border-l-[3px] border-transparent pl-2 text-base font-bold text-white hover:text-gold focus:text-gold transition-colors uppercase tracking-wide focus:border-[#C9A84C] active:border-[#C9A84C]">Training Types</a>
+            <a href="#programs" onClick={closeMenu} className="flex min-h-10 items-center border-l-[3px] border-transparent pl-2 text-base font-bold text-white hover:text-gold focus:text-gold transition-colors uppercase tracking-wide focus:border-[#C9A84C] active:border-[#C9A84C]">Programs</a>
+            <a href="/offers" onClick={closeMenu} className="flex min-h-10 items-center border-l-[3px] border-transparent pl-2 text-base font-bold text-white hover:text-gold focus:text-gold transition-colors uppercase tracking-wide focus:border-[#C9A84C] active:border-[#C9A84C]">Offers</a>
+            <a href="/portal" onClick={closeMenu} className="flex min-h-10 items-center border-l-[3px] border-transparent pl-2 text-base font-bold text-white hover:text-gold focus:text-gold transition-colors uppercase tracking-wide focus:border-[#C9A84C] active:border-[#C9A84C]">Membership</a>
+            <a href="#transformations" onClick={closeMenu} className="flex min-h-10 items-center border-l-[3px] border-transparent pl-2 text-base font-bold text-white hover:text-gold focus:text-gold transition-colors uppercase tracking-wide focus:border-[#C9A84C] active:border-[#C9A84C]">Transformations</a>
+            <a href="#gallery" onClick={closeMenu} className="flex min-h-10 items-center border-l-[3px] border-transparent pl-2 text-base font-bold text-white hover:text-gold focus:text-gold transition-colors uppercase tracking-wide focus:border-[#C9A84C] active:border-[#C9A84C]">Gallery</a>
+            <a href="#contact" onClick={closeMenu} className="flex min-h-10 items-center border-l-[3px] border-transparent pl-2 text-base font-bold text-white hover:text-gold focus:text-gold transition-colors uppercase tracking-wide focus:border-[#C9A84C] active:border-[#C9A84C]">Contact</a>
 
             <button
               type="button"
@@ -204,7 +247,7 @@ const Navbar: React.FC<{ onJoinNow: () => void }> = ({ onJoinNow }) => {
                 closeMenu();
                 onJoinNow();
               }}
-              className="gold-gradient text-black font-bold py-3 px-6 rounded-full text-sm hover:scale-105 transition-transform mt-4 text-center block"
+              className="gold-gradient text-black font-bold min-h-0 py-2 px-4 rounded-full text-xs hover:scale-105 transition-transform mt-3 text-center block w-full shadow-[0_0_12px_rgba(201,168,76,0.3)]"
             >
               JOIN NOW
             </button>
@@ -253,7 +296,7 @@ const Hero: React.FC<{ onStart: () => void }> = ({ onStart }) => {
   }, [heroMedia.length]);
 
   return (
-    <section id="home" className="relative min-h-screen flex items-center justify-center overflow-hidden pt-16 md:pt-0 bg-[#050505]">
+    <section id="home" className="relative min-h-screen flex items-center justify-center overflow-hidden pt-14 md:pt-0 bg-[#050505] border-b border-[#C9A84C]/20">
       <div className="absolute inset-0 z-0">
         {heroMedia.map((media, index) => (
           <div
@@ -263,7 +306,7 @@ const Hero: React.FC<{ onStart: () => void }> = ({ onStart }) => {
             {media.type === 'video' ? (
               <video
                 src={activeMedia === index ? media.src : undefined}
-                className="w-full h-full object-cover"
+                className="w-full h-full object-cover brightness-[0.32] contrast-[0.95] saturate-[0.7] scale-[1.02]"
                 autoPlay={activeMedia === index}
                 muted
                 loop
@@ -275,7 +318,7 @@ const Hero: React.FC<{ onStart: () => void }> = ({ onStart }) => {
               <img
                 src={media.src}
                 alt={media.alt}
-                className="w-full h-full object-cover transition-transform duration-[10000ms] transform-gpu will-change-transform"
+                className="w-full h-full object-cover brightness-[0.38] contrast-[0.92] saturate-[0.72] transition-transform duration-[10000ms] transform-gpu will-change-transform"
                 style={{ transform: activeMedia === index ? 'scale(1.05)' : 'scale(1)' }}
                 fetchPriority={index === 0 ? 'high' : 'auto'}
                 loading={index === 0 ? 'eager' : 'lazy'}
@@ -285,31 +328,34 @@ const Hero: React.FC<{ onStart: () => void }> = ({ onStart }) => {
           </div>
         ))}
         {/* Black Glass Themed Filter */}
-        <div className="absolute inset-0 z-20 bg-black/70 backdrop-blur-[4px] pointer-events-none"></div>
-        <div className="absolute inset-0 z-20 bg-gradient-to-t from-[#050505] via-transparent to-black/40 pointer-events-none"></div>
-        <div className="absolute inset-0 z-20 gym-line-grid opacity-20 pointer-events-none"></div>
+        <div className="absolute inset-0 z-[1] bg-black/88 md:bg-black/78 backdrop-blur-[8px] md:backdrop-blur-[5px] pointer-events-none"></div>
+        <div className="absolute inset-0 z-[1] bg-gradient-to-b from-black/72 via-black/55 to-black/20 pointer-events-none"></div>
+        <div className="absolute inset-0 z-[1] bg-gradient-to-t from-[#050505] via-black/60 to-black/65 pointer-events-none"></div>
+        <div className="absolute inset-0 z-[1] bg-black/20 mix-blend-multiply pointer-events-none"></div>
+        <div className="absolute inset-0 z-[1] gym-line-grid dark-precision-grid opacity-25 pointer-events-none"></div>
       </div>
 
-      <div className="container mx-auto px-6 md:px-6 relative z-10 text-center py-16 md:py-0">
-        <div className="inline-flex items-center justify-center gap-3 mb-6 px-4 py-2 border border-gold/20 bg-black/40 backdrop-blur-md rounded-full shadow-lg animate-fade-in-down" style={{ animationDelay: '0.2s' }}>
+      <div className="container mx-auto px-4 md:px-6 relative z-10 text-center py-10 md:py-0 flex items-center justify-center">
+        <div className="mx-auto flex min-h-[calc(100vh-3.5rem)] max-w-4xl flex-col items-center justify-center -translate-y-4 rounded-[24px] bg-black/28 px-3 py-6 backdrop-blur-[2px] md:min-h-0 md:translate-y-0 md:rounded-none md:bg-transparent md:px-0 md:py-0 md:backdrop-blur-0">
+        <div className="inline-flex items-center justify-center gap-2 mb-3 md:mb-6 px-3 md:px-4 py-1.5 md:py-2 border border-gold/20 bg-black/50 backdrop-blur-md rounded-full shadow-lg animate-fade-in-down" style={{ animationDelay: '0.2s' }}>
           <span className="w-2 h-2 rounded-full bg-gold/80"></span>
-          <span className="text-xs md:text-sm font-bold tracking-[0.2em] text-gold uppercase">Train Hard. Move Loud.</span>
+          <span className="text-[11px] md:text-sm font-bold tracking-[0.22em] text-gold uppercase">Train Hard. Move Loud.</span>
         </div>
-        <div className="flex flex-nowrap items-center justify-center gap-2 md:gap-4 mb-6 md:mb-6 animate-fade-in-down" style={{ animationDelay: '0.3s' }}>
-          <span className="text-xl sm:text-2xl md:text-4xl font-extrabold tracking-widest text-[#EAEAEA] whitespace-nowrap">NOIZE</span>
-          <span className="text-xl sm:text-2xl md:text-4xl font-light tracking-widest text-[#CCCCCC] uppercase whitespace-nowrap">Fitness & Lifestyle</span>
+        <div className="flex flex-wrap items-center justify-center gap-x-2 gap-y-1 mb-3 md:mb-6 animate-fade-in-down" style={{ animationDelay: '0.3s' }}>
+          <span className="text-xl sm:text-2xl md:text-4xl font-extrabold tracking-[0.14em] text-[#EAEAEA]">NOIZE</span>
+          <span className="text-lg sm:text-2xl md:text-4xl font-light tracking-[0.14em] text-[#CCCCCC] uppercase">Fitness & Lifestyle</span>
         </div>
-        <h1 className="text-4xl sm:text-4xl md:text-6xl lg:text-7xl font-black mb-6 md:mb-6 tracking-tight leading-tight px-2 animate-fade-in-up" style={{ animationDelay: '0.4s' }}>
+        <h1 className="max-w-5xl text-[2rem] sm:text-4xl md:text-6xl lg:text-7xl font-black mb-3 md:mb-6 tracking-tight leading-[1.03] px-1 md:px-2 animate-fade-in-up drop-shadow-[0_10px_30px_rgba(0,0,0,0.9)]" style={{ animationDelay: '0.4s' }}>
           JUST BE <span className="text-gold">QUIET</span>,<br />
           LET THE RESULTS MAKE A <span className="text-gold" style={{ animationDelay: '0.2s' }}>NOIZE</span>
         </h1>
-        <p className="text-lg sm:text-lg md:text-xl text-neutral-300 max-w-2xl mx-auto mb-8 md:mb-10 font-light tracking-wide px-4 animate-fade-in opacity-90" style={{ animationDelay: '0.6s' }}>
-          Premium Fitness â€¢ Real Transformations â€¢ Lifestyle Training
+        <p className="text-sm sm:text-lg md:text-xl text-neutral-200 max-w-xl mx-auto mb-5 md:mb-10 font-light tracking-wide px-2 md:px-4 animate-fade-in opacity-95 drop-shadow-[0_6px_20px_rgba(0,0,0,0.8)]" style={{ animationDelay: '0.6s' }}>
+          Premium Fitness • Real Transformations • Lifestyle Training
           <br />
-          <span className="text-xs sm:text-sm mt-3 block text-neutral-400">Train in a high-energy, women-friendly, results-driven fitness environment.</span>
+          <span className="text-[11px] sm:text-sm mt-2 block text-neutral-300">Train in a high-energy, women-friendly, results-driven fitness environment.</span>
         </p>
 
-        <div className="flex flex-col sm:flex-row items-center justify-center gap-4 md:gap-6 px-4 animate-fade-in-up" style={{ animationDelay: '0.8s' }}>
+        <div className="flex w-full max-w-xl flex-col sm:flex-row items-center justify-center gap-3 md:gap-6 px-1 md:px-4 animate-fade-in-up" style={{ animationDelay: '0.8s' }}>
           {/* Rectified: Opens Global Auth Flow */}
           <button
             onClick={onStart}
@@ -340,6 +386,7 @@ const Hero: React.FC<{ onStart: () => void }> = ({ onStart }) => {
             ))}
           </div>
         )}
+        </div>
       </div>
     </section>
   );
@@ -388,6 +435,19 @@ const TrainingBookingModal: React.FC<{
     }
   }, [isOpen]);
 
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        onClose();
+      }
+    };
+
+    window.addEventListener('keydown', handleEscape);
+    return () => window.removeEventListener('keydown', handleEscape);
+  }, [isOpen, onClose]);
+
   const handleTimeSelect = (time: string) => {
     setSelectedTime(time);
     setStep('form');
@@ -415,11 +475,20 @@ const TrainingBookingModal: React.FC<{
 
   return (
     <div
-      className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fade-in"
+      className="fixed inset-0 z-[110] overflow-y-auto bg-black/80 p-4 backdrop-blur-sm animate-fade-in"
+      style={{ WebkitOverflowScrolling: 'touch' }}
       onClick={onClose}
     >
+      <button
+        onClick={onClose}
+        className="fixed left-4 top-4 z-[111] flex h-11 w-11 items-center justify-center rounded-full bg-black/70 text-white shadow-lg backdrop-blur-md transition-all hover:bg-black"
+        aria-label="Close booking modal"
+      >
+        <ModalBackIcon />
+      </button>
       <div
-        className="relative w-full max-w-3xl max-h-[90vh] overflow-y-auto glass rounded-3xl border-2 border-gold/40 shadow-2xl shadow-gold/20 animate-fade-in-up"
+        className="relative mx-auto my-16 w-full max-w-3xl max-h-[calc(100vh-4rem)] overflow-y-auto glass rounded-3xl border-2 border-gold/40 shadow-2xl shadow-gold/20 animate-fade-in-up"
+        style={{ WebkitOverflowScrolling: 'touch' }}
         onClick={(e) => e.stopPropagation()}
       >
         <button
@@ -546,18 +615,19 @@ const TrainingBookingModal: React.FC<{
 };
 
 const TrainingTypes: React.FC<{ onTypeSelect: (typeId: string) => void; trainingTypes: ReturnType<typeof buildTrainingTypes> }> = ({ onTypeSelect, trainingTypes }) => {
+  const navigate = useNavigate();
   const [slotModal, setSlotModal] = useState<'online' | 'home' | null>(null);
   const [selectedSlot, setSelectedSlot] = useState('');
   const TIME_SLOTS = {
     morning: [
-      '5:30 AM – 6:30 AM',
-      '6:30 AM – 7:30 AM',
-      '7:30 AM – 8:30 AM',
+      '5:30 AM - 6:30 AM',
+      '6:30 AM - 7:30 AM',
+      '7:30 AM - 8:30 AM',
     ],
     evening: [
-      '5:30 PM – 6:30 PM',
-      '6:30 PM – 7:30 PM',
-      '7:30 PM – 8:30 PM',
+      '5:30 PM - 6:30 PM',
+      '6:30 PM - 7:30 PM',
+      '7:30 PM - 8:30 PM',
     ],
   };
 
@@ -575,11 +645,25 @@ const TrainingTypes: React.FC<{ onTypeSelect: (typeId: string) => void; training
     sessionStorage.setItem('noize_slot_type', slotModal);
     setSlotModal(null);
     setSelectedSlot('');
-    window.location.href = `/portal?tab=${tab}`;
+    navigate(`/portal?tab=${tab}`);
   };
 
+  useEffect(() => {
+    if (!slotModal) return;
+
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setSlotModal(null);
+        setSelectedSlot('');
+      }
+    };
+
+    window.addEventListener('keydown', handleEscape);
+    return () => window.removeEventListener('keydown', handleEscape);
+  }, [slotModal]);
+
   return (
-    <section id="training-types" className="py-16 md:py-24 relative overflow-hidden">
+    <section id="training-types" className="py-10 md:py-24 relative overflow-hidden border-b border-[#C9A84C]/20">
       <div className="absolute inset-0 z-0">
         <img
           src="/images/gallery-1.jpg"
@@ -589,9 +673,10 @@ const TrainingTypes: React.FC<{ onTypeSelect: (typeId: string) => void; training
           decoding="async"
         />
         <div className="absolute inset-0 bg-black/80 pointer-events-none"></div>
+        <div className="absolute inset-0 gym-line-grid dark-precision-grid opacity-20 pointer-events-none"></div>
       </div>
       <div className="container mx-auto px-4 md:px-6 relative z-10">
-        <div className="text-center mb-16 md:mb-20">
+        <div className="text-center mb-10 md:mb-20">
           <h2 className="text-3xl md:text-5xl lg:text-5xl font-black mb-4 md:mb-6 tracking-tight">
             CHOOSE YOUR <span className="text-gold">TRAINING TYPE</span>
           </h2>
@@ -605,21 +690,21 @@ const TrainingTypes: React.FC<{ onTypeSelect: (typeId: string) => void; training
             <div
               key={type.id}
               onClick={() => onTypeSelect(type.id)}
-              className="glass rounded-3xl p-8 md:p-10 border border-white/5 hover:border-gold/30 hover:-translate-y-2 hover:shadow-[0_12px_45px_rgba(229,192,123,0.15)] transition-all duration-500 cursor-pointer group flex flex-col h-full bg-[#121212]/80"
+              className="glass mx-auto flex h-full min-h-[360px] md:min-h-[420px] w-full flex-col rounded-3xl border border-white/5 bg-[#121212]/80 p-5 md:p-6 transition-all duration-500 hover:-translate-y-2 hover:border-gold/30 hover:shadow-[0_12px_45px_rgba(229,192,123,0.15)] cursor-pointer group"
             >
-              <div className="mb-8 p-4 rounded-2xl bg-white/5 border border-white/10 group-hover:bg-gold/10 group-hover:border-gold/30 transition-all duration-500 w-max">
+              <div className="mx-auto mb-5 md:mb-8 w-fit rounded-2xl border border-white/10 bg-[#1a1a1a] p-3 md:p-4 transition-all duration-500 group-hover:border-gold/30 group-hover:bg-gold/10">
                 {type.icon}
               </div>
-              <h3 className="text-xl md:text-2xl font-black text-white mb-3 tracking-wide group-hover:text-gold transition-colors duration-300">
+              <h3 className="mb-3 text-center text-xl font-black tracking-wide text-white transition-colors duration-300 group-hover:text-gold md:text-2xl">
                 {type.title}
               </h3>
-              <p className="text-neutral-400 text-sm md:text-base mb-6 font-light leading-relaxed flex-grow">
+              <p className="mb-6 flex-grow text-center text-sm font-light leading-relaxed text-neutral-400 md:text-base">
                 {type.description}
               </p>
               <ul className="space-y-3 mb-8">
                 {type.features.map((feature, idx) => (
                   <li key={idx} className="flex items-center gap-3 text-sm text-neutral-300 font-light">
-                    <span className="text-gold text-xs">â—†</span>
+                    <FeatureBulletIcon />
                     {feature}
                   </li>
                 ))}
@@ -650,14 +735,26 @@ const TrainingTypes: React.FC<{ onTypeSelect: (typeId: string) => void; training
 
         {slotModal && (
           <div
-            className="fixed inset-0 z-[200] flex items-center justify-center bg-black/90 backdrop-blur-md px-4"
+            className="fixed inset-0 z-[200] overflow-y-auto bg-black/90 px-4 backdrop-blur-md"
+            style={{ WebkitOverflowScrolling: 'touch' }}
             onClick={() => {
               setSlotModal(null);
               setSelectedSlot('');
             }}
           >
+            <button
+              onClick={() => {
+                setSlotModal(null);
+                setSelectedSlot('');
+              }}
+              className="fixed left-4 top-4 z-[201] flex h-11 w-11 items-center justify-center rounded-full bg-black/70 text-white shadow-lg backdrop-blur-md transition-all hover:bg-black"
+              aria-label="Close time slot modal"
+            >
+              <ModalBackIcon />
+            </button>
             <div
-              className="w-full max-w-md glass rounded-[32px] border border-gold/20 p-8"
+              className="mx-auto my-16 w-full max-w-md overflow-y-auto glass rounded-[32px] border border-gold/20 p-8"
+              style={{ WebkitOverflowScrolling: 'touch', maxHeight: 'calc(100vh - 4rem)' }}
               onClick={(e) => e.stopPropagation()}
             >
               <p className="text-xs font-black uppercase tracking-[0.3em] text-gold mb-2">
@@ -672,7 +769,7 @@ const TrainingTypes: React.FC<{ onTypeSelect: (typeId: string) => void; training
 
               <div className="space-y-6">
                 <div>
-                  <p className="mb-3 text-sm font-black text-gold">ðŸŒ… Morning Batch</p>
+                  <p className="mb-3 text-sm font-black text-gold">Morning Batch</p>
                   <div className="flex flex-col gap-3 mb-6">
                     {TIME_SLOTS.morning.map((slot) => (
                       <button
@@ -691,7 +788,7 @@ const TrainingTypes: React.FC<{ onTypeSelect: (typeId: string) => void; training
                 </div>
 
                 <div>
-                  <p className="mb-3 text-sm font-black text-gold">ðŸŒ† Evening Batch</p>
+                  <p className="mb-3 text-sm font-black text-gold">Evening Batch</p>
                   <div className="flex flex-col gap-3 mb-8">
                     {TIME_SLOTS.evening.map((slot) => (
                       <button
@@ -715,8 +812,7 @@ const TrainingTypes: React.FC<{ onTypeSelect: (typeId: string) => void; training
                 onClick={handleSlotConfirm}
                 className="w-full gold-gradient text-black font-black py-4 rounded-full text-sm uppercase tracking-widest disabled:opacity-40 disabled:cursor-not-allowed hover:shadow-[0_0_30px_rgba(229,192,123,0.4)] transition-all"
               >
-                Confirm Slot & View Plans â†’
-              </button>
+                Confirm Slot & View Plans</button>
 
               <button
                 onClick={() => { setSlotModal(null); setSelectedSlot(''); }}
@@ -807,7 +903,7 @@ const SpecialOffers: React.FC<{ sectionContent: PortalContentSection; onUnlockEx
             FESTIVE / SEASONAL <span className="text-gold">OFFERS</span>
           </h2>
           <div className="mt-10 glass rounded-[32px] border border-white/10 p-12 md:p-16 flex flex-col items-center gap-5">
-            <div className="text-5xl">ðŸŽ‰</div>
+            <PartyPopper className="text-[#C9A84C] w-12 h-12" aria-hidden="true" />
             <h3 className="text-xl font-black text-white uppercase tracking-wide">
               No Ongoing Offers Right Now
             </h3>
@@ -923,7 +1019,10 @@ const SpecialOffers: React.FC<{ sectionContent: PortalContentSection; onUnlockEx
                       onClick={onUnlockExclusiveOffers}
                       className="mt-4 w-full rounded-full border border-gold/30 bg-gold/5 text-gold font-black py-3 px-6 text-xs uppercase tracking-widest hover:bg-gold/10 transition-all"
                     >
-                      ðŸ”’ Unlock Exclusive Mystery Offers
+                      <span className="inline-flex items-center gap-2">
+                        <Lock className="text-[#C9A84C] w-6 h-6" aria-hidden="true" />
+                        Unlock Exclusive Mystery Offers
+                      </span>
                     </button>
                   </div>
                 </div>
@@ -973,7 +1072,7 @@ const BrandStory: React.FC = () => {
   const media = gymMedia[activeMedia];
 
   return (
-    <section className="py-16 md:py-24 relative overflow-hidden">
+    <section className="py-10 md:py-24 relative overflow-hidden border-b border-[#C9A84C]/20">
       <div className="absolute inset-0 z-0">
         <img src={siteImages['bg_philosophy'] || "/images/gallery-5.jpg"} alt="Brand Background" className="w-full h-full object-cover brightness-[0.2] blur-sm scale-110 transform-gpu" />
         <div className="absolute inset-0 bg-black/85 pointer-events-none"></div>
@@ -1038,20 +1137,15 @@ const BrandStory: React.FC = () => {
         <div className="relative z-10">
           <h2 className="text-3xl md:text-4xl lg:text-5xl font-black mb-4 md:mb-8 leading-tight tracking-tight">THE NOIZE <br /><span className="text-gold">PHILOSOPHY</span></h2>
           <p className="text-neutral-400 text-base md:text-lg mb-6 md:mb-8 font-light leading-relaxed">
-            Noize Fitness & Lifestyle is not just a gym â€” itâ€™s a movement. We blend bodybuilding, crossfit, and functional lifestyle training to create real transformations for every body type.
+            Noize Fitness & Lifestyle is not just a gym, it's a movement. We blend bodybuilding, crossfit, and functional lifestyle training to create real transformations for every body type.
           </p>
 
-          <div className="grid grid-cols-2 gap-4 md:gap-6">
-            {[
-              { title: "Certified Coaches", icon: "â—†" },
-              { title: "Women-Friendly", icon: "â—†" },
-              { title: "Premium Gear", icon: "â—†" },
-              { title: "Lifestyle Focus", icon: "â—†" },
-              { title: "Free Assessments", icon: "â—†" },
-              { title: "Free Diet Plan", icon: "â—†" }
-            ].map((item, idx) => (
-              <div key={idx} className="glass p-5 rounded-2xl border border-white/5 hover:border-gold/30 hover:-translate-y-1 transition-all duration-300">
-                <span className="text-gold text-lg mb-3 block">{item.icon}</span>
+          <div className="grid grid-cols-2 gap-3 md:gap-6">
+            {WHY_CHOOSE_US_ITEMS.map((item, idx) => (
+              <div key={idx} className="glass flex min-h-[100px] md:min-h-[132px] flex-col gap-2 md:gap-3 rounded-2xl border border-white/5 p-3 md:p-4 transition-all duration-300 hover:-translate-y-1 hover:border-gold/30 active:border-[#C9A84C] active:shadow-[0_0_8px_rgba(201,168,76,0.4)]">
+                <div className="flex h-10 w-10 md:h-11 md:w-11 items-center justify-center rounded-xl md:rounded-2xl bg-[#1a1a1a] text-[#C9A84C]">
+                  {item.icon}
+                </div>
                 <h4 className="font-bold text-white text-sm md:text-base tracking-wide">{item.title}</h4>
               </div>
             ))}
@@ -1100,7 +1194,7 @@ const ProgramsGrid: React.FC = () => {
 
   return (
     <>
-      <section id="programs" className="py-16 md:py-24 relative overflow-hidden">
+      <section id="programs" className="py-10 md:py-24 relative overflow-hidden border-b border-[#C9A84C]/20">
         <div className="absolute inset-0 z-0">
           <img src={siteImages['bg_programs'] || "/images/bodybuilding.jpg"} alt="Programs Background" className="w-full h-full object-cover brightness-[0.2] blur-md scale-110 transform-gpu" />
           <div className="absolute inset-0 bg-black/85 pointer-events-none"></div>
@@ -1150,12 +1244,20 @@ const ProgramsGrid: React.FC = () => {
       {/* Full-Screen Detailed Overlay */}
       {selectedProgram && (
         <div
-          className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-xl animate-fade-in p-4 md:p-8"
+          className="fixed inset-0 z-[100] flex items-end justify-center bg-black/70 md:bg-black/80 backdrop-blur-xl animate-fade-in p-0 md:p-8"
           onClick={() => setSelectedProgram(null)}
         >
           <button
             onClick={() => setSelectedProgram(null)}
-            className="absolute top-6 right-6 md:top-10 md:right-10 z-[110] bg-white/5 hover:bg-gold hover:text-black text-white p-3 md:p-4 rounded-full transition-all duration-300 shadow-2xl border border-white/10 hover:border-gold opacity-80 hover:opacity-100 group"
+            className="absolute top-3 left-3 z-[110] flex min-h-11 min-w-11 items-center gap-2 rounded-full bg-black/60 px-3 text-white md:hidden"
+            aria-label="Back"
+          >
+            <ModalBackIcon className="w-4 h-4" />
+            <span className="text-sm font-medium">Back</span>
+          </button>
+          <button
+            onClick={() => setSelectedProgram(null)}
+            className="absolute top-3 right-3 z-[110] flex h-9 w-9 items-center justify-center rounded-full bg-black/60 text-white transition-all duration-300 md:top-10 md:right-10 md:h-auto md:w-auto md:bg-white/5 md:p-4 md:hover:bg-gold md:hover:text-black shadow-2xl border border-white/10 md:hover:border-gold opacity-100 md:opacity-80 md:hover:opacity-100 group"
             aria-label="Close details"
           >
             <svg className="w-6 h-6 md:w-8 md:h-8 group-hover:rotate-90 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1164,17 +1266,17 @@ const ProgramsGrid: React.FC = () => {
           </button>
 
           <div
-            className="w-full max-w-6xl h-[85vh] md:h-[80vh] flex flex-col md:flex-row bg-[#0E0E0E] rounded-[2rem] overflow-hidden shadow-[0_0_80px_rgba(229,192,123,0.15)] border border-white/5 relative animate-fade-in-up"
+            className="relative flex max-h-[90vh] w-full max-w-6xl flex-col overflow-hidden rounded-t-[24px] md:rounded-[2rem] border border-white/5 bg-[#1a1a1a] md:bg-[#0E0E0E] shadow-[0_0_80px_rgba(229,192,123,0.15)] animate-fade-in-up md:h-[80vh] md:max-h-none md:flex-row pb-[env(safe-area-inset-bottom)] md:pb-0"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="w-full md:w-1/2 h-64 md:h-full relative overflow-hidden group">
+            <div className="relative h-56 max-h-56 w-full flex-none overflow-hidden rounded-t-[24px] bg-[#111111] md:h-full md:max-h-none md:w-1/2 md:rounded-none group">
               {activeGallery ? (
                 activeGallery.map((imgSrc, slideIdx) => (
                   <img
                     key={slideIdx}
                     src={imgSrc}
                     alt={`${selectedProgram.title} slide ${slideIdx + 1}`}
-                    className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 ${activeModalSlide === slideIdx ? 'opacity-100 z-10' : 'opacity-0 z-0'
+                    className={`absolute inset-0 h-full w-full object-contain md:object-cover transition-opacity duration-1000 ${activeModalSlide === slideIdx ? 'opacity-100 z-10' : 'opacity-0 z-0'
                       }`}
                   />
                 ))
@@ -1182,11 +1284,11 @@ const ProgramsGrid: React.FC = () => {
                 <img
                   src={selectedProgram.imageUrl}
                   alt={selectedProgram.title}
-                  className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105"
+                  className="h-full w-full object-contain md:object-cover transition-transform duration-1000 group-hover:scale-105"
                 />
               )}
 
-              <div className="absolute inset-0 bg-gradient-to-t md:bg-gradient-to-r from-[#0E0E0E] via-[#0E0E0E]/40 to-transparent z-10"></div>
+              <div className="absolute inset-0 bg-gradient-to-t from-[#0E0E0E]/45 via-transparent to-transparent md:bg-gradient-to-r md:from-[#0E0E0E] md:via-[#0E0E0E]/40 md:to-transparent z-10"></div>
               <div className="absolute inset-0 border-r border-white/5 hidden md:block z-20"></div>
 
               {activeGallery && activeGallery.length > 1 && (
@@ -1204,34 +1306,34 @@ const ProgramsGrid: React.FC = () => {
               )}
             </div>
 
-            <div className="w-full md:w-1/2 p-8 md:p-16 flex flex-col justify-center relative overflow-y-auto">
-              <span className="text-gold mb-6 block w-14 h-14 opacity-90">{selectedProgram.icon}</span>
-              <h3 className="text-4xl md:text-5xl lg:text-6xl font-black mb-6 tracking-tight text-white drop-shadow-md">
+            <div className="relative flex w-full flex-1 flex-col overflow-y-auto p-4 md:w-1/2 md:justify-center md:p-16 [webkit-overflow-scrolling:touch]">
+              <span className="mb-6 hidden h-14 w-14 text-gold opacity-90 md:block">{selectedProgram.icon}</span>
+              <h3 className="mb-4 text-xl font-bold tracking-tight text-white md:mb-6 md:text-5xl lg:text-6xl md:font-black md:drop-shadow-md">
                 {selectedProgram.title}
               </h3>
-              <p className="text-neutral-300 text-lg md:text-xl font-light leading-relaxed mb-10">
+              <p className="mb-6 text-base font-light leading-relaxed text-neutral-300 md:mb-10 md:text-xl">
                 {selectedProgram.description}
               </p>
 
-              <div className="space-y-5 mb-12">
-                <div className="flex items-center gap-4 text-neutral-400 font-light border-b border-white/5 pb-4">
+              <div className="mb-6 space-y-0 md:mb-12">
+                <div className="flex items-start gap-4 border-b border-white/5 py-4 text-neutral-400 md:pb-4 md:pt-0 font-light">
                   <div className="w-2 h-2 rounded-full bg-gold shadow-[0_0_10px_rgba(229,192,123,0.8)]"></div>
                   <p className="tracking-wide">Deep, comprehensive routines tailored specifically to your goals.</p>
                 </div>
-                <div className="flex items-center gap-4 text-neutral-400 font-light border-b border-white/5 pb-4">
+                <div className="flex items-start gap-4 border-b border-white/5 py-4 text-neutral-400 font-light">
                   <div className="w-2 h-2 rounded-full bg-gold shadow-[0_0_10px_rgba(229,192,123,0.8)]"></div>
                   <p className="tracking-wide">Interactive coaching led directly by certified Noize fitness professionals.</p>
                 </div>
-                <div className="flex items-center gap-4 text-neutral-400 font-light border-b border-white/5 pb-4">
+                <div className="flex items-start gap-4 border-b border-white/5 py-4 text-neutral-400 font-light">
                   <div className="w-2 h-2 rounded-full bg-gold shadow-[0_0_10px_rgba(229,192,123,0.8)]"></div>
                   <p className="tracking-wide">Join a community focused on dynamic, lifestyle recovery and movement.</p>
                 </div>
               </div>
 
-              <div className="mt-auto">
+              <div className="mt-auto sticky bottom-0 bg-gradient-to-t from-[#1a1a1a] via-[#1a1a1a] to-transparent pt-4 md:static md:bg-none md:pt-0">
                 <button
                   onClick={() => handleWhatsApp(`Hi, I'm highly interested in joining the ${selectedProgram.title} program. Please share the details!`)}
-                  className="bg-gold text-black font-bold py-4 px-8 rounded-full hover:bg-yellow-400 hover:shadow-[0_0_40px_rgba(229,192,123,0.4)] hover:-translate-y-1 transition-all duration-300 w-full md:w-auto text-center uppercase tracking-[0.2em] text-sm flex items-center justify-center gap-3"
+                  className="flex w-full items-center justify-center gap-3 rounded-full bg-gold px-8 py-4 text-center text-sm font-bold uppercase tracking-[0.2em] text-black transition-all duration-300 hover:-translate-y-1 hover:bg-yellow-400 hover:shadow-[0_0_40px_rgba(229,192,123,0.4)] md:w-auto"
                 >
                   Enquire About {selectedProgram.title}
                 </button>
@@ -1303,14 +1405,14 @@ const Membership: React.FC = () => {
 
   return (
     <section id="membership" className="py-16 md:py-24">
-      <div className="container mx-auto px-6 md:px-6">
+      <div className="container relative z-[1] mx-auto px-4 md:px-6">
         <div className="text-center mb-10 md:mb-16">
           <h2 className="text-3xl md:text-5xl lg:text-6xl font-black mb-3 md:mb-4">FLEXIBLE <span className="text-gold">PLANS</span></h2>
           <p className="text-neutral-400 text-sm md:text-base px-4">Maximum results with membership options for offline, online, and home workout goals.</p>
-          <div className="mt-8 flex flex-wrap items-center justify-center gap-3 md:gap-4">
+          <div className="mt-8 flex flex-wrap items-center justify-center gap-2 md:gap-4">
             <button
               onClick={() => setActiveCategory('offline')}
-              className={`px-5 py-3 rounded-full text-xs md:text-sm uppercase tracking-widest transition-all ${activeCategory === 'offline'
+              className={`min-h-11 whitespace-nowrap rounded-full px-5 py-2 text-sm md:px-5 md:py-3 md:text-sm uppercase tracking-widest transition-all ${activeCategory === 'offline'
                 ? 'gold-gradient text-black font-black'
                 : 'border border-white/15 text-white bg-transparent'
               }`}
@@ -1319,7 +1421,7 @@ const Membership: React.FC = () => {
             </button>
             <button
               onClick={() => setActiveCategory('online')}
-              className={`px-5 py-3 rounded-full text-xs md:text-sm uppercase tracking-widest transition-all ${activeCategory === 'online'
+              className={`min-h-11 whitespace-nowrap rounded-full px-5 py-2 text-sm md:px-5 md:py-3 md:text-sm uppercase tracking-widest transition-all ${activeCategory === 'online'
                 ? 'gold-gradient text-black font-black'
                 : 'border border-white/15 text-white bg-transparent'
               }`}
@@ -1328,7 +1430,7 @@ const Membership: React.FC = () => {
             </button>
             <button
               onClick={() => setActiveCategory('home_workout')}
-              className={`px-5 py-3 rounded-full text-xs md:text-sm uppercase tracking-widest transition-all ${activeCategory === 'home_workout'
+              className={`min-h-11 whitespace-nowrap rounded-full px-5 py-2 text-sm md:px-5 md:py-3 md:text-sm uppercase tracking-widest transition-all ${activeCategory === 'home_workout'
                 ? 'gold-gradient text-black font-black'
                 : 'border border-white/15 text-white bg-transparent'
               }`}
@@ -1337,7 +1439,7 @@ const Membership: React.FC = () => {
             </button>
             <button
               onClick={() => window.location.href = '/portal'}
-              className="px-6 py-3 rounded-full gold-gradient text-black text-xs md:text-sm font-black uppercase tracking-widest hover:scale-[1.02] transition-all"
+              className="w-full md:w-auto px-6 py-3.5 md:py-3 rounded-xl md:rounded-full gold-gradient text-black text-base md:text-sm font-black uppercase tracking-widest hover:scale-[1.02] transition-all"
             >
               Membership Details
             </button>
@@ -1361,9 +1463,9 @@ const Membership: React.FC = () => {
                 </button>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6 md:gap-8">
+              <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6 md:gap-8 overflow-x-hidden">
                 {section.plans.map((plan) => (
-                  <div key={plan.id} className={`relative flex flex-col p-8 md:p-10 rounded-[24px] md:rounded-[32px] border ${plan.is_popular ? 'border-gold bg-gold/5' : 'border-white/10 glass'} transition-all hover:translate-y-[-10px]`}>
+                  <div key={plan.id} className={`relative flex w-full min-w-0 flex-col p-6 md:p-10 rounded-[24px] md:rounded-[32px] border ${plan.is_popular ? 'border-gold bg-gold/5' : 'border-white/10 glass'} transition-all hover:translate-y-[-10px] overflow-hidden`}>
                     {plan.is_popular && (
                       <span className="absolute -top-3 md:-top-4 left-1/2 -translate-x-1/2 bg-gold text-black text-xs font-black py-1.5 px-4 md:px-4 rounded-full uppercase tracking-widest">
                         Most Popular
@@ -1371,14 +1473,16 @@ const Membership: React.FC = () => {
                     )}
                     <h4 className="text-2xl md:text-2xl font-black mb-2">{plan.name}</h4>
                     <p className="text-gold text-sm md:text-sm font-bold mb-6 md:mb-6">{plan.tagline}</p>
-                    <div className="text-4xl md:text-4xl font-black mb-8 md:mb-8">Rs. {plan.price.toLocaleString()}<span className="text-sm font-light text-neutral-400">/-</span></div>
-                    <p className="text-neutral-400 text-xs mb-4">{plan.duration}</p>
+                    <div className="mb-8 md:mb-8 flex flex-col gap-2">
+                      <div className="text-4xl md:text-4xl font-black break-words">{'\u20B9'}{plan.price.toLocaleString()}<span className="text-sm font-light text-neutral-400">/-</span></div>
+                      <p className="text-neutral-400 text-xs block">{plan.duration}</p>
+                    </div>
 
                     <ul className="space-y-3 md:space-y-4 mb-6 md:mb-10 flex-grow">
                       {plan.features.map((feature, i) => (
-                        <li key={i} className="flex items-center gap-2 md:gap-3 text-neutral-300 text-xs md:text-sm">
+                        <li key={i} className="flex items-start gap-2 md:gap-3 text-neutral-300 text-xs md:text-sm min-w-0">
                           <svg className="w-4 h-4 text-gold flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" /></svg>
-                          {feature}
+                          <span className="block">{feature}</span>
                         </li>
                       ))}
                     </ul>
@@ -1419,7 +1523,7 @@ const Membership: React.FC = () => {
               )}
               <h3 className="text-2xl md:text-2xl font-black mb-2">{plan.name}</h3>
               <p className="text-gold text-sm md:text-sm font-bold mb-6 md:mb-6">{plan.tagline}</p>
-              <div className="text-4xl md:text-4xl font-black mb-8 md:mb-8">â‚¹{plan.price.toLocaleString()}<span className="text-sm font-light text-neutral-400">/-</span></div>
+              <div className="text-4xl md:text-4xl font-black mb-8 md:mb-8">{'\u20B9'}{plan.price.toLocaleString()}<span className="text-sm font-light text-neutral-400">/-</span></div>
               <p className="text-neutral-400 text-xs mb-4">{plan.duration}</p>
 
               <ul className="space-y-3 md:space-y-4 mb-6 md:mb-10 flex-grow">
@@ -1455,7 +1559,7 @@ const Membership: React.FC = () => {
               Select a preferred time slot to continue
             </p>
 
-            <p className="text-xs font-black uppercase tracking-widest text-gold/70 mb-3">{'ðŸŒ… Morning Batch'}</p>
+            <p className="text-xs font-black uppercase tracking-widest text-gold/70 mb-3">Morning Batch</p>
             <div className="flex flex-col gap-3 mb-6">
               {TIME_SLOTS.morning.map(slot => (
                 <button
@@ -1469,7 +1573,7 @@ const Membership: React.FC = () => {
               ))}
             </div>
 
-            <p className="text-xs font-black uppercase tracking-widest text-gold/70 mb-3">{'ðŸŒ† Evening Batch'}</p>
+            <p className="text-xs font-black uppercase tracking-widest text-gold/70 mb-3">Evening Batch</p>
             <div className="flex flex-col gap-3 mb-8">
               {TIME_SLOTS.evening.map(slot => (
                 <button
@@ -1488,15 +1592,14 @@ const Membership: React.FC = () => {
               onClick={() => {
                 const tab = slotModal === 'online' ? 'online' : 'home_workout';
                 sessionStorage.setItem('noize_selected_slot', selectedSlot);
-                sessionStorage.setItem('noize_slot_type', slotModal ?? '');
+                sessionStorage.setItem('noize_slot_type', slotModal === 'online' ? 'online' : 'home');
                 setSlotModal(null);
                 setSelectedSlot('');
                 window.location.href = `/portal?tab=${tab}`;
               }}
               className="w-full gold-gradient text-black font-black py-4 rounded-full text-sm uppercase tracking-widest disabled:opacity-40 disabled:cursor-not-allowed hover:shadow-[0_0_30px_rgba(229,192,123,0.4)] transition-all"
             >
-              Confirm Slot & View Plans â†’
-            </button>
+              Confirm Slot & View Plans</button>
 
             <button
               onClick={() => { setSlotModal(null); setSelectedSlot(''); }}
@@ -1581,7 +1684,7 @@ const Transformations: React.FC = () => {
   }, []);
 
   return (
-    <section id="transformations" className="py-16 md:py-24 bg-[#050505] relative overflow-hidden">
+    <section id="transformations" className="py-10 md:py-24 bg-[#050505] relative overflow-hidden border-b border-[#C9A84C]/20">
       <div className="absolute inset-0 gym-line-grid opacity-10"></div>
       <div className="container mx-auto px-6 md:px-6 relative z-10">
         <div className="text-center mb-10 md:mb-16">
@@ -1624,7 +1727,7 @@ const Transformations: React.FC = () => {
 };
 
 const OnlineClasses: React.FC<{ sectionContent: PortalContentSection }> = ({ sectionContent }) => (
-  <section id="online-classes" className="py-16 md:py-24 bg-gradient-to-br from-gold/10 via-transparent to-gold/5 relative overflow-hidden">
+  <section id="online-classes" className="py-10 md:py-24 bg-gradient-to-br from-gold/10 via-transparent to-gold/5 relative overflow-hidden border-b border-[#C9A84C]/20">
     <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PHBhdHRlcm4gaWQ9ImdyaWQiIHdpZHRoPSI2MCIgaGVpZ2h0PSI2MCIgcGF0dGVyblVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+PHBhdGggZD0iTSAxMCAwIEwgMCAwIDAgMTAiIGZpbGw9Im5vbmUiIHN0cm9rZT0icmdiYSgyMjksMTkyLDEyMywwLjA1KSIgc3Ryb2tlLXdpZHRoPSIxIi8+PC9wYXR0ZXJuPjwvZGVmcz48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSI2MAlSIIGZpbGw9InVybCgjZ3JpZCkiLz48L3N2Zz4=')] opacity-50"></div>
 
     <div className="container mx-auto px-6 md:px-6 relative z-10">
@@ -1758,7 +1861,7 @@ const Gallery: React.FC = () => {
   ];
 
   return (
-    <section id="gallery" className="py-16 md:py-24 gym-surface relative overflow-hidden">
+    <section id="gallery" className="py-10 md:py-24 gym-surface relative overflow-hidden border-b border-[#C9A84C]/20">
       <div className="absolute inset-0 gym-line-grid opacity-25"></div>
       <div className="container mx-auto px-6 md:px-6">
         <div className="mb-16 md:mb-20">
@@ -1906,7 +2009,7 @@ const Gallery: React.FC = () => {
 };
 
 const WhyChooseUs: React.FC = () => (
-  <section className="py-12 md:py-24">
+  <section className="py-10 md:py-24 border-b border-[#C9A84C]/20">
     <div className="container mx-auto px-4 md:px-6">
       <div className="glass p-6 md:p-12 rounded-[24px] md:rounded-[40px] border border-white/5 relative overflow-hidden bg-black/60">
         <div
@@ -1948,7 +2051,7 @@ const WhyChooseUs: React.FC = () => (
 const WeeklyHighlights: React.FC = () => {
   const siteImages = useContext(SiteImagesContext);
   return (
-    <section className="py-12 md:py-24 bg-[#0A0A0A]">
+    <section className="py-10 md:py-24 bg-[#0A0A0A] border-b border-[#C9A84C]/20">
       <div className="container mx-auto px-4 md:px-6">
         <div className="text-center mb-8 md:mb-16">
           <h2 className="text-3xl md:text-5xl lg:text-6xl font-black mb-3 md:mb-4 uppercase">Weekly <span className="text-gold">Highlights</span></h2>
@@ -2032,7 +2135,7 @@ const Testimonials: React.FC = () => {
   }, []);
 
   return (
-    <section className="py-12 md:py-24 bg-gold/5">
+    <section className="py-10 md:py-24 bg-gold/5 border-b border-[#C9A84C]/20">
       <div className="container mx-auto px-4 md:px-6">
         <div className="text-center mb-8 md:mb-12">
           <div className="inline-flex items-center gap-2 mb-4 glass px-4 py-2 rounded-full border border-gold/20">
@@ -2074,7 +2177,7 @@ const Testimonials: React.FC = () => {
 };
 
 const Contact: React.FC = () => (
-  <section id="contact" className="py-12 md:py-24 bg-[#0A0A0A]">
+  <section id="contact" className="py-10 md:py-24 bg-[#0A0A0A] border-b border-[#C9A84C]/20">
     <div className="container mx-auto px-4 md:px-6 grid md:grid-cols-2 gap-8 md:gap-16">
       <div>
         <h2 className="text-3xl md:text-4xl lg:text-5xl font-black mb-4 md:mb-8 tracking-tight">LET'S <span className="text-gold">TALK</span></h2>
@@ -2142,24 +2245,24 @@ const Contact: React.FC = () => (
 );
 
 const Footer: React.FC = () => (
-  <footer className="py-10 md:py-20 border-t border-white/5 relative overflow-hidden">
+  <footer className="py-8 pb-[calc(92px+env(safe-area-inset-bottom))] md:py-20 md:pb-20 border-t border-[#C9A84C]/20 relative overflow-hidden">
     <div className="container mx-auto px-4 md:px-6">
-      <div className="grid md:grid-cols-4 gap-8 md:gap-12 mb-10 md:mb-20">
+      <div className="grid md:grid-cols-4 gap-6 md:gap-12 mb-8 md:mb-20">
         <div className="col-span-1 md:col-span-2">
           <div className="flex items-center gap-2 md:gap-3 mb-4 md:mb-8">
-            <img src="/images/logo.png" alt="NOIZE Fitness" className="h-10 md:h-14 w-auto" />
-            <span className="text-2xl md:text-4xl font-black tracking-tighter text-gold drop-shadow-[0_2px_8px_rgba(229,192,123,0.5)]">NOIZE</span>
+            <img src="/images/logo.png" alt="NOIZE Fitness" className="h-8 md:h-14 w-auto" />
+            <span className="text-xl md:text-4xl font-black tracking-tighter text-gold drop-shadow-[0_2px_8px_rgba(229,192,123,0.5)]">NOIZE</span>
           </div>
-          <p className="text-neutral-500 text-sm md:text-base max-w-sm mb-4 md:mb-8 leading-relaxed">
+          <p className="text-neutral-500 text-xs md:text-base max-w-sm mb-4 md:mb-8 leading-relaxed">
             Revolutionizing the fitness industry with a lifestyle-first approach. Premium equipment, expert coaching, and a supportive community for all.
           </p>
-          <div className="flex gap-3 md:gap-4">
-            <a href="https://www.instagram.com/noize_fitness_/" target="_blank" rel="noopener noreferrer" className="w-9 h-9 md:w-10 md:h-10 rounded-full glass border border-white/10 flex items-center justify-center hover:border-gold hover:text-gold transition-all cursor-pointer">
+          <div className="flex gap-2 md:gap-4">
+            <a href="https://www.instagram.com/noize_fitness_/" target="_blank" rel="noopener noreferrer" className="flex min-h-11 min-w-11 w-11 h-11 md:w-10 md:h-10 rounded-full glass border border-white/10 items-center justify-center hover:border-gold hover:text-gold transition-all cursor-pointer">
               <svg className="w-4 h-4 md:w-5 md:h-5" fill="currentColor" viewBox="0 0 24 24">
                 <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z" />
               </svg>
             </a>
-            <a href="https://www.youtube.com/@noizefitness/" target="_blank" rel="noopener noreferrer" className="w-9 h-9 md:w-10 md:h-10 rounded-full glass border border-white/10 flex items-center justify-center hover:border-gold hover:text-gold transition-all cursor-pointer">
+            <a href="https://www.youtube.com/@noizefitness/" target="_blank" rel="noopener noreferrer" className="flex min-h-11 min-w-11 w-11 h-11 md:w-10 md:h-10 rounded-full glass border border-white/10 items-center justify-center hover:border-gold hover:text-gold transition-all cursor-pointer">
               <svg className="w-4 h-4 md:w-5 md:h-5" fill="currentColor" viewBox="0 0 24 24">
                 <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z" />
               </svg>
@@ -2168,17 +2271,17 @@ const Footer: React.FC = () => (
         </div>
 
         <div>
-          <h4 className="text-white font-bold text-sm md:text-base mb-4 md:mb-6">QUICK LINKS</h4>
+          <h4 className="text-white font-bold text-xs md:text-base mb-3 md:mb-6">QUICK LINKS</h4>
           <ul className="space-y-3 md:space-y-4 text-neutral-500 text-xs md:text-sm">
             <li><a href="#home" className="hover:text-white transition-colors">Home</a></li>
             <li><a href="#programs" className="hover:text-white transition-colors">Programs</a></li>
-            <li><a href="#membership" className="hover:text-white transition-colors">Membership</a></li>
+            <li><a href="/portal" className="hover:text-white transition-colors">Membership</a></li>
             <li><a href="#contact" className="hover:text-white transition-colors">Contact</a></li>
           </ul>
         </div>
 
         <div>
-          <h4 className="text-white font-bold text-sm md:text-base mb-4 md:mb-6">TIMINGS</h4>
+          <h4 className="text-white font-bold text-xs md:text-base mb-3 md:mb-6">TIMINGS</h4>
           <ul className="space-y-3 md:space-y-4 text-neutral-500 text-xs md:text-sm">
             <li className="flex justify-between gap-2"><span>Mon - Sun:</span> <span className="text-neutral-300">5:30 AM - 10:00 PM</span></li>
             <li className="flex justify-between gap-2"><span>Festival Day:</span> <span className="text-neutral-300">Holiday</span></li>
@@ -2187,7 +2290,7 @@ const Footer: React.FC = () => (
       </div>
 
       <div className="flex flex-col md:flex-row justify-center items-center pt-6 md:pt-10 border-t border-white/5 text-[10px] md:text-xs font-bold text-neutral-600 tracking-widest text-center">
-        <p className="px-4">Â© 2026 NOIZE FITNESS & LIFESTYLE. ALL RIGHTS RESERVED.</p>
+        <p className="px-4">{'\u00A9'} 2026 NOIZE FITNESS & LIFESTYLE. ALL RIGHTS RESERVED.</p>
       </div>
 
       <div className="text-center mt-4 md:mt-6 text-[10px] text-neutral-700">
@@ -2457,7 +2560,7 @@ const OfflineLoginModal: React.FC<{
   return (
     <div className="fixed inset-0 z-[150] flex items-center justify-center p-4 bg-black/95 backdrop-blur-xl animate-fade-in" onClick={onClose}>
       <div className="relative w-full max-w-md glass rounded-[32px] border border-white/10 p-8 md:p-10 animate-fade-in-up" onClick={e => e.stopPropagation()}>
-        <button onClick={onClose} className="absolute top-6 right-6 text-neutral-500 hover:text-white transition-colors">
+        <button onClick={onClose} className="absolute top-6 right-6 flex h-11 w-11 items-center justify-center rounded-full text-neutral-500 hover:text-white transition-colors">
           <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>
         </button>
 
@@ -2597,21 +2700,25 @@ const OfflineLoginModal: React.FC<{
 };
 
 const FloatingButtons: React.FC = () => (
-  <div className="fixed bottom-4 md:bottom-8 right-4 md:right-8 z-[100] flex flex-col gap-3 md:gap-4">
+  <div className="fixed bottom-[calc(24px+env(safe-area-inset-bottom))] right-4 z-[999] flex flex-col gap-3">
     <a
       href="tel:+918296890693"
-      className="w-12 h-12 md:w-14 md:h-14 bg-white text-black rounded-full shadow-2xl flex items-center justify-center hover:scale-110 transition-transform group"
+      aria-label="Call us"
+      className="flex h-[44px] w-[44px] items-center justify-center rounded-full bg-white text-black shadow-[0_4px_12px_rgba(0,0,0,0.4)] transition-transform hover:scale-110 group md:h-14 md:w-14 md:shadow-2xl"
     >
-      <svg className="w-5 h-5 md:w-6 md:h-6 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" /></svg>
+      <Phone className="h-6 w-6 transition-transform group-hover:scale-110" aria-hidden="true" />
     </a>
-    <button
-      onClick={() => handleWhatsApp("Hi! I'm interested in NOIZE Fitness.")}
-      className="w-12 h-12 md:w-14 md:h-14 bg-[#25D366] text-white rounded-full shadow-2xl flex items-center justify-center hover:scale-110 transition-transform group"
+    <a
+      href={`https://wa.me/${WHATSAPP_2}?text=${encodeURIComponent("Hi! I'm interested in NOIZE Fitness.")}`}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="flex h-[44px] w-[44px] items-center justify-center rounded-full bg-[#25D366] text-white shadow-[0_4px_12px_rgba(0,0,0,0.4)] transition-transform hover:scale-110 group md:h-14 md:w-14 md:shadow-2xl"
+      aria-label="Chat on WhatsApp"
     >
-      <svg className="w-6 h-6 md:w-7 md:h-7 group-hover:scale-110 transition-transform" fill="currentColor" viewBox="0 0 24 24">
+      <svg className="h-6 w-6 md:h-7 md:w-7 group-hover:scale-110 transition-transform" fill="currentColor" viewBox="0 0 24 24">
         <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z" />
       </svg>
-    </button>
+    </a>
   </div>
 );
 
@@ -2706,7 +2813,7 @@ const OffersListModal: React.FC<{
                     <div className="md:text-right">
                       <div className="text-3xl font-black text-gold mb-4">{offer.price_text}</div>
                       <button
-                        onClick={() => handleWhatsApp(`Hi NOIZE Team! ðŸ‘‹\n\nI'd like to claim this exclusive offer:\n\nðŸ“Œ Offer: ${offer.title}\nðŸ’° Price: â‚¹${offer.price_text}\n\nðŸ‘¤ Name: ${customerName}\nðŸ“§ Email: ${customerName}\n\nPlease assist me. Thank you!`)}
+                        onClick={() => handleWhatsApp(`Hi NOIZE Team! \uD83D\uDC4B\n\nI'd like to claim this exclusive offer:\n\n\uD83D\uDCCC Offer: ${offer.title}\n\uD83D\uDCB0 Price: \u20B9${offer.price_text}\n\n\uD83D\uDC64 Name: ${customerName}\n\uD83D\uDCE7 Email: ${customerName}\n\nPlease assist me. Thank you!`)}
                         className="gold-gradient text-black font-black py-3 px-6 rounded-full text-xs uppercase tracking-widest hover:shadow-[0_8px_30px_rgba(229,192,123,0.4)] transition-all"
                       >
                         Claim Offer
@@ -2885,6 +2992,25 @@ const App: React.FC = () => {
   }, []);
 
   useEffect(() => {
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key !== 'Escape') return;
+
+      if (slotModal) {
+        setSlotModal(null);
+        setSelectedSlot('');
+        return;
+      }
+
+      if (isOptionsModalOpen) {
+        setIsOptionsModalOpen(false);
+      }
+    };
+
+    window.addEventListener('keydown', handleEscape);
+    return () => window.removeEventListener('keydown', handleEscape);
+  }, [isOptionsModalOpen, slotModal]);
+
+  useEffect(() => {
     const fetchImages = async () => {
       const { data } = await supabase.from('section_images').select('section_key, image_data');
       if (data) {
@@ -2988,14 +3114,12 @@ const App: React.FC = () => {
     <SiteImagesContext.Provider value={siteImages}>
       <div className="min-h-screen bg-[#050505] text-white">
         <Navbar onJoinNow={handleGetStarted} />
-        <main>
+        <main className="pb-[100px] md:pb-0">
           <Hero onStart={handleGetStarted} />
           <TrainingTypes onTypeSelect={handleOptionSelect} trainingTypes={trainingTypes} />
-          <SpecialOffers sectionContent={portalContent.special_offers} onUnlockExclusiveOffers={openExclusiveMysteryOffers} />
           <BrandStory />
           <ProgramsGrid />
           <WhyChooseUs />
-          <Membership />
           <Transformations />
           <OnlineClasses sectionContent={portalContent.online_workout} />
           <WeeklyHighlights />
@@ -3022,8 +3146,19 @@ const App: React.FC = () => {
 
         {/* Re-using Options Modal from Hero logic but controlled globally */}
         {isOptionsModalOpen && (
-          <div className="fixed inset-0 z-[140] flex items-center justify-center p-4 bg-black/90 backdrop-blur-xl animate-fade-in" onClick={() => setIsOptionsModalOpen(false)}>
-            <div className="relative w-full max-w-5xl glass rounded-[40px] border border-white/10 p-8 md:p-12 animate-fade-in-up shadow-[0_0_100px_rgba(229,192,123,0.15)]" onClick={e => e.stopPropagation()}>
+          <div
+            className="fixed inset-0 z-[140] overflow-y-auto bg-black/90 p-4 backdrop-blur-xl animate-fade-in"
+            style={{ WebkitOverflowScrolling: 'touch' }}
+            onClick={() => setIsOptionsModalOpen(false)}
+          >
+            <button
+              onClick={() => setIsOptionsModalOpen(false)}
+              className="fixed left-4 top-4 z-[141] flex h-11 w-11 items-center justify-center rounded-full bg-black/70 text-white shadow-lg backdrop-blur-md transition-all hover:bg-black"
+              aria-label="Close Get Started modal"
+            >
+              <ModalBackIcon />
+            </button>
+            <div className="relative mx-auto my-16 w-full max-w-5xl overflow-y-auto glass rounded-[40px] border border-white/10 p-8 md:p-12 animate-fade-in-up shadow-[0_0_100px_rgba(229,192,123,0.15)]" style={{ WebkitOverflowScrolling: 'touch', maxHeight: 'calc(100vh - 4rem)' }} onClick={e => e.stopPropagation()}>
               <button
                 onClick={() => setIsOptionsModalOpen(false)}
                 className="absolute top-6 right-6 w-12 h-12 flex items-center justify-center rounded-full bg-white/5 hover:bg-red-500/20 text-white hover:text-red-500 transition-all duration-300"
@@ -3031,6 +3166,14 @@ const App: React.FC = () => {
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M6 18L18 6M6 6l12 12" />
                 </svg>
+              </button>
+
+              <button
+                onClick={() => setIsOptionsModalOpen(false)}
+                className="mb-6 flex min-h-11 min-w-11 items-center gap-2 rounded-full bg-[#0d0d0d] px-3 text-white font-medium md:hidden"
+              >
+                <ModalBackIcon className="w-4 h-4" />
+                <span>&larr; Back</span>
               </button>
 
               <div className="text-center mb-10">
@@ -3074,9 +3217,9 @@ const App: React.FC = () => {
                       setSelectedSlot('');
                       setSlotModal(type.id === 'online' ? 'online' : 'home');
                     }}
-                    className="glass group w-full p-8 rounded-3xl border border-white/5 hover:border-gold/50 transition-all duration-500 cursor-pointer hover:-translate-y-2 hover:shadow-[0_20px_50px_rgba(229,192,123,0.1)] flex flex-col items-center text-center"
+                    className="glass group mx-auto w-full rounded-3xl border border-white/5 p-6 transition-all duration-500 cursor-pointer hover:-translate-y-2 hover:border-gold/50 hover:shadow-[0_20px_50px_rgba(229,192,123,0.1)] flex flex-col items-center text-center"
                   >
-                    <div className="w-20 h-20 rounded-2xl bg-white/5 flex items-center justify-center mb-6 group-hover:bg-gold/10 group-hover:scale-110 transition-all duration-500">
+                    <div className="mb-6 flex w-fit items-center justify-center rounded-2xl bg-[#1a1a1a] p-4 transition-all duration-500 group-hover:scale-110 group-hover:bg-gold/10">
                       <span className="text-gold transform scale-125">{type.icon}</span>
                     </div>
                     <h3 className="text-xl font-bold mb-3 group-hover:text-gold transition-colors">{type.title}</h3>
@@ -3093,14 +3236,26 @@ const App: React.FC = () => {
 
         {slotModal && (
           <div
-            className="fixed inset-0 z-[200] flex items-center justify-center bg-black/90 backdrop-blur-md px-4"
+            className="fixed inset-0 z-[200] overflow-y-auto bg-black/90 px-4 backdrop-blur-md"
+            style={{ WebkitOverflowScrolling: 'touch' }}
             onClick={() => {
               setSlotModal(null);
               setSelectedSlot('');
             }}
           >
+            <button
+              onClick={() => {
+                setSlotModal(null);
+                setSelectedSlot('');
+              }}
+              className="fixed left-4 top-4 z-[201] flex h-11 w-11 items-center justify-center rounded-full bg-black/70 text-white shadow-lg backdrop-blur-md transition-all hover:bg-black"
+              aria-label="Close slot selection modal"
+            >
+              <ModalBackIcon />
+            </button>
             <div
-              className="w-full max-w-md glass rounded-[32px] border border-gold/20 p-8"
+              className="mx-auto my-16 w-full max-w-md overflow-y-auto glass rounded-[32px] border border-gold/20 p-8"
+              style={{ WebkitOverflowScrolling: 'touch', maxHeight: 'calc(100vh - 4rem)' }}
               onClick={(e) => e.stopPropagation()}
             >
               <p className="text-xs font-black uppercase tracking-[0.3em] text-gold mb-2">
@@ -3113,7 +3268,7 @@ const App: React.FC = () => {
                 Select a preferred time slot to continue to membership
               </p>
 
-              <p className="text-[10px] font-black uppercase tracking-widest text-gold/70 mb-3">🌅 Morning Batch</p>
+              <p className="text-[10px] font-black uppercase tracking-widest text-gold/70 mb-3">Morning Batch</p>
               <div className="flex flex-col gap-3 mb-6">
                 {TIME_SLOTS.morning.map((slot) => (
                   <button
@@ -3129,7 +3284,7 @@ const App: React.FC = () => {
                 ))}
               </div>
 
-              <p className="text-[10px] font-black uppercase tracking-widest text-gold/70 mb-3">🌆 Evening Batch</p>
+              <p className="text-[10px] font-black uppercase tracking-widest text-gold/70 mb-3">Evening Batch</p>
               <div className="flex flex-col gap-3 mb-8">
                 {TIME_SLOTS.evening.map((slot) => (
                   <button
@@ -3157,8 +3312,7 @@ const App: React.FC = () => {
                 }}
                 className="w-full gold-gradient text-black font-black py-4 rounded-full text-sm uppercase tracking-widest transition-all hover:shadow-[0_0_30px_rgba(229,192,123,0.4)] disabled:opacity-40 disabled:cursor-not-allowed"
               >
-                Confirm Slot & View Plans →
-              </button>
+                Confirm Slot & View Plans</button>
 
               <button
                 onClick={() => {

@@ -73,6 +73,7 @@ root.render(
         <Routes>
           <Route path="/" element={<App />} />
           <Route path="/admin/*" element={<Admin />} />
+          <Route path="/offers" element={<OfflineOffersPortal />} />
           <Route path="/offline-offers" element={<OfflineOffersPortal />} />
           <Route path="/portal" element={<MembershipPortal />} />
           <Route path="/logout" element={<LogoutPage />} />
