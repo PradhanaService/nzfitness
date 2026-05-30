@@ -407,4 +407,28 @@ body {
   }
 }
 
+/* Program Card Responsive Widths to prevent Safari flexbox wrapping issues and enforce perfect desktop columns */
+.program-card {
+  width: 100% !important;
+  flex: 0 0 auto !important;
+}
+
+@media (min-width: 640px) {
+  .program-card {
+    width: calc((100% - 24px) / 2) !important;
+  }
+}
+
+@media (min-width: 768px) {
+  .program-card {
+    width: calc((100% - 32px) / 2) !important;
+  }
+}
+
+@media (min-width: 1024px) {
+  .program-card {
+    width: calc((100% - 64px) / 3) !important;
+  }
+}
+
 

@@ -1461,7 +1461,7 @@ const ProgramsGrid: React.FC = () => {
                 <div
                   key={program.id}
                   onClick={() => setSelectedProgram(program)}
-                  className="group glass rounded-3xl overflow-hidden border border-white/10 hover:border-gold/50 cursor-pointer hover:-translate-y-2 hover:shadow-[0_12px_40px_rgba(229,192,123,0.2)] transition-all duration-500 bg-[#121212]/90 flex flex-col w-full sm:w-[calc(50%-12px)] lg:w-[calc(33.333%-16px)]"
+                  className="group glass rounded-3xl overflow-hidden border border-white/10 hover:border-gold/50 cursor-pointer hover:-translate-y-2 hover:shadow-[0_12px_40px_rgba(229,192,123,0.2)] transition-all duration-500 bg-[#121212]/90 flex flex-col program-card"
                 >
                   <div className="h-52 md:h-48 relative overflow-hidden">
                     <img src={thumbnail} alt={program.title} className="w-full h-full object-cover object-center transition-transform duration-700 group-hover:scale-105" loading="lazy" decoding="async" />
