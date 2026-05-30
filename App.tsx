@@ -1450,7 +1450,7 @@ const ProgramsGrid: React.FC = () => {
             <p className="text-neutral-400 text-sm md:text-base max-w-xl mx-auto px-4 font-light">From high-intensity CrossFit to calming Yoga, we offer a diverse range of programs tailored for your goals. Click a program to learn more.</p>
           </div>
 
-          <div className="relative grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 max-w-6xl mx-auto">
+          <div className="relative flex flex-wrap justify-center gap-6 md:gap-8 max-w-6xl mx-auto">
             {PROGRAMS.map((program) => {
               const prefix = `program_${program.id.toLowerCase()}_`;
               const legacyKey = `program_${program.id.toLowerCase()}`;
@@ -1461,7 +1461,7 @@ const ProgramsGrid: React.FC = () => {
                 <div
                   key={program.id}
                   onClick={() => setSelectedProgram(program)}
-                  className="group glass rounded-3xl overflow-hidden border border-white/10 hover:border-gold/50 cursor-pointer hover:-translate-y-2 hover:shadow-[0_12px_40px_rgba(229,192,123,0.2)] transition-all duration-500 bg-[#121212]/90 flex flex-col h-full"
+                  className="group glass rounded-3xl overflow-hidden border border-white/10 hover:border-gold/50 cursor-pointer hover:-translate-y-2 hover:shadow-[0_12px_40px_rgba(229,192,123,0.2)] transition-all duration-500 bg-[#121212]/90 flex flex-col w-full sm:w-[calc(50%-12px)] lg:w-[calc(33.333%-16px)]"
                 >
                   <div className="h-52 md:h-48 relative overflow-hidden">
                     <img src={thumbnail} alt={program.title} className="w-full h-full object-cover object-center transition-transform duration-700 group-hover:scale-105" loading="lazy" decoding="async" />
