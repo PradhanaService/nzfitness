@@ -110,9 +110,7 @@ I'd like to confirm my membership:
 
 \uD83D\uDCCB Plan: ${plan.name}
 \uD83D\uDCB0 Price: \u20B9${plan.price}
-\u23F3 Duration: ${plan.duration}
-
-Please confirm my booking. Thank you!`;
+\u23F3 Duration: ${plan.duration}`;
 
     handlePortalWhatsApp(message);
     return;
@@ -129,8 +127,7 @@ const openPortalWhatsAppForPlan = (plan: MembershipPlan) => {
     `\uD83C\uDFCB\uFE0F Plan: ${plan.name}\n` +
     `\uD83D\uDCB0 Price: \u20B9${plan.price.toLocaleString()}\n` +
     `\u23F3 Duration: ${plan.duration}\n` +
-    (savedSlot ? `\u23F0 Preferred Slot: ${savedSlot}\n` : '') +
-    `\nPlease confirm my booking. Thank you!`;
+    (savedSlot ? `\u23F0 Preferred Slot: ${savedSlot}\n` : '');
 
   handlePortalWhatsApp(message);
 };
@@ -322,8 +319,7 @@ const MembershipPortal: React.FC = () => {
       `\uD83D\uDCC2 Type: ${slotType === 'online' ? 'Online Training' : 'Home Training'}\n` +
       `\uD83D\uDCB0 Price: \u20B9${plan.price.toLocaleString()}\n` +
       `\u23F3 Duration: ${plan.duration}\n` +
-      `\u23F0 Preferred Slot: ${savedSlot}\n\n` +
-      `Please confirm my booking. Thank you!`;
+      `\u23F0 Preferred Slot: ${savedSlot}`;
 
     handlePortalWhatsApp(message);
   };
