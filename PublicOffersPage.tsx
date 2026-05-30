@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Navbar, Footer, SpecialOffers, OfflineLoginModal } from './App';
+import { SharedNavbar, Footer, SpecialOffers, OfflineLoginModal } from './App';
 
 const OFFLINE_PORTAL_CUSTOMER_KEY = 'noize_offline_customer';
 
@@ -20,7 +20,7 @@ const PublicOffersPage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-[#050505] text-white flex flex-col">
-      <Navbar onJoinNow={() => window.location.href = '/#contact'} />
+      <SharedNavbar onJoinNow={() => window.location.href = '/#contact'} />
       
       <main className="flex-1 pt-24 pb-[100px] md:pb-0">
         <div className="container mx-auto px-4 md:px-6 pt-8 relative z-20">

@@ -8,7 +8,6 @@ const Admin = lazy(() => import('./AdminPage'));
 const MembershipPortal = lazy(() => import('./MembershipPortal'));
 const OfflineOffersPortal = lazy(() => import('./OfflineOffersPortal'));
 const PublicOffersPage = lazy(() => import('./PublicOffersPage'));
-const TransformationsPage = lazy(() => import('./TransformationsPage'));
 const LogoutPage = lazy(() => import('./LogoutPage'));
 
 type RouteErrorBoundaryState = {
@@ -52,6 +51,20 @@ class RouteErrorBoundary extends React.Component<RouteErrorBoundaryProps, RouteE
     return this.props.children;
   }
 }
+
+const TransformationsPage: React.FC = () => {
+  React.useEffect(() => {
+    // Redirect to home page transformations section
+    window.location.replace('/#transformations');
+  }, []);
+  return (
+    <div className="min-h-screen bg-[#0E0E0E] flex items-center justify-center">
+      <p className="text-gold text-sm font-bold uppercase tracking-widest animate-pulse">
+        Redirecting...
+      </p>
+    </div>
+  );
+};
 
 const rootElement = document.getElementById('root');
 if (!rootElement) {

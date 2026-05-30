@@ -256,6 +256,105 @@ export const Navbar: React.FC<{ onJoinNow: () => void }> = ({ onJoinNow }) => {
   );
 };
 
+// Shared navbar for sub-pages (/portal, /offers, /offline-offers)
+// Uses window.location.href instead of anchor scrolling
+export const SharedNavbar: React.FC<{ onJoinNow?: () => void }> = ({ onJoinNow }) => {
+  const [isScrolled, setIsScrolled] = React.useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = React.useState(false);
+
+  React.useEffect(() => {
+    const handleScroll = () => setIsScrolled(window.scrollY > 50);
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  const NAV_LINKS = [
+    { label: 'Home',            href: '/' },
+    { label: 'Programs',        href: '/#programs' },
+    { label: 'Offers',          href: '/offers' },
+    { label: 'Membership',      href: '/portal' },
+    { label: 'Transformations', href: '/transformations' },
+    { label: 'Gallery',         href: '/#gallery' },
+    { label: 'Contact',         href: '/#contact' },
+  ];
+
+  return (
+    <>
+      <nav className={`fixed top-0 left-0 right-0 z-50 pt-[env(safe-area-inset-top)] transition-all duration-300 ${isScrolled ? 'py-2 md:py-4 glass shadow-2xl' : 'py-3 md:py-6 bg-transparent'}`}>
+        <div className="container mx-auto px-3 md:px-6 flex justify-between items-center">
+          {/* Logo */}
+          <a href="/" className="flex items-center gap-2 md:gap-3">
+            <img src="/images/logo.png" alt="NOIZE Fitness" className="h-6 md:h-10 w-auto" loading="eager" />
+            <span className="text-lg md:text-2xl font-black tracking-tighter text-gold drop-shadow-[0_2px_8px_rgba(229,192,123,0.5)]">NOIZE</span>
+          </a>
+
+          {/* Desktop links */}
+          <div className="hidden md:flex items-center gap-8 text-sm font-medium uppercase tracking-widest text-neutral-300">
+            {NAV_LINKS.map(link => (
+              <a
+                key={link.label}
+                href={link.href}
+                className="hover:text-gold transition-colors"
+              >
+                {link.label}
+              </a>
+            ))}
+          </div>
+
+          <div className="flex items-center gap-3">
+            <button
+              type="button"
+              onClick={() => onJoinNow ? onJoinNow() : (window.location.href = '/portal')}
+              className="gold-gradient text-black font-bold min-h-0 py-1.5 md:py-2 px-3 md:px-6 rounded-full text-[10px] sm:text-xs md:text-sm hover:scale-105 transition-transform shadow-[0_0_12px_rgba(201,168,76,0.3)] md:shadow-none"
+            >
+              JOIN NOW
+            </button>
+
+            {/* Mobile hamburger */}
+            <div className="md:hidden">
+              <button
+                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                className="flex flex-col items-center justify-center gap-1.5 p-2 min-h-10 min-w-10"
+                aria-label="Toggle menu"
+              >
+                <span className={`w-6 h-0.5 bg-white transition-all duration-300 ${isMobileMenuOpen ? 'rotate-45 translate-y-2' : ''}`} />
+                <span className={`w-6 h-0.5 bg-white transition-all duration-300 ${isMobileMenuOpen ? 'opacity-0' : ''}`} />
+                <span className={`w-6 h-0.5 bg-white transition-all duration-300 ${isMobileMenuOpen ? '-rotate-45 -translate-y-2' : ''}`} />
+              </button>
+            </div>
+          </div>
+        </div>
+      </nav>
+
+      {/* Mobile dropdown */}
+      <div className={`fixed inset-0 z-40 md:hidden transition-all duration-300 ${isMobileMenuOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}>
+        <div className="absolute inset-0 bg-black/95 backdrop-blur-lg" onClick={() => setIsMobileMenuOpen(false)} />
+        <div className={`absolute top-16 right-3 w-[calc(100%-1.5rem)] glass rounded-2xl p-5 transition-transform duration-300 ${isMobileMenuOpen ? 'translate-x-0' : 'translate-x-full'}`}>
+          <div className="flex flex-col gap-3">
+            {NAV_LINKS.map(link => (
+              <a
+                key={link.label}
+                href={link.href}
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="flex min-h-10 items-center border-l-[3px] border-transparent pl-2 text-base font-bold text-white hover:text-gold transition-colors uppercase tracking-wide"
+              >
+                {link.label}
+              </a>
+            ))}
+            <button
+              type="button"
+              onClick={() => { setIsMobileMenuOpen(false); window.location.href = '/portal'; }}
+              className="gold-gradient text-black font-bold min-h-0 py-2 px-4 rounded-full text-xs hover:scale-105 transition-transform mt-3 text-center block w-full"
+            >
+              JOIN NOW
+            </button>
+          </div>
+        </div>
+      </div>
+    </>
+  );
+};
+
 const Hero: React.FC<{ onStart: () => void }> = ({ onStart }) => {
   const [activeMedia, setActiveMedia] = useState(0);
   const siteImages = useContext(SiteImagesContext);

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { supabase, MembershipPlan, MembershipCategory } from './supabaseClient';
+import { SharedNavbar } from './App';
 
 const smoothScrollToId = (id: string, offset = 96, duration = 700) => {
   const element = document.getElementById(id);
@@ -353,7 +354,9 @@ const MembershipPortal: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-[#0A0A0A] px-4 py-10 md:px-8 md:py-16">
-      <style>{`
+      <SharedNavbar />
+      <div className="pt-16 md:pt-20">
+        <style>{`
         @keyframes offersShake {
           0%, 100% { transform: translateX(0) rotate(0deg); }
           20% { transform: translateX(-0.5px) rotate(-0.8deg); }
@@ -879,6 +882,7 @@ const MembershipPortal: React.FC = () => {
           </div>
         </>
       )}
+      </div>
     </div>
   );
 };

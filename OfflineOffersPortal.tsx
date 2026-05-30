@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Offer, supabase } from './supabaseClient';
+import { SharedNavbar } from './App';
 
 type OfflinePortalCustomer = {
   fullName: string;
@@ -213,7 +214,9 @@ const OfflineOffersPortal: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-[#0e0e0e] text-white w-full overflow-x-hidden">
-      <style>{`
+      <SharedNavbar />
+      <div className="pt-16 md:pt-20">
+        <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;500;700;900&display=swap');
         *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
         :root{
@@ -522,6 +525,7 @@ const OfflineOffersPortal: React.FC = () => {
           </div>
         </div>
       )}
+      </div>
     </div>
   );
 };
