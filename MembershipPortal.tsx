@@ -449,7 +449,7 @@ const MembershipPortal: React.FC = () => {
                         <div key={plan.id} className="portal-plan-grid grid gap-4 border-b border-white/5 pb-4 last:border-b-0 md:gap-6 md:pb-6 lg:grid-cols-[1.1fr_0.9fr]">
                           <div className="portal-plan-card relative flex h-full flex-col rounded-[20px] border border-white/10 bg-[#121212]/50 p-5 transition-all duration-300 hover:border-gold/30 md:p-8">
                             {plan.is_popular && (
-                              <span className="absolute top-3 right-3 md:top-4 md:right-4 rounded-full border border-gold/40 bg-gold/10 px-3 py-1 text-[9px] font-black uppercase tracking-[0.16em] text-gold shadow-sm">
+                              <span className="absolute top-[-10px] md:top-[-14px] right-4 md:right-8 rounded-full gold-gradient px-3 py-1 text-[8px] md:text-[9px] font-black uppercase tracking-[0.16em] text-black shadow-md z-10">
                                 Most Popular
                               </span>
                             )}
