@@ -447,15 +447,17 @@ const MembershipPortal: React.FC = () => {
                     <div id="portal-plan-list" className="flex flex-col gap-4 md:gap-6">
                       {visiblePlans.map((plan) => (
                         <div key={plan.id} className="portal-plan-grid grid gap-4 border-b border-white/5 pb-4 last:border-b-0 md:gap-6 md:pb-6 lg:grid-cols-[1.1fr_0.9fr]">
-                          <div className="portal-plan-card flex h-full flex-col rounded-[20px] border border-white/10 bg-[#121212]/50 p-5 transition-all duration-300 hover:border-gold/30 md:p-8">
+                          <div className="portal-plan-card relative flex h-full flex-col rounded-[20px] border border-white/10 bg-[#121212]/50 p-5 transition-all duration-300 hover:border-gold/30 md:p-8">
+                            {plan.is_popular && (
+                              <span className="absolute top-3 right-3 md:top-4 md:right-4 rounded-full border border-gold/40 bg-gold/10 px-3 py-1 text-[9px] font-black uppercase tracking-[0.16em] text-gold shadow-sm">
+                                Most Popular
+                              </span>
+                            )}
                             <div className="portal-plan-info">
-                              <div className="portal-plan-title-row">
-                                <h4 className="portal-plan-title text-xl font-black uppercase leading-tight tracking-tight text-white md:text-3xl">{plan.name}</h4>
-                                {plan.is_popular && (
-                                  <span className="portal-plan-badge w-fit rounded-full border border-gold/30 px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.14em] text-gold">
-                                    Most Popular
-                                  </span>
-                                )}
+                              <div className="portal-plan-title-row mb-5">
+                                <h4 className="portal-plan-title text-xl font-black uppercase leading-tight tracking-tight text-white md:text-3xl pr-24">
+                                  {plan.name}
+                                </h4>
                               </div>
                               <p className="portal-plan-tagline mb-6 text-sm font-bold uppercase tracking-[0.12em] text-neutral-300">
                                 {plan.tagline}

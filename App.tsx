@@ -1367,13 +1367,13 @@ const ProgramsGrid: React.FC = () => {
                   <div className="h-52 md:h-48 relative overflow-hidden">
                     <img src={thumbnail} alt={program.title} className="w-full h-full object-cover object-center transition-transform duration-700 group-hover:scale-105" loading="lazy" decoding="async" />
                     <div className="absolute inset-0 bg-gradient-to-t from-[#121212] via-transparent to-transparent"></div>
-                    <div className="absolute top-4 right-4 bg-black/60 backdrop-blur-md px-3 py-1 rounded-full border border-gold/30">
+                    <div className="absolute top-3 right-3 md:top-4 md:right-4 bg-black/60 backdrop-blur-md px-3 py-1.5 rounded-full border border-gold/30 shadow-md">
                       <span className="text-gold text-[10px] font-bold uppercase tracking-widest">View Details</span>
                     </div>
                   </div>
-                  <div className="p-6 md:p-8 flex-grow flex flex-col pointer-events-none">
-                    <div className="text-gold mb-3 opacity-90 group-hover:opacity-100 transition-opacity">{program.icon}</div>
-                    <h3 className="text-lg md:text-xl font-bold mb-3 tracking-wide group-hover:text-gold transition-colors">{program.title}</h3>
+                  <div className="p-5 md:p-8 flex-grow flex flex-col pointer-events-none text-center sm:text-left">
+                    <div className="text-gold mb-3 opacity-90 group-hover:opacity-100 transition-opacity flex justify-center sm:justify-start">{program.icon}</div>
+                    <h3 className="text-lg md:text-xl font-bold mb-2 tracking-wide group-hover:text-gold transition-colors">{program.title}</h3>
                     <p className="text-neutral-400 text-sm font-light leading-relaxed flex-grow">{program.description}</p>
                   </div>
                 </div>
