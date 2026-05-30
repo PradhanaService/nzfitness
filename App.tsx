@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useContext } from 'react';
-import { ClipboardCheck, Dumbbell, Heart, Leaf, Lock, PartyPopper, Phone, Users, Zap } from 'lucide-react';
+import { ClipboardCheck, Dumbbell, Heart, Leaf, Lock, PartyPopper, Users, Zap } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { DEFAULT_PORTAL_CONTENT, PROGRAMS, TRANSFORMATIONS, REVIEWS, TRAINING_TYPES } from './constants';
 import { PortalContentSection, Program, Transformation, Review } from './types';
@@ -86,10 +86,10 @@ const MEMBERSHIP_SECTION_CONFIG: {
   typeId: 'offline' | 'online' | 'home';
   sectionKey: keyof typeof portalSectionIcons;
 }[] = [
-  { category: 'offline', typeId: 'offline', sectionKey: 'offline_workout' },
-  { category: 'online', typeId: 'online', sectionKey: 'online_workout' },
-  { category: 'home_workout', typeId: 'home', sectionKey: 'home_workout' },
-];
+    { category: 'offline', typeId: 'offline', sectionKey: 'offline_workout' },
+    { category: 'online', typeId: 'online', sectionKey: 'online_workout' },
+    { category: 'home_workout', typeId: 'home', sectionKey: 'home_workout' },
+  ];
 
 const normalizeMembershipCategory = (category?: string | null): MembershipCategory => {
   if (category === 'online' || category === 'home_workout') {
@@ -150,7 +150,7 @@ const GYM_MEDIA_DEFAULT = [
   { type: 'image', src: '/images/gallery-5.jpg', alt: 'NOIZE gym atmosphere' }
 ];
 
-const Navbar: React.FC<{ onJoinNow: () => void }> = ({ onJoinNow }) => {
+export const Navbar: React.FC<{ onJoinNow: () => void }> = ({ onJoinNow }) => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
@@ -186,11 +186,10 @@ const Navbar: React.FC<{ onJoinNow: () => void }> = ({ onJoinNow }) => {
 
           <div className="hidden md:flex items-center gap-8 text-sm font-medium uppercase tracking-widest text-neutral-300">
             <a href="#home" className="hover:text-gold transition-colors">Home</a>
-            <a href="#training-types" className="hover:text-gold transition-colors">Training Types</a>
             <a href="#programs" className="hover:text-gold transition-colors">Programs</a>
             <a href="/offers" className="hover:text-gold transition-colors">Offers</a>
             <a href="/portal" className="hover:text-gold transition-colors">Membership</a>
-            <a href="#transformations" className="hover:text-gold transition-colors">Transformations</a>
+            <a href="/transformations" className="hover:text-gold transition-colors">Transformations</a>
             <a href="#gallery" className="hover:text-gold transition-colors">Gallery</a>
             <a href="#contact" className="hover:text-gold transition-colors">Contact</a>
           </div>
@@ -233,11 +232,10 @@ const Navbar: React.FC<{ onJoinNow: () => void }> = ({ onJoinNow }) => {
         <div className={`absolute top-16 right-3 w-[calc(100%-1.5rem)] glass rounded-2xl p-5 transition-transform duration-300 ease-in-out ${isMobileMenuOpen ? 'translate-x-0' : 'translate-x-full'}`}>
           <div className="flex flex-col gap-3">
             <a href="#home" onClick={closeMenu} className="flex min-h-10 items-center border-l-[3px] border-transparent pl-2 text-base font-bold text-white hover:text-gold focus:text-gold transition-colors uppercase tracking-wide focus:border-[#C9A84C] active:border-[#C9A84C]">Home</a>
-            <a href="#training-types" onClick={closeMenu} className="flex min-h-10 items-center border-l-[3px] border-transparent pl-2 text-base font-bold text-white hover:text-gold focus:text-gold transition-colors uppercase tracking-wide focus:border-[#C9A84C] active:border-[#C9A84C]">Training Types</a>
             <a href="#programs" onClick={closeMenu} className="flex min-h-10 items-center border-l-[3px] border-transparent pl-2 text-base font-bold text-white hover:text-gold focus:text-gold transition-colors uppercase tracking-wide focus:border-[#C9A84C] active:border-[#C9A84C]">Programs</a>
             <a href="/offers" onClick={closeMenu} className="flex min-h-10 items-center border-l-[3px] border-transparent pl-2 text-base font-bold text-white hover:text-gold focus:text-gold transition-colors uppercase tracking-wide focus:border-[#C9A84C] active:border-[#C9A84C]">Offers</a>
             <a href="/portal" onClick={closeMenu} className="flex min-h-10 items-center border-l-[3px] border-transparent pl-2 text-base font-bold text-white hover:text-gold focus:text-gold transition-colors uppercase tracking-wide focus:border-[#C9A84C] active:border-[#C9A84C]">Membership</a>
-            <a href="#transformations" onClick={closeMenu} className="flex min-h-10 items-center border-l-[3px] border-transparent pl-2 text-base font-bold text-white hover:text-gold focus:text-gold transition-colors uppercase tracking-wide focus:border-[#C9A84C] active:border-[#C9A84C]">Transformations</a>
+            <a href="/transformations" onClick={closeMenu} className="flex min-h-10 items-center border-l-[3px] border-transparent pl-2 text-base font-bold text-white hover:text-gold focus:text-gold transition-colors uppercase tracking-wide focus:border-[#C9A84C] active:border-[#C9A84C]">Transformations</a>
             <a href="#gallery" onClick={closeMenu} className="flex min-h-10 items-center border-l-[3px] border-transparent pl-2 text-base font-bold text-white hover:text-gold focus:text-gold transition-colors uppercase tracking-wide focus:border-[#C9A84C] active:border-[#C9A84C]">Gallery</a>
             <a href="#contact" onClick={closeMenu} className="flex min-h-10 items-center border-l-[3px] border-transparent pl-2 text-base font-bold text-white hover:text-gold focus:text-gold transition-colors uppercase tracking-wide focus:border-[#C9A84C] active:border-[#C9A84C]">Contact</a>
 
@@ -296,7 +294,7 @@ const Hero: React.FC<{ onStart: () => void }> = ({ onStart }) => {
   }, [heroMedia.length]);
 
   return (
-    <section id="home" className="relative min-h-screen flex items-center justify-center overflow-hidden pt-14 md:pt-0 bg-[#050505] border-b border-[#C9A84C]/20">
+    <section id="home" className="relative min-h-screen flex items-center justify-center pt-14 md:pt-0 bg-[#050505] border-b border-[#C9A84C]/20">
       <div className="absolute inset-0 z-0">
         {heroMedia.map((media, index) => (
           <div
@@ -337,55 +335,61 @@ const Hero: React.FC<{ onStart: () => void }> = ({ onStart }) => {
 
       <div className="container mx-auto px-4 md:px-6 relative z-10 text-center py-10 md:py-0 flex items-center justify-center">
         <div className="mx-auto flex min-h-[calc(100vh-3.5rem)] max-w-4xl flex-col items-center justify-center -translate-y-4 rounded-[24px] bg-black/28 px-3 py-6 backdrop-blur-[2px] md:min-h-0 md:translate-y-0 md:rounded-none md:bg-transparent md:px-0 md:py-0 md:backdrop-blur-0">
-        <div className="inline-flex items-center justify-center gap-2 mb-3 md:mb-6 px-3 md:px-4 py-1.5 md:py-2 border border-gold/20 bg-black/50 backdrop-blur-md rounded-full shadow-lg animate-fade-in-down" style={{ animationDelay: '0.2s' }}>
-          <span className="w-2 h-2 rounded-full bg-gold/80"></span>
-          <span className="text-[11px] md:text-sm font-bold tracking-[0.22em] text-gold uppercase">Train Hard. Move Loud.</span>
-        </div>
-        <div className="flex flex-wrap items-center justify-center gap-x-2 gap-y-1 mb-3 md:mb-6 animate-fade-in-down" style={{ animationDelay: '0.3s' }}>
-          <span className="text-xl sm:text-2xl md:text-4xl font-extrabold tracking-[0.14em] text-[#EAEAEA]">NOIZE</span>
-          <span className="text-lg sm:text-2xl md:text-4xl font-light tracking-[0.14em] text-[#CCCCCC] uppercase">Fitness & Lifestyle</span>
-        </div>
-        <h1 className="max-w-5xl text-[2rem] sm:text-4xl md:text-6xl lg:text-7xl font-black mb-3 md:mb-6 tracking-tight leading-[1.03] px-1 md:px-2 animate-fade-in-up drop-shadow-[0_10px_30px_rgba(0,0,0,0.9)]" style={{ animationDelay: '0.4s' }}>
-          JUST BE <span className="text-gold">QUIET</span>,<br />
-          LET THE RESULTS MAKE A <span className="text-gold" style={{ animationDelay: '0.2s' }}>NOIZE</span>
-        </h1>
-        <p className="text-sm sm:text-lg md:text-xl text-neutral-200 max-w-xl mx-auto mb-5 md:mb-10 font-light tracking-wide px-2 md:px-4 animate-fade-in opacity-95 drop-shadow-[0_6px_20px_rgba(0,0,0,0.8)]" style={{ animationDelay: '0.6s' }}>
-          Premium Fitness • Real Transformations • Lifestyle Training
-          <br />
-          <span className="text-[11px] sm:text-sm mt-2 block text-neutral-300">Train in a high-energy, women-friendly, results-driven fitness environment.</span>
-        </p>
-
-        <div className="flex w-full max-w-xl flex-col sm:flex-row items-center justify-center gap-3 md:gap-6 px-1 md:px-4 animate-fade-in-up" style={{ animationDelay: '0.8s' }}>
-          {/* Rectified: Opens Global Auth Flow */}
-          <button
-            onClick={onStart}
-            className="gold-gradient text-black font-bold py-3 md:py-4 px-8 md:px-10 rounded-full text-sm md:text-base tracking-widest uppercase w-full sm:w-auto shadow-lg shadow-gold/20 hover:shadow-[0_8px_30px_rgba(229,192,123,0.4)] hover:-translate-y-1 transition-all duration-300 text-center"
-          >
-            GET STARTED
-          </button>
-          <button
-            onClick={() => handleWhatsApp("Hi, I'm interested in joining NOIZE Fitness & Lifestyle. Please share more details.")}
-            className="glass shadow-lg border border-white/10 text-white font-bold py-3 md:py-4 px-8 md:px-10 rounded-full text-sm md:text-base tracking-widest uppercase w-full sm:w-auto flex items-center justify-center gap-3 hover:bg-white/5 hover:border-white/20 hover:-translate-y-1 transition-all duration-300 group"
-          >
-            <svg className="w-5 h-5 md:w-5 md:h-5 group-hover:scale-110 transition-transform duration-300" fill="currentColor" viewBox="0 0 24 24">
-              <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z" />
-            </svg>
-            WhatsApp Enquiry
-          </button>
-        </div>
-        {heroMedia.length > 1 && (
-          <div className="mt-10 flex justify-center gap-2" aria-label="Hero media selector">
-            {heroMedia.map((media, index) => (
-              <button
-                key={media.src}
-                type="button"
-                onClick={() => setActiveMedia(index)}
-                className={`h-1.5 rounded-full transition-all ${activeMedia === index ? 'w-10 bg-gold' : 'w-5 bg-white/30 hover:bg-white/60'}`}
-                aria-label={`Show slide ${index + 1}`}
-              />
-            ))}
+          <div className="inline-flex items-center justify-center gap-2 mb-3 md:mb-6 px-3 md:px-4 py-1.5 md:py-2 border border-gold/20 bg-black/50 backdrop-blur-md rounded-full shadow-lg animate-fade-in-down" style={{ animationDelay: '0.2s' }}>
+            <span className="w-2 h-2 rounded-full bg-gold/80"></span>
+            <span className="text-[11px] md:text-sm font-bold tracking-[0.22em] text-gold uppercase">Train Hard. Move Loud.</span>
           </div>
-        )}
+          <div className="flex flex-wrap items-center justify-center gap-x-2 gap-y-1 mb-3 md:mb-6 animate-fade-in-down" style={{ animationDelay: '0.3s' }}>
+            <span className="text-xl sm:text-2xl md:text-4xl font-extrabold tracking-[0.14em] text-[#EAEAEA]">NOIZE</span>
+            <span className="text-lg sm:text-2xl md:text-4xl font-light tracking-[0.14em] text-[#CCCCCC] uppercase">Fitness & Lifestyle</span>
+          </div>
+          <h1 className="max-w-5xl text-[2rem] sm:text-4xl md:text-6xl lg:text-7xl font-black mb-3 md:mb-6 tracking-tight leading-[1.03] px-1 md:px-2 animate-fade-in-up drop-shadow-[0_10px_30px_rgba(0,0,0,0.9)]" style={{ animationDelay: '0.4s' }}>
+            JUST BE <span className="text-gold">QUIET</span>,<br />
+            LET THE RESULTS MAKE A <span className="text-gold" style={{ animationDelay: '0.2s' }}>NOIZE</span>
+          </h1>
+          <div className="flex flex-col items-center gap-2 mb-5 md:mb-10 animate-fade-in opacity-95" style={{ animationDelay: '0.6s' }}>
+            <p className="text-sm sm:text-lg md:text-xl text-neutral-200 font-light tracking-wide text-center drop-shadow-[0_6px_20px_rgba(0,0,0,0.8)]">
+              Premium Fitness • Real Transformations • Lifestyle Training
+            </p>
+            <p className="text-[11px] sm:text-sm text-neutral-400 text-center tracking-wide">
+              Train in a high-energy, women-friendly, results-driven fitness environment.
+            </p>
+            <p className="text-[11px] sm:text-sm text-neutral-400 text-center tracking-wide">
+              Train from anywhere with live sessions and personalized guidance.
+            </p>
+          </div>
+
+          <div className="flex w-full max-w-xl flex-col sm:flex-row items-center justify-center gap-3 md:gap-6 px-1 md:px-4 animate-fade-in-up" style={{ animationDelay: '0.8s' }}>
+            {/* Rectified: Opens Global Auth Flow */}
+            <button
+              onClick={onStart}
+              className="gold-gradient text-black font-bold py-3 md:py-4 px-8 md:px-10 rounded-full text-sm md:text-base tracking-widest uppercase w-full sm:w-auto shadow-lg shadow-gold/20 hover:shadow-[0_8px_30px_rgba(229,192,123,0.4)] hover:-translate-y-1 transition-all duration-300 text-center"
+            >
+              GET STARTED
+            </button>
+            <button
+              onClick={() => handleWhatsApp("Hi, I'm interested in joining NOIZE Fitness & Lifestyle. Please share more details.")}
+              className="glass shadow-lg border border-white/10 text-white font-bold py-3 md:py-4 px-8 md:px-10 rounded-full text-sm md:text-base tracking-widest uppercase w-full sm:w-auto flex items-center justify-center gap-3 hover:bg-white/5 hover:border-white/20 hover:-translate-y-1 transition-all duration-300 group"
+            >
+              <svg className="w-5 h-5 md:w-5 md:h-5 group-hover:scale-110 transition-transform duration-300" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z" />
+              </svg>
+              WhatsApp Enquiry
+            </button>
+          </div>
+          {heroMedia.length > 1 && (
+            <div className="mt-10 flex justify-center gap-2" aria-label="Hero media selector">
+              {heroMedia.map((media, index) => (
+                <button
+                  key={media.src}
+                  type="button"
+                  onClick={() => setActiveMedia(index)}
+                  className={`h-1.5 rounded-full transition-all ${activeMedia === index ? 'w-10 bg-gold' : 'w-5 bg-white/30 hover:bg-white/60'}`}
+                  aria-label={`Show slide ${index + 1}`}
+                />
+              ))}
+            </div>
+          )}
         </div>
       </div>
     </section>
@@ -734,94 +738,238 @@ const TrainingTypes: React.FC<{ onTypeSelect: (typeId: string) => void; training
         </div>
 
         {slotModal && (
-          <div
-            className="fixed inset-0 z-[200] overflow-y-auto bg-black/90 px-4 backdrop-blur-md"
-            style={{ WebkitOverflowScrolling: 'touch' }}
-            onClick={() => {
-              setSlotModal(null);
-              setSelectedSlot('');
-            }}
-          >
-            <button
-              onClick={() => {
-                setSlotModal(null);
-                setSelectedSlot('');
-              }}
-              className="fixed left-4 top-4 z-[201] flex h-11 w-11 items-center justify-center rounded-full bg-black/70 text-white shadow-lg backdrop-blur-md transition-all hover:bg-black"
-              aria-label="Close time slot modal"
-            >
-              <ModalBackIcon />
-            </button>
+          <>
+            <style>{`
+              @keyframes sbFadeIn { from{opacity:0} to{opacity:1} }
+              @keyframes sbCardUp {
+                from{opacity:0;transform:translateY(24px) scale(0.97)}
+                to{opacity:1;transform:translateY(0) scale(1)}
+              }
+              .sb-overlay {
+                position:fixed;inset:0;z-index:200;
+                display:flex;align-items:center;justify-content:center;
+                padding:1rem;
+                background:rgba(0,0,0,0.88);
+                backdrop-filter:blur(10px);
+                animation:sbFadeIn 0.22s ease-out;
+                overflow-y:auto;
+              }
+              .sb-card {
+                position:relative;
+                width:100%;
+                max-width:440px;
+                background:#141414;
+                border:1px solid rgba(255,255,255,0.08);
+                border-radius:24px;
+                padding:1.5rem 1.5rem 1.75rem;
+                animation:sbCardUp 0.28s ease-out;
+                margin:auto;
+              }
+              @media(min-width:640px){
+                .sb-card{ padding:2rem 2rem 2.25rem; }
+              }
+              .sb-back-row {
+                display:flex;align-items:center;gap:0.5rem;
+                margin-bottom:1.5rem;
+                background:none;border:none;cursor:pointer;
+                padding:0;
+              }
+              .sb-back-arrow {
+                color:#E5C07B;font-size:1.1rem;line-height:1;
+              }
+              .sb-back-label {
+                font-size:0.62rem;font-weight:900;
+                letter-spacing:0.2em;text-transform:uppercase;
+                color:#E5C07B;
+              }
+              .sb-eyebrow {
+                font-size:0.6rem;font-weight:900;
+                letter-spacing:0.22em;text-transform:uppercase;
+                color:#E5C07B;text-align:center;
+                margin-bottom:0.5rem;
+              }
+              .sb-heading {
+                font-size:1.6rem;font-weight:900;
+                color:#fff;text-align:center;
+                margin-bottom:0.4rem;letter-spacing:-0.01em;
+              }
+              @media(min-width:640px){ .sb-heading{font-size:1.85rem;} }
+              .sb-sub {
+                font-size:0.78rem;color:rgba(255,255,255,0.38);
+                text-align:center;margin-bottom:1.5rem;
+              }
+              .sb-batch-label {
+                display:flex;align-items:center;gap:0.45rem;
+                font-size:0.6rem;font-weight:900;
+                letter-spacing:0.18em;text-transform:uppercase;
+                color:#E5C07B;margin-bottom:0.75rem;
+                justify-content:center;
+              }
+              .sb-batch-dot {
+                width:6px;height:6px;border-radius:50%;
+                background:#E5C07B;flex-shrink:0;
+              }
+              .sb-grid {
+                display:grid;grid-template-columns:1fr 1fr;
+                gap:0.5rem;margin-bottom:0.5rem;
+              }
+              .sb-grid-center {
+                display:flex;justify-content:center;
+                margin-bottom:1.1rem;
+              }
+              .sb-slot {
+                background:rgba(255,255,255,0.04);
+                border:1px solid rgba(255,255,255,0.1);
+                border-radius:100px;
+                padding:0.7rem 0.5rem;
+                font-size:0.72rem;font-weight:700;
+                color:rgba(255,255,255,0.75);
+                cursor:pointer;text-align:center;
+                transition:border-color 0.18s,color 0.18s,background 0.18s;
+                white-space:nowrap;
+              }
+              .sb-slot:hover {
+                border-color:rgba(229,192,123,0.45);
+                color:#fff;
+              }
+              .sb-slot.selected {
+                border-color:#E5C07B;
+                color:#E5C07B;
+                background:rgba(229,192,123,0.06);
+              }
+              .sb-slot-wide {
+                min-width:180px;
+                background:rgba(255,255,255,0.04);
+                border:1px solid rgba(255,255,255,0.1);
+                border-radius:100px;
+                padding:0.7rem 1.5rem;
+                font-size:0.72rem;font-weight:700;
+                color:rgba(255,255,255,0.75);
+                cursor:pointer;text-align:center;
+                transition:border-color 0.18s,color 0.18s,background 0.18s;
+                white-space:nowrap;
+              }
+              .sb-slot-wide:hover {
+                border-color:rgba(229,192,123,0.45);color:#fff;
+              }
+              .sb-slot-wide.selected {
+                border-color:#E5C07B;color:#E5C07B;
+                background:rgba(229,192,123,0.06);
+              }
+              .sb-confirm {
+                width:100%;padding:1rem;
+                border-radius:100px;border:none;
+                background:linear-gradient(135deg,#E5C07B 0%,#C9993E 100%);
+                color:#000;font-size:0.7rem;font-weight:900;
+                letter-spacing:0.16em;text-transform:uppercase;
+                cursor:pointer;margin-top:1.25rem;
+                transition:opacity 0.2s,transform 0.15s;
+              }
+              .sb-confirm:hover:not(:disabled){opacity:0.9;transform:scale(1.01);}
+              .sb-confirm:disabled{opacity:0.35;cursor:not-allowed;}
+              .sb-cancel {
+                width:100%;padding:0.6rem;margin-top:0.6rem;
+                background:none;border:none;
+                font-size:0.65rem;font-weight:700;
+                letter-spacing:0.14em;text-transform:uppercase;
+                color:rgba(255,255,255,0.28);cursor:pointer;
+                transition:color 0.2s;
+              }
+              .sb-cancel:hover{color:rgba(255,255,255,0.6);}
+            `}</style>
+        
             <div
-              className="mx-auto my-16 w-full max-w-md overflow-y-auto glass rounded-[32px] border border-gold/20 p-8"
-              style={{ WebkitOverflowScrolling: 'touch', maxHeight: 'calc(100vh - 4rem)' }}
-              onClick={(e) => e.stopPropagation()}
+              className="sb-overlay"
+              onClick={() => { setSlotModal(null); setSelectedSlot(''); }}
             >
-              <p className="text-xs font-black uppercase tracking-[0.3em] text-gold mb-2">
-                {slotModal === 'online' ? 'Online Training' : 'Home Training'}
-              </p>
-              <h2 className="text-2xl font-black text-white mb-1">
-                Choose Your Batch
-              </h2>
-              <p className="text-neutral-400 text-sm mb-8">
-                Select a preferred time slot to continue
-              </p>
-
-              <div className="space-y-6">
-                <div>
-                  <p className="mb-3 text-sm font-black text-gold">Morning Batch</p>
-                  <div className="flex flex-col gap-3 mb-6">
-                    {TIME_SLOTS.morning.map((slot) => (
-                      <button
-                        key={slot}
-                        onClick={() => setSelectedSlot(slot)}
-                        className={`w-full rounded-full px-5 py-3 text-sm font-black uppercase tracking-widest transition-all ${
-                          selectedSlot === slot
-                            ? 'gold-gradient text-black shadow-[0_0_20px_rgba(229,192,123,0.3)]'
-                            : 'border border-white/10 bg-white/5 text-white hover:border-gold/40'
-                        }`}
-                      >
-                        {slot}
-                      </button>
-                    ))}
-                  </div>
+              <div className="sb-card" onClick={(e) => e.stopPropagation()}>
+        
+                {/* Back row */}
+                <button
+                  className="sb-back-row"
+                  onClick={() => { setSlotModal(null); setSelectedSlot(''); }}
+                  aria-label="Go back"
+                >
+                  <span className="sb-back-arrow">←</span>
+                  <span className="sb-back-label">Get Started</span>
+                </button>
+        
+                {/* Header */}
+                <p className="sb-eyebrow">
+                  {slotModal === 'online' ? 'Online Training' : 'Home Training'}
+                </p>
+                <h2 className="sb-heading">Choose Your Batch</h2>
+                <p className="sb-sub">Select a preferred time slot to continue</p>
+        
+                {/* Morning Batch */}
+                <div className="sb-batch-label">
+                  <span className="sb-batch-dot" />
+                  Morning Batch
                 </div>
-
-                <div>
-                  <p className="mb-3 text-sm font-black text-gold">Evening Batch</p>
-                  <div className="flex flex-col gap-3 mb-8">
-                    {TIME_SLOTS.evening.map((slot) => (
-                      <button
-                        key={slot}
-                        onClick={() => setSelectedSlot(slot)}
-                        className={`w-full rounded-full px-5 py-3 text-sm font-black uppercase tracking-widest transition-all ${
-                          selectedSlot === slot
-                            ? 'gold-gradient text-black shadow-[0_0_20px_rgba(229,192,123,0.3)]'
-                            : 'border border-white/10 bg-white/5 text-white hover:border-gold/40'
-                        }`}
-                      >
-                        {slot}
-                      </button>
-                    ))}
-                  </div>
+                <div className="sb-grid">
+                  {TIME_SLOTS.morning.slice(0, 2).map((slot) => (
+                    <button
+                      key={slot}
+                      className={`sb-slot${selectedSlot === slot ? ' selected' : ''}`}
+                      onClick={() => setSelectedSlot(slot)}
+                    >
+                      {slot}
+                    </button>
+                  ))}
                 </div>
+                <div className="sb-grid-center">
+                  <button
+                    className={`sb-slot-wide${selectedSlot === TIME_SLOTS.morning[2] ? ' selected' : ''}`}
+                    onClick={() => setSelectedSlot(TIME_SLOTS.morning[2])}
+                  >
+                    {TIME_SLOTS.morning[2]}
+                  </button>
+                </div>
+        
+                {/* Evening Batch */}
+                <div className="sb-batch-label">
+                  <span className="sb-batch-dot" />
+                  Evening Batch
+                </div>
+                <div className="sb-grid">
+                  {TIME_SLOTS.evening.slice(0, 2).map((slot) => (
+                    <button
+                      key={slot}
+                      className={`sb-slot${selectedSlot === slot ? ' selected' : ''}`}
+                      onClick={() => setSelectedSlot(slot)}
+                    >
+                      {slot}
+                    </button>
+                  ))}
+                </div>
+                <div className="sb-grid-center">
+                  <button
+                    className={`sb-slot-wide${selectedSlot === TIME_SLOTS.evening[2] ? ' selected' : ''}`}
+                    onClick={() => setSelectedSlot(TIME_SLOTS.evening[2])}
+                  >
+                    {TIME_SLOTS.evening[2]}
+                  </button>
+                </div>
+        
+                {/* Confirm — keep the exact existing onClick logic unchanged */}
+                <button
+                  className="sb-confirm"
+                  disabled={!selectedSlot}
+                  onClick={handleSlotConfirm}
+                >
+                  Confirm Slot and View Plans
+                </button>
+        
+                <button
+                  className="sb-cancel"
+                  onClick={() => { setSlotModal(null); setSelectedSlot(''); }}
+                >
+                  ← Go Back
+                </button>
+        
               </div>
-
-              <button
-                disabled={!selectedSlot}
-                onClick={handleSlotConfirm}
-                className="w-full gold-gradient text-black font-black py-4 rounded-full text-sm uppercase tracking-widest disabled:opacity-40 disabled:cursor-not-allowed hover:shadow-[0_0_30px_rgba(229,192,123,0.4)] transition-all"
-              >
-                Confirm Slot & View Plans</button>
-
-              <button
-                onClick={() => { setSlotModal(null); setSelectedSlot(''); }}
-                className="w-full mt-4 text-neutral-500 text-xs font-bold uppercase tracking-widest hover:text-white transition-colors"
-              >
-                Cancel
-              </button>
             </div>
-          </div>
+          </>
         )}
       </div>
     </section>
@@ -831,7 +979,7 @@ const TrainingTypes: React.FC<{ onTypeSelect: (typeId: string) => void; training
 // Module-level guard to prevent double-rotation in React Strict Mode during development
 let offerRotatedInThisSession = false;
 
-const SpecialOffers: React.FC<{ sectionContent: PortalContentSection; onUnlockExclusiveOffers: () => void }> = ({ sectionContent, onUnlockExclusiveOffers }) => {
+export const SpecialOffers: React.FC<{ sectionContent: PortalContentSection; onUnlockExclusiveOffers: () => void }> = ({ sectionContent, onUnlockExclusiveOffers }) => {
   const [offers, setOffers] = useState<Offer[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -876,7 +1024,7 @@ const SpecialOffers: React.FC<{ sectionContent: PortalContentSection; onUnlockEx
     };
 
     fetchOffers();
-    
+
     // Reset the guard when the component unmounts (optional, but good for HMR)
     return () => {
       // We don't reset it on unmount because a refresh is a full reload anyway.
@@ -905,18 +1053,12 @@ const SpecialOffers: React.FC<{ sectionContent: PortalContentSection; onUnlockEx
           <div className="mt-10 glass rounded-[32px] border border-white/10 p-12 md:p-16 flex flex-col items-center gap-5">
             <PartyPopper className="text-[#C9A84C] w-12 h-12" aria-hidden="true" />
             <h3 className="text-xl font-black text-white uppercase tracking-wide">
-              No Ongoing Offers Right Now
+              There is no offer listed here
             </h3>
             <p className="text-neutral-400 text-sm md:text-base max-w-md leading-relaxed">
               We're cooking up something special! Check back soon for
               exclusive festive and seasonal deals.
             </p>
-            <div className="flex items-center gap-2 mt-2 px-4 py-2 rounded-full border border-gold/20 bg-gold/5">
-              <span className="h-2 w-2 rounded-full bg-gold/60 animate-pulse"></span>
-              <span className="text-gold text-xs font-black uppercase tracking-widest">
-                New offers dropping soon
-              </span>
-            </div>
           </div>
         </div>
       </section>
@@ -1409,13 +1551,13 @@ const Membership: React.FC = () => {
         <div className="text-center mb-10 md:mb-16">
           <h2 className="text-3xl md:text-5xl lg:text-6xl font-black mb-3 md:mb-4">FLEXIBLE <span className="text-gold">PLANS</span></h2>
           <p className="text-neutral-400 text-sm md:text-base px-4">Maximum results with membership options for offline, online, and home workout goals.</p>
-          <div className="mt-8 flex flex-wrap items-center justify-center gap-2 md:gap-4">
+          <div className="membership-tabs-container mt-8 flex flex-wrap items-center justify-center gap-2 md:gap-4">
             <button
               onClick={() => setActiveCategory('offline')}
               className={`min-h-11 whitespace-nowrap rounded-full px-5 py-2 text-sm md:px-5 md:py-3 md:text-sm uppercase tracking-widest transition-all ${activeCategory === 'offline'
                 ? 'gold-gradient text-black font-black'
                 : 'border border-white/15 text-white bg-transparent'
-              }`}
+                }`}
             >
               Offline
             </button>
@@ -1424,7 +1566,7 @@ const Membership: React.FC = () => {
               className={`min-h-11 whitespace-nowrap rounded-full px-5 py-2 text-sm md:px-5 md:py-3 md:text-sm uppercase tracking-widest transition-all ${activeCategory === 'online'
                 ? 'gold-gradient text-black font-black'
                 : 'border border-white/15 text-white bg-transparent'
-              }`}
+                }`}
             >
               Online
             </button>
@@ -1433,7 +1575,7 @@ const Membership: React.FC = () => {
               className={`min-h-11 whitespace-nowrap rounded-full px-5 py-2 text-sm md:px-5 md:py-3 md:text-sm uppercase tracking-widest transition-all ${activeCategory === 'home_workout'
                 ? 'gold-gradient text-black font-black'
                 : 'border border-white/15 text-white bg-transparent'
-              }`}
+                }`}
             >
               Home Workout
             </button>
@@ -1463,22 +1605,30 @@ const Membership: React.FC = () => {
                 </button>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6 md:gap-8 overflow-x-hidden">
+              <div className="membership-grid grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6 md:gap-8 overflow-x-hidden">
                 {section.plans.map((plan) => (
-                  <div key={plan.id} className={`relative flex w-full min-w-0 flex-col p-6 md:p-10 rounded-[24px] md:rounded-[32px] border ${plan.is_popular ? 'border-gold bg-gold/5' : 'border-white/10 glass'} transition-all hover:translate-y-[-10px] overflow-hidden`}>
-                    {plan.is_popular && (
-                      <span className="absolute -top-3 md:-top-4 left-1/2 -translate-x-1/2 bg-gold text-black text-xs font-black py-1.5 px-4 md:px-4 rounded-full uppercase tracking-widest">
-                        Most Popular
-                      </span>
-                    )}
-                    <h4 className="text-2xl md:text-2xl font-black mb-2">{plan.name}</h4>
-                    <p className="text-gold text-sm md:text-sm font-bold mb-6 md:mb-6">{plan.tagline}</p>
-                    <div className="mb-8 md:mb-8 flex flex-col gap-2">
-                      <div className="text-4xl md:text-4xl font-black break-words">{'\u20B9'}{plan.price.toLocaleString()}<span className="text-sm font-light text-neutral-400">/-</span></div>
-                      <p className="text-neutral-400 text-xs block">{plan.duration}</p>
+                  <div key={plan.id} className={`membership-card relative flex w-full min-w-0 flex-col p-6 md:p-10 rounded-[24px] md:rounded-[32px] border ${plan.is_popular ? 'border-gold bg-gold/5' : 'border-white/10 glass'} transition-all hover:translate-y-[-10px] overflow-hidden`}>
+                    <div className="membership-info">
+                      <div className="membership-title-row">
+                        <h4 className="membership-title text-2xl md:text-2xl font-black mb-2">{plan.name}</h4>
+                        {plan.is_popular && (
+                          <span className="membership-badge absolute -top-3 md:-top-4 left-1/2 -translate-x-1/2 bg-gold text-black text-xs font-black py-1.5 px-4 md:px-4 rounded-full uppercase tracking-widest">
+                            Most Popular
+                          </span>
+                        )}
+                      </div>
+                      <p className="membership-tagline text-gold text-sm md:text-sm font-bold mb-6 md:mb-6">{plan.tagline}</p>
+                      <div className="membership-meta-row mb-8 md:mb-8 flex flex-col gap-2">
+                        <div className="membership-price text-4xl md:text-4xl font-black break-words">{'\u20B9'}{plan.price.toLocaleString()}<span className="text-sm font-light text-neutral-400">/-</span></div>
+                        <div className="membership-duration-subtitle">
+                          <span className="membership-duration text-neutral-400 text-xs block">{plan.duration}</span>
+                          <span className="membership-separator hidden"> • </span>
+                          <span className="membership-subtitle hidden">{plan.tagline}</span>
+                        </div>
+                      </div>
                     </div>
 
-                    <ul className="space-y-3 md:space-y-4 mb-6 md:mb-10 flex-grow">
+                    <ul className="membership-features space-y-3 md:space-y-4 mb-6 md:mb-10 flex-grow">
                       {plan.features.map((feature, i) => (
                         <li key={i} className="flex items-start gap-2 md:gap-3 text-neutral-300 text-xs md:text-sm min-w-0">
                           <svg className="w-4 h-4 text-gold flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" /></svg>
@@ -1502,7 +1652,7 @@ const Membership: React.FC = () => {
                           setSlotModal(plan.category === 'online' ? 'online' : 'home');
                         }
                       }}
-                      className={`w-full py-3 md:py-4 rounded-full font-black text-xs md:text-sm transition-all text-center block ${plan.is_popular ? 'gold-gradient text-black hover:shadow-lg' : 'glass text-white hover:bg-white/10'}`}
+                      className={`membership-button w-full py-3 md:py-4 rounded-full font-black text-xs md:text-sm transition-all text-center block ${plan.is_popular ? 'gold-gradient text-black hover:shadow-lg' : 'glass text-white hover:bg-white/10'}`}
                     >
                       VIEW DETAILS
                     </button>
@@ -1547,68 +1697,245 @@ const Membership: React.FC = () => {
       </div>
 
       {slotModal && (
-        <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/90 backdrop-blur-md px-4">
-          <div className="w-full max-w-md glass rounded-[32px] border border-gold/20 p-8" onClick={(e) => e.stopPropagation()}>
-            <p className="text-xs font-black uppercase tracking-[0.3em] text-gold mb-2">
-              {slotModal === 'online' ? 'Online Training' : 'Home Training'}
-            </p>
-            <h2 className="text-2xl font-black text-white mb-1">
-              Choose Your Batch
-            </h2>
-            <p className="text-neutral-400 text-sm mb-8">
-              Select a preferred time slot to continue
-            </p>
-
-            <p className="text-xs font-black uppercase tracking-widest text-gold/70 mb-3">Morning Batch</p>
-            <div className="flex flex-col gap-3 mb-6">
-              {TIME_SLOTS.morning.map(slot => (
+        <>
+          <style>{`
+            @keyframes sbFadeIn { from{opacity:0} to{opacity:1} }
+            @keyframes sbCardUp {
+              from{opacity:0;transform:translateY(24px) scale(0.97)}
+              to{opacity:1;transform:translateY(0) scale(1)}
+            }
+            .sb-overlay {
+              position:fixed;inset:0;z-index:200;
+              display:flex;align-items:center;justify-content:center;
+              padding:1rem;
+              background:rgba(0,0,0,0.88);
+              backdrop-filter:blur(10px);
+              animation:sbFadeIn 0.22s ease-out;
+              overflow-y:auto;
+            }
+            .sb-card {
+              position:relative;
+              width:100%;
+              max-width:440px;
+              background:#141414;
+              border:1px solid rgba(255,255,255,0.08);
+              border-radius:24px;
+              padding:1.5rem 1.5rem 1.75rem;
+              animation:sbCardUp 0.28s ease-out;
+              margin:auto;
+            }
+            @media(min-width:640px){
+              .sb-card{ padding:2rem 2rem 2.25rem; }
+            }
+            .sb-back-row {
+              display:flex;align-items:center;gap:0.5rem;
+              margin-bottom:1.5rem;
+              background:none;border:none;cursor:pointer;
+              padding:0;
+            }
+            .sb-back-arrow {
+              color:#E5C07B;font-size:1.1rem;line-height:1;
+            }
+            .sb-back-label {
+              font-size:0.62rem;font-weight:900;
+              letter-spacing:0.2em;text-transform:uppercase;
+              color:#E5C07B;
+            }
+            .sb-eyebrow {
+              font-size:0.6rem;font-weight:900;
+              letter-spacing:0.22em;text-transform:uppercase;
+              color:#E5C07B;text-align:center;
+              margin-bottom:0.5rem;
+            }
+            .sb-heading {
+              font-size:1.6rem;font-weight:900;
+              color:#fff;text-align:center;
+              margin-bottom:0.4rem;letter-spacing:-0.01em;
+            }
+            @media(min-width:640px){ .sb-heading{font-size:1.85rem;} }
+            .sb-sub {
+              font-size:0.78rem;color:rgba(255,255,255,0.38);
+              text-align:center;margin-bottom:1.5rem;
+            }
+            .sb-batch-label {
+              display:flex;align-items:center;gap:0.45rem;
+              font-size:0.6rem;font-weight:900;
+              letter-spacing:0.18em;text-transform:uppercase;
+              color:#E5C07B;margin-bottom:0.75rem;
+              justify-content:center;
+            }
+            .sb-batch-dot {
+              width:6px;height:6px;border-radius:50%;
+              background:#E5C07B;flex-shrink:0;
+            }
+            .sb-grid {
+              display:grid;grid-template-columns:1fr 1fr;
+              gap:0.5rem;margin-bottom:0.5rem;
+            }
+            .sb-grid-center {
+              display:flex;justify-content:center;
+              margin-bottom:1.1rem;
+            }
+            .sb-slot {
+              background:rgba(255,255,255,0.04);
+              border:1px solid rgba(255,255,255,0.1);
+              border-radius:100px;
+              padding:0.7rem 0.5rem;
+              font-size:0.72rem;font-weight:700;
+              color:rgba(255,255,255,0.75);
+              cursor:pointer;text-align:center;
+              transition:border-color 0.18s,color 0.18s,background 0.18s;
+              white-space:nowrap;
+            }
+            .sb-slot:hover {
+              border-color:rgba(229,192,123,0.45);
+              color:#fff;
+            }
+            .sb-slot.selected {
+              border-color:#E5C07B;
+              color:#E5C07B;
+              background:rgba(229,192,123,0.06);
+            }
+            .sb-slot-wide {
+              min-width:180px;
+              background:rgba(255,255,255,0.04);
+              border:1px solid rgba(255,255,255,0.1);
+              border-radius:100px;
+              padding:0.7rem 1.5rem;
+              font-size:0.72rem;font-weight:700;
+              color:rgba(255,255,255,0.75);
+              cursor:pointer;text-align:center;
+              transition:border-color 0.18s,color 0.18s,background 0.18s;
+              white-space:nowrap;
+            }
+            .sb-slot-wide:hover {
+              border-color:rgba(229,192,123,0.45);color:#fff;
+            }
+            .sb-slot-wide.selected {
+              border-color:#E5C07B;color:#E5C07B;
+              background:rgba(229,192,123,0.06);
+            }
+            .sb-confirm {
+              width:100%;padding:1rem;
+              border-radius:100px;border:none;
+              background:linear-gradient(135deg,#E5C07B 0%,#C9993E 100%);
+              color:#000;font-size:0.7rem;font-weight:900;
+              letter-spacing:0.16em;text-transform:uppercase;
+              cursor:pointer;margin-top:1.25rem;
+              transition:opacity 0.2s,transform 0.15s;
+            }
+            .sb-confirm:hover:not(:disabled){opacity:0.9;transform:scale(1.01);}
+            .sb-confirm:disabled{opacity:0.35;cursor:not-allowed;}
+            .sb-cancel {
+              width:100%;padding:0.6rem;margin-top:0.6rem;
+              background:none;border:none;
+              font-size:0.65rem;font-weight:700;
+              letter-spacing:0.14em;text-transform:uppercase;
+              color:rgba(255,255,255,0.28);cursor:pointer;
+              transition:color 0.2s;
+            }
+            .sb-cancel:hover{color:rgba(255,255,255,0.6);}
+          `}</style>
+      
+          <div
+            className="sb-overlay"
+            onClick={() => { setSlotModal(null); setSelectedSlot(''); }}
+          >
+            <div className="sb-card" onClick={(e) => e.stopPropagation()}>
+      
+              {/* Back row */}
+              <button
+                className="sb-back-row"
+                onClick={() => { setSlotModal(null); setSelectedSlot(''); }}
+                aria-label="Go back"
+              >
+                <span className="sb-back-arrow">←</span>
+                <span className="sb-back-label">Get Started</span>
+              </button>
+      
+              {/* Header */}
+              <p className="sb-eyebrow">
+                {slotModal === 'online' ? 'Online Training' : 'Home Training'}
+              </p>
+              <h2 className="sb-heading">Choose Your Batch</h2>
+              <p className="sb-sub">Select a preferred time slot to continue</p>
+      
+              {/* Morning Batch */}
+              <div className="sb-batch-label">
+                <span className="sb-batch-dot" />
+                Morning Batch
+              </div>
+              <div className="sb-grid">
+                {TIME_SLOTS.morning.slice(0, 2).map((slot) => (
+                  <button
+                    key={slot}
+                    className={`sb-slot${selectedSlot === slot ? ' selected' : ''}`}
+                    onClick={() => setSelectedSlot(slot)}
+                  >
+                    {slot}
+                  </button>
+                ))}
+              </div>
+              <div className="sb-grid-center">
                 <button
-                  key={slot}
-                  onClick={() => setSelectedSlot(slot)}
-                  className={`w-full rounded-full px-5 py-3 text-sm font-black uppercase tracking-widest transition-all ${selectedSlot === slot
-                    ? 'gold-gradient text-black shadow-[0_0_20px_rgba(229,192,123,0.3)]'
-                    : 'border border-white/10 bg-white/5 text-white hover:border-gold/40'
-                    }`}
-                >{slot}</button>
-              ))}
-            </div>
-
-            <p className="text-xs font-black uppercase tracking-widest text-gold/70 mb-3">Evening Batch</p>
-            <div className="flex flex-col gap-3 mb-8">
-              {TIME_SLOTS.evening.map(slot => (
+                  className={`sb-slot-wide${selectedSlot === TIME_SLOTS.morning[2] ? ' selected' : ''}`}
+                  onClick={() => setSelectedSlot(TIME_SLOTS.morning[2])}
+                >
+                  {TIME_SLOTS.morning[2]}
+                </button>
+              </div>
+      
+              {/* Evening Batch */}
+              <div className="sb-batch-label">
+                <span className="sb-batch-dot" />
+                Evening Batch
+              </div>
+              <div className="sb-grid">
+                {TIME_SLOTS.evening.slice(0, 2).map((slot) => (
+                  <button
+                    key={slot}
+                    className={`sb-slot${selectedSlot === slot ? ' selected' : ''}`}
+                    onClick={() => setSelectedSlot(slot)}
+                  >
+                    {slot}
+                  </button>
+                ))}
+              </div>
+              <div className="sb-grid-center">
                 <button
-                  key={slot}
-                  onClick={() => setSelectedSlot(slot)}
-                  className={`w-full rounded-full px-5 py-3 text-sm font-black uppercase tracking-widest transition-all ${selectedSlot === slot
-                    ? 'gold-gradient text-black shadow-[0_0_20px_rgba(229,192,123,0.3)]'
-                    : 'border border-white/10 bg-white/5 text-white hover:border-gold/40'
-                    }`}
-                >{slot}</button>
-              ))}
+                  className={`sb-slot-wide${selectedSlot === TIME_SLOTS.evening[2] ? ' selected' : ''}`}
+                  onClick={() => setSelectedSlot(TIME_SLOTS.evening[2])}
+                >
+                  {TIME_SLOTS.evening[2]}
+                </button>
+              </div>
+      
+              {/* Confirm — keep the exact existing onClick logic unchanged */}
+              <button
+                className="sb-confirm"
+                disabled={!selectedSlot}
+                onClick={() => {
+                  const tab = slotModal === 'online' ? 'online' : 'home_workout';
+                  sessionStorage.setItem('noize_selected_slot', selectedSlot);
+                  sessionStorage.setItem('noize_slot_type', slotModal === 'online' ? 'online' : 'home');
+                  setSlotModal(null);
+                  setSelectedSlot('');
+                  window.location.href = `/portal?tab=${tab}`;
+                }}
+              >
+                Confirm Slot and View Plans
+              </button>
+      
+              <button
+                className="sb-cancel"
+                onClick={() => { setSlotModal(null); setSelectedSlot(''); }}
+              >
+                ← Go Back
+              </button>
+      
             </div>
-
-            <button
-              disabled={!selectedSlot}
-              onClick={() => {
-                const tab = slotModal === 'online' ? 'online' : 'home_workout';
-                sessionStorage.setItem('noize_selected_slot', selectedSlot);
-                sessionStorage.setItem('noize_slot_type', slotModal === 'online' ? 'online' : 'home');
-                setSlotModal(null);
-                setSelectedSlot('');
-                window.location.href = `/portal?tab=${tab}`;
-              }}
-              className="w-full gold-gradient text-black font-black py-4 rounded-full text-sm uppercase tracking-widest disabled:opacity-40 disabled:cursor-not-allowed hover:shadow-[0_0_30px_rgba(229,192,123,0.4)] transition-all"
-            >
-              Confirm Slot & View Plans</button>
-
-            <button
-              onClick={() => { setSlotModal(null); setSelectedSlot(''); }}
-              className="w-full mt-4 text-neutral-500 text-xs font-bold uppercase tracking-widest hover:text-white transition-colors"
-            >
-              Cancel
-            </button>
           </div>
-        </div>
+        </>
       )}
 
     </section>
@@ -1673,7 +2000,7 @@ const TransformationCard: React.FC<{ t: any, index: number }> = ({ t, index }) =
   );
 };
 
-const Transformations: React.FC = () => {
+export const Transformations: React.FC = () => {
   const [currentIndex, setCurrentIndex] = useState(0);
 
   useEffect(() => {
@@ -1725,88 +2052,6 @@ const Transformations: React.FC = () => {
     </section>
   );
 };
-
-const OnlineClasses: React.FC<{ sectionContent: PortalContentSection }> = ({ sectionContent }) => (
-  <section id="online-classes" className="py-10 md:py-24 bg-gradient-to-br from-gold/10 via-transparent to-gold/5 relative overflow-hidden border-b border-[#C9A84C]/20">
-    <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PHBhdHRlcm4gaWQ9ImdyaWQiIHdpZHRoPSI2MCIgaGVpZ2h0PSI2MCIgcGF0dGVyblVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+PHBhdGggZD0iTSAxMCAwIEwgMCAwIDAgMTAiIGZpbGw9Im5vbmUiIHN0cm9rZT0icmdiYSgyMjksMTkyLDEyMywwLjA1KSIgc3Ryb2tlLXdpZHRoPSIxIi8+PC9wYXR0ZXJuPjwvZGVmcz48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSI2MAlSIIGZpbGw9InVybCgjZ3JpZCkiLz48L3N2Zz4=')] opacity-50"></div>
-
-    <div className="container mx-auto px-6 md:px-6 relative z-10">
-      <div className="text-center mb-10 md:mb-16">
-        <div className="inline-flex items-center gap-2 mb-4 glass px-4 py-2 rounded-full border border-gold/20">
-          <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
-          <span className="text-gold font-bold text-sm uppercase tracking-wider">Live & On-Demand</span>
-        </div>
-        <h2 className="text-4xl md:text-5xl lg:text-6xl font-black mb-4 md:mb-4 px-4">
-          TRAIN FROM <span className="text-gold">ANYWHERE</span>
-        </h2>
-        <p className="text-base md:text-base px-6 max-w-2xl mx-auto text-neutral-300">
-          {sectionContent.description}
-        </p>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8 max-w-4xl mx-auto mb-10 md:mb-16">
-        <div
-          onClick={() => window.location.href = '/portal'}
-          className="glass rounded-[24px] p-6 md:p-8 border border-white/10 hover:border-gold/30 transition-all group hover:scale-105 duration-500 cursor-pointer"
-        >
-          <div className="w-14 h-14 md:w-16 md:h-16 rounded-full gold-gradient flex items-center justify-center mb-4 md:mb-6 group-hover:scale-110 transition-transform">
-            <svg className="w-7 h-7 md:w-8 md:h-8 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
-            </svg>
-          </div>
-          <h3 className="text-xl md:text-2xl font-black mb-2 md:mb-3 text-white">Live Sessions</h3>
-          <p className="text-neutral-400 text-sm md:text-base leading-relaxed">
-            {sectionContent.features[0] || 'Join interactive live classes with real-time feedback from certified trainers'}
-          </p>
-        </div>
-
-        <div
-          onClick={() => {
-            smoothScrollToId('programs');
-          }}
-          className="glass rounded-[24px] p-6 md:p-8 border border-white/10 hover:border-gold/30 transition-all group hover:scale-105 duration-500 cursor-pointer"
-        >
-          <div className="w-14 h-14 md:w-16 md:h-16 rounded-full gold-gradient flex items-center justify-center mb-4 md:mb-6 group-hover:scale-110 transition-transform">
-            <svg className="w-7 h-7 md:w-8 md:h-8 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-          </div>
-          <h3 className="text-xl md:text-2xl font-black mb-2 md:mb-3 text-white">All Programs</h3>
-          <p className="text-neutral-400 text-sm md:text-base leading-relaxed">
-            {sectionContent.features[1] || 'Choose from Transformation, CrossFit, Zumba, Yoga & Functional Training'}
-          </p>
-        </div>
-      </div>
-
-      <div className="glass rounded-[24px] md:rounded-[32px] p-6 md:p-10 border border-gold/20 max-w-4xl mx-auto">
-        <div className="flex flex-col md:flex-row items-center justify-between gap-6 md:gap-8">
-          <div className="flex-1 text-center md:text-left">
-            <div className="inline-flex items-center gap-2 mb-3 bg-gold/10 px-3 py-1.5 rounded-full">
-              <span className="text-gold text-xs md:text-sm font-bold uppercase tracking-wider">Included in Membership</span>
-            </div>
-            <h3 className="text-2xl md:text-3xl lg:text-4xl font-black mb-2 md:mb-3 text-white">
-              Get Access to <span className="text-gold">{sectionContent.title}</span>
-            </h3>
-            <p className="text-neutral-400 text-sm md:text-base mb-4 md:mb-0">
-              {sectionContent.features[2] || 'Available with all membership plans - no extra charges'}
-            </p>
-          </div>
-          <div className="flex-shrink-0">
-            <button
-              onClick={() => handleWhatsApp("Hi, I'm interested in joining NOIZE online classes. Please share more details about the schedule and how to get started.")}
-              className="gold-gradient text-black font-black py-3 md:py-4 px-8 md:px-10 rounded-full text-base md:text-lg hover:shadow-[0_0_30px_rgba(229,192,123,0.6)] transition-all inline-flex items-center gap-3 group"
-            >
-              <span>Start Online Training</span>
-              <svg className="w-5 h-5 group-hover:translate-x-1 transition-transform" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z" clipRule="evenodd" />
-              </svg>
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
-);
 
 const Gallery: React.FC = () => {
   const videoRefs = useRef<(HTMLVideoElement | null)[]>([]);
@@ -1907,25 +2152,7 @@ const Gallery: React.FC = () => {
             ))}
           </div>
 
-          <div className="md:hidden overflow-x-auto scrollbar-hide -mx-6 px-6">
-            <div className="flex gap-4 pb-4">
-              {images.map((img, i) => (
-                <div key={`mobile-${i}`} className="flex-shrink-0 w-[80vw] aspect-square rounded-[20px] overflow-hidden glass">
-                  <img src={img} alt={`Gallery ${i + 1}`} className="w-full h-full object-cover" loading="lazy" decoding="async" />
-                </div>
-              ))}
-            </div>
-          </div>
 
-          <div className="hidden md:block overflow-hidden relative">
-            <div className="flex gap-6 animate-scroll-desktop">
-              {[...images, ...images, ...images].map((img, i) => (
-                <div key={`desktop-${i}`} className="flex-shrink-0 w-[280px] lg:w-[320px] aspect-square rounded-[24px] overflow-hidden glass group">
-                  <img src={img} alt={`Gallery ${(i % images.length) + 1}`} className="w-full h-full object-cover transition-all duration-500 scale-100 group-hover:scale-110" loading="lazy" decoding="async" />
-                </div>
-              ))}
-            </div>
-          </div>
         </div>
 
         <div className="relative">
@@ -2244,7 +2471,7 @@ const Contact: React.FC = () => (
   </section>
 );
 
-const Footer: React.FC = () => (
+export const Footer: React.FC = () => (
   <footer className="py-8 pb-[calc(92px+env(safe-area-inset-bottom))] md:py-20 md:pb-20 border-t border-[#C9A84C]/20 relative overflow-hidden">
     <div className="container mx-auto px-4 md:px-6">
       <div className="grid md:grid-cols-4 gap-6 md:gap-12 mb-8 md:mb-20">
@@ -2314,7 +2541,7 @@ const OFFLINE_PORTAL_ACCESS_KEY = 'noize_offline_portal_access';
 const OFFLINE_EMAIL_COOLDOWN_KEY = 'noize_offline_email_cooldown_until';
 const OFFLINE_EMAIL_ERROR_KEY = 'noize_offline_email_error';
 
-const OfflineLoginModal: React.FC<{
+export const OfflineLoginModal: React.FC<{
   isOpen: boolean;
   onClose: () => void;
   onSuccess: (profile: OfflineCustomerProfile, repeatVisits: number) => void;
@@ -2558,144 +2785,225 @@ const OfflineLoginModal: React.FC<{
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-[150] flex items-center justify-center p-4 bg-black/95 backdrop-blur-xl animate-fade-in" onClick={onClose}>
-      <div className="relative w-full max-w-md glass rounded-[32px] border border-white/10 p-8 md:p-10 animate-fade-in-up" onClick={e => e.stopPropagation()}>
-        <button onClick={onClose} className="absolute top-6 right-6 flex h-11 w-11 items-center justify-center rounded-full text-neutral-500 hover:text-white transition-colors">
-          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>
-        </button>
+    <>
+      <style>{`
+        @keyframes loginFadeIn {
+          from { opacity: 0; transform: scale(0.96) translateY(10px); }
+          to   { opacity: 1; transform: scale(1) translateY(0); }
+        }
+        .lf-overlay {
+          position: fixed; inset: 0; z-index: 150;
+          display: flex; align-items: center; justify-content: center;
+          padding: 1rem;
+          background: rgba(0,0,0,0.88);
+          backdrop-filter: blur(8px);
+        }
+        .lf-card {
+          position: relative; width: 100%; max-width: 420px;
+          background: #111111;
+          border: 1px solid rgba(255,255,255,0.09);
+          border-radius: 20px;
+          padding: 2.25rem 2rem;
+          animation: loginFadeIn 0.32s ease-out;
+          overflow: hidden;
+        }
+        .lf-glow {
+          pointer-events: none; position: absolute; inset: 0;
+          border-radius: 20px;
+          background: radial-gradient(ellipse at 50% -5%, rgba(229,192,123,0.15) 0%, transparent 62%);
+        }
+        .lf-close {
+          position: absolute; top: 1rem; right: 1rem;
+          width: 2rem; height: 2rem; border-radius: 50%;
+          border: 1px solid rgba(255,255,255,0.14);
+          background: transparent; color: #fff;
+          font-size: 0.75rem; cursor: pointer;
+          display: flex; align-items: center; justify-content: center;
+          transition: border-color 0.2s, color 0.2s;
+        }
+        .lf-close:hover { border-color: rgba(229,192,123,0.5); color: #E5C07B; }
+        .lf-eyebrow {
+          font-size: 0.6rem; font-weight: 900;
+          letter-spacing: 0.28em; text-transform: uppercase;
+          color: #E5C07B; margin-bottom: 0.35rem;
+        }
+        .lf-title {
+          font-size: 1.55rem; font-weight: 900;
+          letter-spacing: -0.02em; text-transform: uppercase;
+          color: #ffffff; margin-bottom: 1.6rem;
+        }
+        .lf-label {
+          display: block; font-size: 0.6rem; font-weight: 900;
+          letter-spacing: 0.2em; text-transform: uppercase;
+          color: rgba(255,255,255,0.4); margin-bottom: 0.4rem;
+        }
+        .lf-input {
+          width: 100%;
+          background: rgba(255,255,255,0.04);
+          border: 1px solid rgba(255,255,255,0.09);
+          border-radius: 12px;
+          padding: 0.82rem 1rem;
+          font-size: 0.88rem; color: #ffffff;
+          outline: none; box-sizing: border-box;
+          transition: border-color 0.2s, background 0.2s;
+          margin-bottom: 1rem;
+        }
+        .lf-input::placeholder { color: rgba(255,255,255,0.22); }
+        .lf-input:focus {
+          border-color: rgba(229,192,123,0.5);
+          background: rgba(229,192,123,0.03);
+        }
+        .lf-btn {
+          width: 100%; padding: 0.95rem;
+          border-radius: 12px; border: none;
+          background: linear-gradient(135deg, #E5C07B 0%, #C9993E 100%);
+          color: #000; font-size: 0.7rem; font-weight: 900;
+          letter-spacing: 0.18em; text-transform: uppercase;
+          cursor: pointer; transition: opacity 0.2s, transform 0.15s;
+          margin-top: 0.25rem;
+        }
+        .lf-btn:hover:not(:disabled) { opacity: 0.9; transform: scale(1.01); }
+        .lf-btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+        .lf-otp-input {
+          width: 100%; background: rgba(255,255,255,0.04);
+          border: 1px solid rgba(255,255,255,0.09);
+          border-radius: 12px; padding: 0.82rem 1rem;
+          color: #fff; outline: none; box-sizing: border-box;
+          text-align: center; font-size: 1.4rem;
+          letter-spacing: 0.5em; font-weight: 900;
+          transition: border-color 0.2s;
+        }
+        .lf-otp-input:focus { border-color: rgba(229,192,123,0.5); }
+        .lf-alert-error {
+          margin-bottom: 1rem; padding: 0.7rem 0.9rem;
+          background: rgba(239,68,68,0.08);
+          border: 1px solid rgba(239,68,68,0.28);
+          border-radius: 10px; color: #f87171; font-size: 0.72rem;
+        }
+        .lf-alert-info {
+          margin-bottom: 1rem; padding: 0.7rem 0.9rem;
+          background: rgba(229,192,123,0.07);
+          border: 1px solid rgba(229,192,123,0.22);
+          border-radius: 10px; color: #E5C07B; font-size: 0.72rem;
+        }
+        .lf-footer {
+          margin-top: 1.25rem; text-align: center;
+          font-size: 0.65rem; color: rgba(255,255,255,0.25);
+        }
+        .lf-footer span { color: rgba(255,255,255,0.45); }
+        .lf-change-link {
+          font-size: 0.68rem; color: rgba(229,192,123,0.65);
+          background: none; border: none; cursor: pointer;
+          margin-top: 0.6rem; display: block; transition: color 0.2s;
+        }
+        .lf-change-link:hover { color: #E5C07B; }
+      `}</style>
 
-        <div className="text-center mb-10">
-          <div className="w-16 h-16 bg-gold/10 rounded-2xl flex items-center justify-center mx-auto mb-6">
-            <svg className="w-8 h-8 text-gold" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
-          </div>
-          <h2 className="text-2xl font-black text-white mb-2 uppercase tracking-tight">Offline <span className="text-gold">Login Portal</span></h2>
-          <p className="text-neutral-400 text-sm">Enter member details, verify your email OTP, then unlock the special offers portal.</p>
-        </div>
+      <div className="lf-overlay" onClick={onClose}>
+        <div className="lf-card" onClick={(e) => e.stopPropagation()}>
+          <div className="lf-glow" />
 
-        {error && (
-          <div className="mb-6 p-4 bg-red-500/10 border border-red-500/50 rounded-xl text-red-500 text-xs font-bold flex items-center gap-2">
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-            {error}
-          </div>
-        )}
+          <button className="lf-close" onClick={onClose} aria-label="Close">✕</button>
 
-        {infoMessage && (
-          <div className="mb-6 p-4 bg-gold/10 border border-gold/30 rounded-xl text-gold text-xs font-bold">
-            {infoMessage}
-          </div>
-        )}
+          <div style={{ position: 'relative', zIndex: 1 }}>
+            <p className="lf-eyebrow">Member Access</p>
+            <h2 className="lf-title">Login Portal</h2>
 
-        {!isEmailCodeSent ? (
-          <form onSubmit={handleSendEmailVerification} className="space-y-6">
-            <div className="grid gap-4 sm:grid-cols-2">
-              <div className="sm:col-span-2">
-                <label className="block text-[10px] font-black text-neutral-500 uppercase mb-2 tracking-[0.2em] ml-1">Name</label>
+            {/* ── Error & Info banners — keep these, they're wired to existing state ── */}
+            {error && <div className="lf-alert-error">{error}</div>}
+            {infoMessage && <div className="lf-alert-info">{infoMessage}</div>}
+
+            {/* ── Step 1: Name + Email + Send OTP ── */}
+            {!isEmailCodeSent && (
+              <form onSubmit={handleSendEmailVerification}>
+                <label className="lf-label" htmlFor="ol-name">Name</label>
                 <input
+                  id="ol-name"
+                  className="lf-input"
                   type="text"
                   required
-                  className="w-full bg-white/5 border border-white/10 rounded-2xl px-5 py-4 text-white focus:border-gold outline-none transition-all"
-                  placeholder="Enter full name"
+                  placeholder="Full name"
                   value={formData.fullName}
                   onChange={(e) => handleInputChange('fullName', e.target.value)}
+                  autoComplete="name"
                 />
-              </div>
 
-              <div>
-                <label className="block text-[10px] font-black text-neutral-500 uppercase mb-2 tracking-[0.2em] ml-1">Age</label>
+                <label className="lf-label" htmlFor="ol-email">Email</label>
                 <input
-                  type="number"
-                  required
-                  min="10"
-                  max="100"
-                  className="w-full bg-white/5 border border-white/10 rounded-2xl px-5 py-4 text-white focus:border-gold outline-none transition-all"
-                  placeholder="Age"
-                  value={formData.age}
-                  onChange={(e) => handleInputChange('age', e.target.value)}
-                />
-              </div>
-
-              <div>
-                <label className="block text-[10px] font-black text-neutral-500 uppercase mb-2 tracking-[0.2em] ml-1">DOB</label>
-                <input
-                  type="date"
-                  required
-                  className="w-full bg-white/5 border border-white/10 rounded-2xl px-5 py-4 text-white focus:border-gold outline-none transition-all"
-                  value={formData.dob}
-                  onChange={(e) => handleInputChange('dob', e.target.value)}
-                />
-              </div>
-
-              <div className="sm:col-span-2">
-                <label className="block text-[10px] font-black text-neutral-500 uppercase mb-2 tracking-[0.2em] ml-1">Email</label>
-                <input
+                  id="ol-email"
+                  className="lf-input"
                   type="email"
                   required
-                  className="w-full bg-white/5 border border-white/10 rounded-2xl px-5 py-4 text-white focus:border-gold outline-none transition-all"
                   placeholder="you@example.com"
                   value={formData.email}
                   onChange={(e) => handleInputChange('email', e.target.value)}
+                  autoComplete="email"
                 />
-              </div>
-            </div>
 
-            <button
-              type="submit"
-              disabled={loading || emailCooldownSeconds > 0}
-              className="w-full gold-gradient text-black font-black py-4 rounded-2xl text-sm uppercase tracking-widest hover:shadow-[0_0_30px_rgba(229,192,123,0.3)] transition-all disabled:opacity-50"
-            >
-              {loading ? 'SENDING...' : emailCooldownSeconds > 0 ? `Resend in ${emailCooldownSeconds}s` : 'SEND EMAIL OTP'}
-            </button>
-          </form>
-        ) : !isEmailVerified ? (
-          <form onSubmit={handleVerifyEmailCode} className="space-y-6">
-            <div>
-              <label className="block text-[10px] font-black text-neutral-500 uppercase mb-2 tracking-[0.2em] ml-1">Email OTP</label>
-              <input
-                type="text"
-                required
-                pattern="[0-9]{6}"
-                className="w-full bg-white/5 border border-white/10 rounded-2xl px-5 py-4 text-white focus:border-gold outline-none transition-all text-center text-2xl tracking-[0.5em] font-black"
-                placeholder="000000"
-                value={emailCode}
-                onChange={(e) => setEmailCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
-              />
-              <p className="mt-4 text-xs text-neutral-500 leading-relaxed">
-                Enter the 6-digit OTP sent to your email. After the OTP matches, you will continue to the special offers flow.
-              </p>
-              <button
-                type="button"
-                onClick={() => {
-                  supabase.auth.clearEmailOtpSession();
-                  sessionStorage.removeItem(OFFLINE_PORTAL_ACCESS_KEY);
-                  setIsEmailCodeSent(false);
-                  setIsEmailVerified(false);
-                  setEmailCode('');
-                  setInfoMessage(null);
-                  sessionStorage.removeItem(OFFLINE_EMAIL_PENDING_KEY);
-                }}
-                className="text-xs text-gold font-bold mt-4 block mx-auto hover:underline"
-              >
-                Change Email Address?
-              </button>
-            </div>
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full gold-gradient text-black font-black py-4 rounded-2xl text-sm uppercase tracking-widest hover:shadow-[0_0_30px_rgba(229,192,123,0.3)] transition-all disabled:opacity-50"
-            >
-              {loading ? 'VERIFYING...' : 'VERIFY EMAIL OTP'}
-            </button>
-          </form>
-        ) : null}
+                <button
+                  type="submit"
+                  className="lf-btn"
+                  disabled={loading || emailCooldownSeconds > 0}
+                >
+                  {loading
+                    ? 'Sending...'
+                    : emailCooldownSeconds > 0
+                      ? `Resend in ${emailCooldownSeconds}s`
+                      : 'Send Email OTP'}
+                </button>
+              </form>
+            )}
 
-        <div className="mt-10 pt-8 border-t border-white/5 text-center">
-          <p className="text-[10px] text-neutral-600 font-bold uppercase tracking-widest leading-relaxed">
-            By continuing, you agree to our <br/>
-            <span className="text-neutral-400">Terms of Service</span> & <span className="text-neutral-400">Privacy Policy</span>
-          </p>
+            {/* ── Step 2: OTP verification ── */}
+            {isEmailCodeSent && !isEmailVerified && (
+              <form onSubmit={handleVerifyEmailCode}>
+                <label className="lf-label" htmlFor="ol-otp">6-Digit OTP</label>
+                <input
+                  id="ol-otp"
+                  className="lf-otp-input"
+                  type="text"
+                  required
+                  pattern="[0-9]{6}"
+                  placeholder="000000"
+                  value={emailCode}
+                  onChange={(e) => setEmailCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                />
+
+                <button
+                  type="button"
+                  className="lf-change-link"
+                  onClick={() => {
+                    supabase.auth.clearEmailOtpSession();
+                    sessionStorage.removeItem(OFFLINE_PORTAL_ACCESS_KEY);
+                    setIsEmailCodeSent(false);
+                    setIsEmailVerified(false);
+                    setEmailCode('');
+                    setInfoMessage(null);
+                    sessionStorage.removeItem(OFFLINE_EMAIL_PENDING_KEY);
+                  }}
+                >
+                  Change email?
+                </button>
+
+                <button
+                  type="submit"
+                  className="lf-btn"
+                  disabled={loading}
+                  style={{ marginTop: '1rem' }}
+                >
+                  {loading ? 'Verifying...' : 'Verify OTP'}
+                </button>
+              </form>
+            )}
+
+            <p className="lf-footer">
+              By continuing you agree to our{' '}
+              <span>Terms</span> &amp; <span>Privacy Policy</span>
+            </p>
+          </div>
         </div>
       </div>
-    </div>
+    </>
   );
 };
 
@@ -2706,7 +3014,19 @@ const FloatingButtons: React.FC = () => (
       aria-label="Call us"
       className="flex h-[44px] w-[44px] items-center justify-center rounded-full bg-white text-black shadow-[0_4px_12px_rgba(0,0,0,0.4)] transition-transform hover:scale-110 group md:h-14 md:w-14 md:shadow-2xl"
     >
-      <Phone className="h-6 w-6 transition-transform group-hover:scale-110" aria-hidden="true" />
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        className="h-5 w-5 md:h-6 md:w-6"
+        fill="none"
+        viewBox="0 0 24 24"
+        stroke="currentColor"
+        strokeWidth={2}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        aria-hidden="true"
+      >
+        <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.61 1h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.58a16 16 0 0 0 6.29 6.29l.95-.96a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z" />
+      </svg>
     </a>
     <a
       href={`https://wa.me/${WHATSAPP_2}?text=${encodeURIComponent("Hi! I'm interested in NOIZE Fitness.")}`}
@@ -2863,10 +3183,11 @@ const App: React.FC = () => {
   const [siteImages, setSiteImages] = useState<Record<string, string>>({});
   const [portalContent, setPortalContent] = useState<Record<string, PortalContentSection>>(PORTAL_CONTENT_DEFAULT_MAP);
   const [user, setUser] = useState<any>(null);
-  
+
   // Modal Flow State
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [isOptionsModalOpen, setIsOptionsModalOpen] = useState(false);
+  const [optionsModalScreen, setOptionsModalScreen] = useState<'categories' | 'online_batch'>('categories');
   const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
   const [selectedBookingType, setSelectedBookingType] = useState<string | null>(null);
   const [pendingType, setPendingType] = useState<string | null>(null);
@@ -2889,6 +3210,7 @@ const App: React.FC = () => {
   };
 
   const handleGetStarted = () => {
+    setOptionsModalScreen('categories');
     setIsOptionsModalOpen(true);
   };
 
@@ -2972,11 +3294,10 @@ const App: React.FC = () => {
   const handleOptionSelect = (typeId: string) => {
     setSelectedBookingType(typeId);
     setIsOptionsModalOpen(false);
-    
+
     if (typeId === 'offline') {
       setIsBookingModalOpen(false);
-      setPendingType('offline');
-      setIsAuthModalOpen(true);
+      window.location.href = '/portal?tab=offline';
     } else if (typeId === 'online') {
       smoothScrollToId('online-classes');
     } else if (typeId === 'home') {
@@ -3120,8 +3441,6 @@ const App: React.FC = () => {
           <BrandStory />
           <ProgramsGrid />
           <WhyChooseUs />
-          <Transformations />
-          <OnlineClasses sectionContent={portalContent.online_workout} />
           <WeeklyHighlights />
           <Gallery />
           <Testimonials />
@@ -3131,13 +3450,13 @@ const App: React.FC = () => {
 
         <FloatingButtons />
 
-        <OfflineLoginModal 
+        <OfflineLoginModal
           isOpen={isAuthModalOpen}
           onClose={() => setIsAuthModalOpen(false)}
           onSuccess={handleAuthSuccess}
         />
 
-        <TrainingBookingModal 
+        <TrainingBookingModal
           isOpen={isBookingModalOpen}
           onClose={() => setIsBookingModalOpen(false)}
           selectedType={selectedBookingType}
@@ -3147,184 +3466,466 @@ const App: React.FC = () => {
         {/* Re-using Options Modal from Hero logic but controlled globally */}
         {isOptionsModalOpen && (
           <div
-            className="fixed inset-0 z-[140] overflow-y-auto bg-black/90 p-4 backdrop-blur-xl animate-fade-in"
+            className="fixed inset-0 z-[140] overflow-y-auto bg-black/95 p-0 sm:p-4 backdrop-blur-xl animate-fade-in flex items-center justify-center"
             style={{ WebkitOverflowScrolling: 'touch' }}
             onClick={() => setIsOptionsModalOpen(false)}
           >
-            <button
-              onClick={() => setIsOptionsModalOpen(false)}
-              className="fixed left-4 top-4 z-[141] flex h-11 w-11 items-center justify-center rounded-full bg-black/70 text-white shadow-lg backdrop-blur-md transition-all hover:bg-black"
-              aria-label="Close Get Started modal"
-            >
-              <ModalBackIcon />
-            </button>
-            <div className="relative mx-auto my-16 w-full max-w-5xl overflow-y-auto glass rounded-[40px] border border-white/10 p-8 md:p-12 animate-fade-in-up shadow-[0_0_100px_rgba(229,192,123,0.15)]" style={{ WebkitOverflowScrolling: 'touch', maxHeight: 'calc(100vh - 4rem)' }} onClick={e => e.stopPropagation()}>
+            {optionsModalScreen === 'categories' && (
               <button
                 onClick={() => setIsOptionsModalOpen(false)}
-                className="absolute top-6 right-6 w-12 h-12 flex items-center justify-center rounded-full bg-white/5 hover:bg-red-500/20 text-white hover:text-red-500 transition-all duration-300"
+                className="fixed left-4 top-4 z-[141] flex h-11 w-11 items-center justify-center rounded-full bg-black/70 text-white shadow-lg backdrop-blur-md transition-all hover:bg-black"
+                aria-label="Close Get Started modal"
               >
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M6 18L18 6M6 6l12 12" />
-                </svg>
+                <ModalBackIcon />
               </button>
+            )}
 
-              <button
-                onClick={() => setIsOptionsModalOpen(false)}
-                className="mb-6 flex min-h-11 min-w-11 items-center gap-2 rounded-full bg-[#0d0d0d] px-3 text-white font-medium md:hidden"
-              >
-                <ModalBackIcon className="w-4 h-4" />
-                <span>&larr; Back</span>
-              </button>
+            {optionsModalScreen === 'categories' ? (
+              <div className="relative mx-auto my-16 w-full max-w-5xl overflow-y-auto glass rounded-[40px] border border-white/10 p-8 md:p-12 animate-fade-in-up shadow-[0_0_100px_rgba(229,192,123,0.15)]" style={{ WebkitOverflowScrolling: 'touch', maxHeight: 'calc(100vh - 4rem)' }} onClick={e => e.stopPropagation()}>
 
-              <div className="text-center mb-10">
-                <h2 className="text-3xl md:text-5xl font-black mb-4">CHOOSE YOUR <span className="text-gold">FITNESS PATH</span></h2>
-                <p className="text-neutral-400 text-lg">Choose offline, online, or home workout to continue</p>
-              </div>
 
-              <div className="grid md:grid-cols-3 gap-6">
-                {[
-                  {
-                    id: 'offline',
-                    title: portalContent.offline_workout.title,
-                    description: portalContent.offline_workout.description,
-                    icon: portalSectionIcons.offline_workout
-                  },
-                  {
-                    id: 'online',
-                    title: portalContent.online_workout.title,
-                    description: portalContent.online_workout.description,
-                    icon: portalSectionIcons.online_workout
-                  },
-                  {
-                    id: 'home',
-                    title: portalContent.home_workout.title,
-                    description: portalContent.home_workout.description,
-                    icon: portalSectionIcons.home_workout
-                  }
-                ].map((type) => (
-                  <button
-                    key={type.id}
-                    type="button"
-                    onClick={() => {
-                      if (type.id === 'offline') {
+                <div className="text-center mb-10">
+                  <h2 className="text-3xl md:text-5xl font-black mb-4 font-['Manrope']">CHOOSE YOUR <span className="text-gold">FITNESS PATH</span></h2>
+                  <p className="text-neutral-400 text-lg">Choose offline, online, or home workout to continue</p>
+                </div>
+
+                <div className="grid md:grid-cols-3 gap-6">
+                  {[
+                    {
+                      id: 'offline',
+                      title: portalContent.offline_workout.title,
+                      description: portalContent.offline_workout.description,
+                      icon: portalSectionIcons.offline_workout
+                    },
+                    {
+                      id: 'online',
+                      title: portalContent.online_workout.title,
+                      description: portalContent.online_workout.description,
+                      icon: portalSectionIcons.online_workout
+                    },
+                    {
+                      id: 'home',
+                      title: portalContent.home_workout.title,
+                      description: portalContent.home_workout.description,
+                      icon: portalSectionIcons.home_workout
+                    }
+                  ].map((type) => (
+                    <button
+                      key={type.id}
+                      type="button"
+                      onClick={() => {
+                        if (type.id === 'offline') {
+                          setIsOptionsModalOpen(false);
+                          window.location.href = '/portal?tab=offline';
+                          return;
+                        }
+
                         setIsOptionsModalOpen(false);
-                        setPendingType('offline');
-                        setIsAuthModalOpen(true);
-                        return;
-                      }
-
-                      setIsOptionsModalOpen(false);
-                      setSelectedSlot('');
-                      setSlotModal(type.id === 'online' ? 'online' : 'home');
-                    }}
-                    className="glass group mx-auto w-full rounded-3xl border border-white/5 p-6 transition-all duration-500 cursor-pointer hover:-translate-y-2 hover:border-gold/50 hover:shadow-[0_20px_50px_rgba(229,192,123,0.1)] flex flex-col items-center text-center"
-                  >
-                    <div className="mb-6 flex w-fit items-center justify-center rounded-2xl bg-[#1a1a1a] p-4 transition-all duration-500 group-hover:scale-110 group-hover:bg-gold/10">
-                      <span className="text-gold transform scale-125">{type.icon}</span>
-                    </div>
-                    <h3 className="text-xl font-bold mb-3 group-hover:text-gold transition-colors">{type.title}</h3>
-                    <p className="text-neutral-500 text-sm mb-6 leading-relaxed">{type.description}</p>
-                    <span className="gold-gradient text-black text-xs font-black py-3 px-8 rounded-full opacity-100 md:opacity-90 md:group-hover:opacity-100 transition-all duration-500 tracking-widest">
-                      GET STARTED
-                    </span>
-                  </button>
-                ))}
+                        setSelectedSlot('');
+                        setTimeout(() => {
+                          setSlotModal(type.id === 'online' ? 'online' : 'home');
+                        }, 50);
+                      }}
+                      className="glass group mx-auto w-full rounded-3xl border border-white/5 p-6 transition-all duration-500 cursor-pointer hover:-translate-y-2 hover:border-gold/50 hover:shadow-[0_20px_50px_rgba(229,192,123,0.15)] flex flex-col items-center text-center"
+                    >
+                      <div className="mb-6 flex w-fit items-center justify-center rounded-2xl bg-[#1a1a1a] p-4 transition-all duration-500 group-hover:scale-110 group-hover:bg-gold/10">
+                        <span className="text-gold transform scale-125">{type.icon}</span>
+                      </div>
+                      <h3 className="text-xl font-bold mb-3 group-hover:text-gold transition-colors">{type.title}</h3>
+                      <p className="text-neutral-500 text-sm mb-6 leading-relaxed">{type.description}</p>
+                      <span className="gold-gradient text-black text-xs font-black py-3 px-8 rounded-full opacity-100 md:opacity-90 md:group-hover:opacity-100 transition-all duration-500 tracking-widest">
+                        GET STARTED
+                      </span>
+                    </button>
+                  ))}
+                </div>
               </div>
-            </div>
+            ) : (
+              <div
+                className="relative mx-auto my-0 sm:my-8 w-full max-w-md h-[100dvh] sm:h-[calc(100vh-4rem)] min-h-[640px] sm:max-h-[850px] overflow-y-auto bg-[#121414] sm:rounded-[24px] border-0 sm:border border-white/5 shadow-[0_24px_60px_rgba(0,0,0,0.8)] flex flex-col font-['Manrope'] animate-slide-up text-[#E3E2E2] scrollbar-hide"
+                onClick={e => e.stopPropagation()}
+              >
+                {/* Header */}
+                <div className="flex items-center gap-4 px-6 pt-6 pb-4 bg-[#121414] sticky top-0 z-20 select-none">
+                  <button
+                    onClick={() => setOptionsModalScreen('categories')}
+                    className="text-[#E5C687] hover:scale-115 active:scale-90 transition-all p-1 flex items-center justify-center"
+                    aria-label="Back"
+                  >
+                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                    </svg>
+                  </button>
+                  <span className="text-[#E5C687] font-black text-xs uppercase tracking-[0.2em]">
+                    GET STARTED
+                  </span>
+                </div>
+
+                {/* Main Content */}
+                <div className="flex-1 px-6 pb-28 pt-4 flex flex-col items-center">
+                  {/* Hero Section */}
+                  <div className="text-center mt-2 mb-8 w-full">
+                    <p className="text-[#E5C687] text-[12px] font-black tracking-[0.15em] mb-2 uppercase">
+                      {slotModal === 'online' ? 'ONLINE TRAINING' : 'HOME TRAINING'}
+                    </p>
+                    <h2 className="text-white text-3xl font-extrabold tracking-tight mb-2 font-['Manrope'] leading-tight">Choose Your Batch</h2>
+                    <p className="text-[#C8C6C5] text-sm font-medium">Select a preferred time slot to continue</p>
+                  </div>
+
+                  {/* Batch Selector Sections */}
+                  <div className="flex flex-col items-center w-full max-w-sm px-2">
+                    {/* Morning Batch */}
+                    <div className="flex items-center justify-center gap-2 mb-4 w-full">
+                      <span className="w-1.5 h-1.5 rounded-full bg-[#E5C687]"></span>
+                      <span className="text-[#E5C687] text-xs font-black tracking-[0.2em] uppercase">MORNING BATCH</span>
+                    </div>
+                    <div className="grid grid-cols-2 gap-3 mb-3 w-full">
+                      {['5:30 AM – 6:30 AM', '6:30 AM – 7:30 AM'].map((slot) => {
+                        const isSelected = selectedSlot === slot;
+                        return (
+                          <button
+                            key={slot}
+                            type="button"
+                            onClick={() => setSelectedSlot(slot)}
+                            className={`py-3.5 px-3 rounded-full font-bold text-[11px] sm:text-xs tracking-wide text-center transition-all duration-300 w-full flex items-center justify-center select-none ${isSelected
+                                ? 'border-[1.5px] border-[#E5C687] bg-[#E5C687]/10 text-white shadow-[0_4px_15px_rgba(229,198,135,0.15)]'
+                                : 'bg-[#1F2020] text-white border-[1.5px] border-transparent hover:bg-[#2c2e2e]'
+                              }`}
+                          >
+                            {slot}
+                          </button>
+                        );
+                      })}
+                    </div>
+                    <div className="w-full flex justify-center mb-10">
+                      <div className="w-[calc(50%-6px)]">
+                        {(() => {
+                          const slot = '7:30 AM – 8:30 AM';
+                          const isSelected = selectedSlot === slot;
+                          return (
+                            <button
+                              type="button"
+                              onClick={() => setSelectedSlot(slot)}
+                              className={`py-3.5 px-3 rounded-full font-bold text-[11px] sm:text-xs tracking-wide text-center transition-all duration-300 w-full flex items-center justify-center select-none ${isSelected
+                                  ? 'border-[1.5px] border-[#E5C687] bg-[#E5C687]/10 text-white shadow-[0_4px_15px_rgba(229,198,135,0.15)]'
+                                  : 'bg-[#1F2020] text-white border-[1.5px] border-transparent hover:bg-[#2c2e2e]'
+                                }`}
+                            >
+                              {slot}
+                            </button>
+                          );
+                        })()}
+                      </div>
+                    </div>
+
+                    {/* Evening Batch */}
+                    <div className="flex items-center justify-center gap-2 mb-4 w-full">
+                      <span className="w-1.5 h-1.5 rounded-full bg-[#E5C687]"></span>
+                      <span className="text-[#E5C687] text-xs font-black tracking-[0.2em] uppercase">EVENING BATCH</span>
+                    </div>
+                    <div className="grid grid-cols-2 gap-3 mb-3 w-full">
+                      {['5:30 PM – 6:30 PM', '6:30 PM – 7:30 PM'].map((slot) => {
+                        const isSelected = selectedSlot === slot;
+                        return (
+                          <button
+                            key={slot}
+                            type="button"
+                            onClick={() => setSelectedSlot(slot)}
+                            className={`py-3.5 px-3 rounded-full font-bold text-[11px] sm:text-xs tracking-wide text-center transition-all duration-300 w-full flex items-center justify-center select-none ${isSelected
+                                ? 'border-[1.5px] border-[#E5C687] bg-[#E5C687]/10 text-white shadow-[0_4px_15px_rgba(229,198,135,0.15)]'
+                                : 'bg-[#1F2020] text-white border-[1.5px] border-transparent hover:bg-[#2c2e2e]'
+                              }`}
+                          >
+                            {slot}
+                          </button>
+                        );
+                      })}
+                    </div>
+                    <div className="w-full flex justify-center mb-6">
+                      <div className="w-[calc(50%-6px)]">
+                        {(() => {
+                          const slot = '7:30 PM – 8:30 PM';
+                          const isSelected = selectedSlot === slot;
+                          return (
+                            <button
+                              type="button"
+                              onClick={() => setSelectedSlot(slot)}
+                              className={`py-3.5 px-3 rounded-full font-bold text-[11px] sm:text-xs tracking-wide text-center transition-all duration-300 w-full flex items-center justify-center select-none ${isSelected
+                                  ? 'border-[1.5px] border-[#E5C687] bg-[#E5C687]/10 text-white shadow-[0_4px_15px_rgba(229,198,135,0.15)]'
+                                  : 'bg-[#1F2020] text-white border-[1.5px] border-transparent hover:bg-[#2c2e2e]'
+                                }`}
+                            >
+                              {slot}
+                            </button>
+                          );
+                        })()}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Footer CTA */}
+                <div className="p-5 mt-auto bg-[#121414] sticky bottom-0 z-20 border-t border-white/5 pb-6 sm:pb-5">
+                  <button
+                    type="button"
+                    disabled={!selectedSlot}
+                    onClick={() => {
+                      const tab = slotModal === 'online' ? 'online' : 'home_workout';
+                      sessionStorage.setItem('noize_selected_slot', selectedSlot);
+                      sessionStorage.setItem('noize_slot_type', slotModal || 'online');
+                      setIsOptionsModalOpen(false);
+                      window.location.href = `/portal?tab=${tab}`;
+                    }}
+                    className="w-full py-4 px-6 rounded-full bg-[#E5C687] text-[#3F2E00] font-extrabold text-[12px] sm:text-xs uppercase tracking-widest transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] hover:shadow-[0_8px_30px_rgba(229,198,135,0.3)] shadow-lg select-none disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:scale-100 disabled:hover:shadow-none"
+                  >
+                    CONFIRM SLOT AND VIEW PLANS
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         )}
 
         {slotModal && (
-          <div
-            className="fixed inset-0 z-[200] overflow-y-auto bg-black/90 px-4 backdrop-blur-md"
-            style={{ WebkitOverflowScrolling: 'touch' }}
-            onClick={() => {
-              setSlotModal(null);
-              setSelectedSlot('');
-            }}
-          >
-            <button
-              onClick={() => {
-                setSlotModal(null);
-                setSelectedSlot('');
-              }}
-              className="fixed left-4 top-4 z-[201] flex h-11 w-11 items-center justify-center rounded-full bg-black/70 text-white shadow-lg backdrop-blur-md transition-all hover:bg-black"
-              aria-label="Close slot selection modal"
-            >
-              <ModalBackIcon />
-            </button>
+          <>
+            <style>{`
+              @keyframes sbFadeIn { from{opacity:0} to{opacity:1} }
+              @keyframes sbCardUp {
+                from{opacity:0;transform:translateY(24px) scale(0.97)}
+                to{opacity:1;transform:translateY(0) scale(1)}
+              }
+              .sb-overlay {
+                position:fixed;inset:0;z-index:200;
+                display:flex;align-items:center;justify-content:center;
+                padding:1rem;
+                background:rgba(0,0,0,0.88);
+                backdrop-filter:blur(10px);
+                animation:sbFadeIn 0.22s ease-out;
+                overflow-y:auto;
+              }
+              .sb-card {
+                position:relative;
+                width:100%;
+                max-width:440px;
+                background:#141414;
+                border:1px solid rgba(255,255,255,0.08);
+                border-radius:24px;
+                padding:1.5rem 1.5rem 1.75rem;
+                animation:sbCardUp 0.28s ease-out;
+                margin:auto;
+              }
+              @media(min-width:640px){
+                .sb-card{ padding:2rem 2rem 2.25rem; }
+              }
+              .sb-back-row {
+                display:flex;align-items:center;gap:0.5rem;
+                margin-bottom:1.5rem;
+                background:none;border:none;cursor:pointer;
+                padding:0;
+              }
+              .sb-back-arrow {
+                color:#E5C07B;font-size:1.1rem;line-height:1;
+              }
+              .sb-back-label {
+                font-size:0.62rem;font-weight:900;
+                letter-spacing:0.2em;text-transform:uppercase;
+                color:#E5C07B;
+              }
+              .sb-eyebrow {
+                font-size:0.6rem;font-weight:900;
+                letter-spacing:0.22em;text-transform:uppercase;
+                color:#E5C07B;text-align:center;
+                margin-bottom:0.5rem;
+              }
+              .sb-heading {
+                font-size:1.6rem;font-weight:900;
+                color:#fff;text-align:center;
+                margin-bottom:0.4rem;letter-spacing:-0.01em;
+              }
+              @media(min-width:640px){ .sb-heading{font-size:1.85rem;} }
+              .sb-sub {
+                font-size:0.78rem;color:rgba(255,255,255,0.38);
+                text-align:center;margin-bottom:1.5rem;
+              }
+              .sb-batch-label {
+                display:flex;align-items:center;gap:0.45rem;
+                font-size:0.6rem;font-weight:900;
+                letter-spacing:0.18em;text-transform:uppercase;
+                color:#E5C07B;margin-bottom:0.75rem;
+                justify-content:center;
+              }
+              .sb-batch-dot {
+                width:6px;height:6px;border-radius:50%;
+                background:#E5C07B;flex-shrink:0;
+              }
+              .sb-grid {
+                display:grid;grid-template-columns:1fr 1fr;
+                gap:0.5rem;margin-bottom:0.5rem;
+              }
+              .sb-grid-center {
+                display:flex;justify-content:center;
+                margin-bottom:1.1rem;
+              }
+              .sb-slot {
+                background:rgba(255,255,255,0.04);
+                border:1px solid rgba(255,255,255,0.1);
+                border-radius:100px;
+                padding:0.7rem 0.5rem;
+                font-size:0.72rem;font-weight:700;
+                color:rgba(255,255,255,0.75);
+                cursor:pointer;text-align:center;
+                transition:border-color 0.18s,color 0.18s,background 0.18s;
+                white-space:nowrap;
+              }
+              .sb-slot:hover {
+                border-color:rgba(229,192,123,0.45);
+                color:#fff;
+              }
+              .sb-slot.selected {
+                border-color:#E5C07B;
+                color:#E5C07B;
+                background:rgba(229,192,123,0.06);
+              }
+              .sb-slot-wide {
+                min-width:180px;
+                background:rgba(255,255,255,0.04);
+                border:1px solid rgba(255,255,255,0.1);
+                border-radius:100px;
+                padding:0.7rem 1.5rem;
+                font-size:0.72rem;font-weight:700;
+                color:rgba(255,255,255,0.75);
+                cursor:pointer;text-align:center;
+                transition:border-color 0.18s,color 0.18s,background 0.18s;
+                white-space:nowrap;
+              }
+              .sb-slot-wide:hover {
+                border-color:rgba(229,192,123,0.45);color:#fff;
+              }
+              .sb-slot-wide.selected {
+                border-color:#E5C07B;color:#E5C07B;
+                background:rgba(229,192,123,0.06);
+              }
+              .sb-confirm {
+                width:100%;padding:1rem;
+                border-radius:100px;border:none;
+                background:linear-gradient(135deg,#E5C07B 0%,#C9993E 100%);
+                color:#000;font-size:0.7rem;font-weight:900;
+                letter-spacing:0.16em;text-transform:uppercase;
+                cursor:pointer;margin-top:1.25rem;
+                transition:opacity 0.2s,transform 0.15s;
+              }
+              .sb-confirm:hover:not(:disabled){opacity:0.9;transform:scale(1.01);}
+              .sb-confirm:disabled{opacity:0.35;cursor:not-allowed;}
+              .sb-cancel {
+                width:100%;padding:0.6rem;margin-top:0.6rem;
+                background:none;border:none;
+                font-size:0.65rem;font-weight:700;
+                letter-spacing:0.14em;text-transform:uppercase;
+                color:rgba(255,255,255,0.28);cursor:pointer;
+                transition:color 0.2s;
+              }
+              .sb-cancel:hover{color:rgba(255,255,255,0.6);}
+            `}</style>
+        
             <div
-              className="mx-auto my-16 w-full max-w-md overflow-y-auto glass rounded-[32px] border border-gold/20 p-8"
-              style={{ WebkitOverflowScrolling: 'touch', maxHeight: 'calc(100vh - 4rem)' }}
-              onClick={(e) => e.stopPropagation()}
+              className="sb-overlay"
+              onClick={() => { setSlotModal(null); setSelectedSlot(''); }}
             >
-              <p className="text-xs font-black uppercase tracking-[0.3em] text-gold mb-2">
-                {slotModal === 'online' ? '🖥 Online Training' : '🏠 Home Training'}
-              </p>
-              <h2 className="text-2xl font-black text-white mb-1">
-                Choose Your Batch
-              </h2>
-              <p className="text-neutral-400 text-sm mb-8">
-                Select a preferred time slot to continue to membership
-              </p>
-
-              <p className="text-[10px] font-black uppercase tracking-widest text-gold/70 mb-3">Morning Batch</p>
-              <div className="flex flex-col gap-3 mb-6">
-                {TIME_SLOTS.morning.map((slot) => (
+              <div className="sb-card" onClick={(e) => e.stopPropagation()}>
+        
+                {/* Back row */}
+                <button
+                  className="sb-back-row"
+                  onClick={() => { setSlotModal(null); setSelectedSlot(''); }}
+                  aria-label="Go back"
+                >
+                  <span className="sb-back-arrow">←</span>
+                  <span className="sb-back-label">Get Started</span>
+                </button>
+        
+                {/* Header */}
+                <p className="sb-eyebrow">
+                  {slotModal === 'online' ? 'Online Training' : 'Home Training'}
+                </p>
+                <h2 className="sb-heading">Choose Your Batch</h2>
+                <p className="sb-sub">Select a preferred time slot to continue</p>
+        
+                {/* Morning Batch */}
+                <div className="sb-batch-label">
+                  <span className="sb-batch-dot" />
+                  Morning Batch
+                </div>
+                <div className="sb-grid">
+                  {TIME_SLOTS.morning.slice(0, 2).map((slot) => (
+                    <button
+                      key={slot}
+                      className={`sb-slot${selectedSlot === slot ? ' selected' : ''}`}
+                      onClick={() => setSelectedSlot(slot)}
+                    >
+                      {slot}
+                    </button>
+                  ))}
+                </div>
+                <div className="sb-grid-center">
                   <button
-                    key={slot}
-                    onClick={() => setSelectedSlot(slot)}
-                    className={`w-full rounded-full px-5 py-3 text-sm font-black uppercase tracking-widest transition-all ${selectedSlot === slot
-                      ? 'gold-gradient text-black shadow-[0_0_20px_rgba(229,192,123,0.3)]'
-                      : 'border border-white/10 bg-white/5 text-white hover:border-gold/40'
-                      }`}
+                    className={`sb-slot-wide${selectedSlot === TIME_SLOTS.morning[2] ? ' selected' : ''}`}
+                    onClick={() => setSelectedSlot(TIME_SLOTS.morning[2])}
                   >
-                    {slot}
+                    {TIME_SLOTS.morning[2]}
                   </button>
-                ))}
-              </div>
-
-              <p className="text-[10px] font-black uppercase tracking-widest text-gold/70 mb-3">Evening Batch</p>
-              <div className="flex flex-col gap-3 mb-8">
-                {TIME_SLOTS.evening.map((slot) => (
+                </div>
+        
+                {/* Evening Batch */}
+                <div className="sb-batch-label">
+                  <span className="sb-batch-dot" />
+                  Evening Batch
+                </div>
+                <div className="sb-grid">
+                  {TIME_SLOTS.evening.slice(0, 2).map((slot) => (
+                    <button
+                      key={slot}
+                      className={`sb-slot${selectedSlot === slot ? ' selected' : ''}`}
+                      onClick={() => setSelectedSlot(slot)}
+                    >
+                      {slot}
+                    </button>
+                  ))}
+                </div>
+                <div className="sb-grid-center">
                   <button
-                    key={slot}
-                    onClick={() => setSelectedSlot(slot)}
-                    className={`w-full rounded-full px-5 py-3 text-sm font-black uppercase tracking-widest transition-all ${selectedSlot === slot
-                      ? 'gold-gradient text-black shadow-[0_0_20px_rgba(229,192,123,0.3)]'
-                      : 'border border-white/10 bg-white/5 text-white hover:border-gold/40'
-                      }`}
+                    className={`sb-slot-wide${selectedSlot === TIME_SLOTS.evening[2] ? ' selected' : ''}`}
+                    onClick={() => setSelectedSlot(TIME_SLOTS.evening[2])}
                   >
-                    {slot}
+                    {TIME_SLOTS.evening[2]}
                   </button>
-                ))}
+                </div>
+        
+                {/* Confirm — keep the exact existing onClick logic unchanged */}
+                <button
+                  className="sb-confirm"
+                  disabled={!selectedSlot}
+                  onClick={() => {
+                    const tab = slotModal === 'online' ? 'online' : 'home_workout';
+                    sessionStorage.setItem('noize_selected_slot', selectedSlot);
+                    sessionStorage.setItem('noize_slot_type', slotModal);
+                    setSlotModal(null);
+                    setSelectedSlot('');
+                    window.location.href = `/portal?tab=${tab}`;
+                  }}
+                >
+                  Confirm Slot and View Plans
+                </button>
+        
+                <button
+                  className="sb-cancel"
+                  onClick={() => { setSlotModal(null); setSelectedSlot(''); }}
+                >
+                  ← Go Back
+                </button>
+        
               </div>
-
-              <button
-                disabled={!selectedSlot}
-                onClick={() => {
-                  const tab = slotModal === 'online' ? 'online' : 'home_workout';
-                  sessionStorage.setItem('noize_selected_slot', selectedSlot);
-                  sessionStorage.setItem('noize_slot_type', slotModal);
-                  setSlotModal(null);
-                  setSelectedSlot('');
-                  window.location.href = `/portal?tab=${tab}`;
-                }}
-                className="w-full gold-gradient text-black font-black py-4 rounded-full text-sm uppercase tracking-widest transition-all hover:shadow-[0_0_30px_rgba(229,192,123,0.4)] disabled:opacity-40 disabled:cursor-not-allowed"
-              >
-                Confirm Slot & View Plans</button>
-
-              <button
-                onClick={() => {
-                  setSlotModal(null);
-                  setSelectedSlot('');
-                }}
-                className="w-full mt-4 text-neutral-500 text-xs font-bold uppercase tracking-widest hover:text-white transition-colors"
-              >
-                ← Go Back
-              </button>
             </div>
-          </div>
+          </>
         )}
       </div>
     </SiteImagesContext.Provider>

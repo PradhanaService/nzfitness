@@ -17,6 +17,7 @@
     
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
       html {
         scroll-behavior: smooth;
@@ -24,6 +25,7 @@
         overscroll-behavior-y: none;
       }
       body {
+        margin: 0;
         font-family: 'Inter', sans-serif;
         background-color: #0E0E0E;
         color: #FFFFFF;
@@ -58,6 +60,7 @@
         background: radial-gradient(circle, rgba(255, 255, 255, 0.22) 0%, rgba(255, 255, 255, 0) 70%);
       }
       #root {
+        min-height: 100vh;
         position: relative;
         z-index: 1;
       }
@@ -262,13 +265,12 @@
         background-size: 200% 200%;
       }
       
-      /* Image Loading Optimization */
+      /* Safer rendering defaults for Chromium/Brave */
       img {
-        content-visibility: auto;
+        display: block;
       }
       main section {
-        content-visibility: auto;
-        contain-intrinsic-size: 900px;
+        position: relative;
       }
       img[loading="lazy"] {
         background: rgba(26, 26, 26, 0.4);
@@ -283,6 +285,17 @@
         background: #090909;
       }
       @media (max-width: 768px) {
+        *::-webkit-scrollbar {
+          display: none;
+        }
+        * {
+          scrollbar-width: none;
+          -ms-overflow-style: none;
+        }
+        html, body {
+          overflow-x: hidden;
+          max-width: 100vw;
+        }
         body::before {
           width: 220px;
           height: 220px;

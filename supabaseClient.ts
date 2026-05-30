@@ -344,6 +344,7 @@ const emitMergedSession = async (callback: AuthCallback, event: string, preferre
 
 export const supabase = {
   from: supabaseData.from.bind(supabaseData),
+  rpc: supabaseData.rpc.bind(supabaseData),
   channel: supabaseData.channel.bind(supabaseData),
   removeChannel: (channel: RealtimeChannel) => supabaseData.removeChannel(channel),
   functions: {

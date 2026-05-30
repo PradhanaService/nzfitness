@@ -169,6 +169,7 @@ const MembershipPortal: React.FC = () => {
   const [plans, setPlans] = useState<MembershipPlan[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedPlan, setSelectedPlan] = useState<MembershipPlan | null>(null);
+  const [showPaymentQR, setShowPaymentQR] = useState(false);
   const [activeCategory, setActiveCategory] = useState<MembershipCategory>(
     (tabFromUrl as MembershipCategory) || 'offline'
   );
@@ -176,6 +177,7 @@ const MembershipPortal: React.FC = () => {
   const [pendingPlan, setPendingPlan] = useState<MembershipPlan | null>(null);
   const [portalSelectedSlot, setPortalSelectedSlot] = useState(existingSlot);
   const isOfflineUser = !!sessionStorage.getItem(OFFLINE_PORTAL_ACCESS_KEY);
+  const [showMysteryPopup, setShowMysteryPopup] = useState(false);
 
   const openExclusiveOffersLogin = () => {
     window.location.href = '/?exclusiveOffers=1';
@@ -240,6 +242,55 @@ const MembershipPortal: React.FC = () => {
   }, []);
 
   useEffect(() => {
+    if (activeCategory !== 'offline') {
+      return;
+    }
+
+    if (
+      sessionStorage.getItem('mysteryPopupShown') === 'true' ||
+      sessionStorage.getItem('mysteryClaimed') === 'true' ||
+      localStorage.getItem('mysteryClaimed') === 'true'
+    ) {
+      return;
+    }
+
+    const timer = setTimeout(async () => {
+      try {
+        const { data, error } = await supabase.rpc('increment_and_check_mystery_popup');
+        if (error) {
+          console.error('Error checking mystery eligibility:', error);
+          return;
+        }
+
+        if (data && (data as any).showPopup === true) {
+          sessionStorage.setItem('mysteryPopupShown', 'true');
+          setShowMysteryPopup(true);
+        }
+      } catch (err) {
+        console.error('Unexpected error checking mystery eligibility:', err);
+      }
+    }, 4000); // 4 seconds of surfing offline category
+
+    return () => {
+      clearTimeout(timer);
+    };
+  }, [activeCategory]);
+
+  const handleRevealMysteryOffer = () => {
+    sessionStorage.setItem('mysteryClaimed', 'true');
+    localStorage.setItem('mysteryClaimed', 'true');
+    setShowMysteryPopup(false);
+    openMysteryOffersPortal();
+  };
+
+  const handleDismissMysteryPopup = () => {
+    sessionStorage.setItem('mysteryClaimed', 'true');
+    localStorage.setItem('mysteryClaimed', 'true');
+    setShowMysteryPopup(false);
+  };
+
+
+  useEffect(() => {
     if (tabFromUrl === 'offline' || tabFromUrl === 'online' || tabFromUrl === 'home_workout') {
       setActiveCategory(tabFromUrl);
     }
@@ -247,10 +298,12 @@ const MembershipPortal: React.FC = () => {
 
   const openPaymentModal = (plan: MembershipPlan) => {
     setSelectedPlan(plan);
+    setShowPaymentQR(false);
   };
 
   const closePaymentModal = () => {
     setSelectedPlan(null);
+    setShowPaymentQR(false);
   };
 
   const sendPlanWhatsApp = (plan: MembershipPlan) => {
@@ -316,9 +369,11 @@ const MembershipPortal: React.FC = () => {
         <div className="mb-8 flex items-center justify-between gap-3">
           <button
             onClick={() => navigate('/')}
-            className="rounded-full border border-white/15 px-4 py-2 text-xs font-bold uppercase tracking-[0.14em] text-white transition-all hover:border-gold/40 hover:text-gold"
+            className="group inline-flex items-center gap-2.5 rounded-full border border-gold/30 bg-black/40 px-5 py-2 text-xs font-bold uppercase tracking-[0.2em] text-gold backdrop-blur-md transition-all duration-300 hover:border-gold hover:bg-gold hover:text-black hover:shadow-[0_0_15px_rgba(201,168,76,0.4)]"
+            aria-label="Back to home"
           >
-            Back To Home
+            <span className="transition-transform duration-300 group-hover:-translate-x-1 text-sm font-black">←</span>
+            <span>Back to Home</span>
           </button>
           {isOfflineUser && (
             <button
@@ -334,57 +389,9 @@ const MembershipPortal: React.FC = () => {
           )}
         </div>
         <div className="mb-8 text-center md:mb-10">
-          <p className="mb-3 inline-flex rounded-full border border-gold/20 px-3 py-1 text-[10px] font-black uppercase tracking-[0.22em] text-gold">
-            Live from Admin Portal
-          </p>
           <h2 className="text-2xl font-black uppercase tracking-tighter text-white md:text-5xl">
-            Membership <span className="text-gold">Plans</span>
+            Membership <span className="text-gold">Portal</span>
           </h2>
-          <p className="mx-auto mt-3 max-w-2xl text-sm text-neutral-400">
-            Choose your training style, compare plans clearly, and complete your membership in one place.
-          </p>
-        </div>
-
-        <div className="mb-8 grid gap-4 md:mb-10 md:grid-cols-2 md:gap-6">
-          <div className="rounded-[20px] border border-white/10 bg-[#121212]/60 p-5 md:p-6">
-            <p className="mb-2 text-[10px] font-black uppercase tracking-[0.22em] text-gold">Exclusive Offers Portal</p>
-            <h3 className="text-xl font-black uppercase tracking-tight text-white">Executive Offer Access</h3>
-            <p className="mt-3 text-sm text-neutral-400">
-              Open the verified offer portal from here and continue through the existing login flow before unlocking offers.
-            </p>
-            <div className="mt-5 flex flex-wrap gap-3">
-              <button
-                onClick={openExclusiveOffersLogin}
-                className="rounded-full border border-white/20 px-4 py-2.5 text-xs font-black uppercase tracking-[0.14em] text-white transition-all hover:border-gold/40 hover:text-gold"
-              >
-                {isOfflineUser ? 'Re-Login Portal' : 'Login To Offers'}
-              </button>
-              {isOfflineUser && (
-                <button
-                  onClick={() => navigate('/offline-offers')}
-                  className="rounded-full border border-white/20 px-4 py-2.5 text-xs font-black uppercase tracking-[0.14em] text-white transition-all hover:border-gold/40 hover:text-gold"
-                >
-                  Open Offer Portal
-                </button>
-              )}
-            </div>
-          </div>
-
-          <div className="rounded-[20px] border border-white/10 bg-[#121212]/60 p-5 md:p-6">
-            <p className="mb-2 text-[10px] font-black uppercase tracking-[0.22em] text-gold">4 / 4 Chance Portal</p>
-            <h3 className="text-xl font-black uppercase tracking-tight text-white">Mystery Chances</h3>
-            <p className="mt-3 text-sm text-neutral-400">
-              Members can use the protected mystery portal here too. If they are not verified yet, we send them through the same OTP login first.
-            </p>
-            <div className="mt-5 flex flex-wrap gap-3">
-              <button
-                onClick={openMysteryOffersPortal}
-                className="rounded-full border border-white/20 px-4 py-2.5 text-xs font-black uppercase tracking-[0.14em] text-white transition-all hover:border-gold/40 hover:text-gold"
-              >
-                {isOfflineUser ? 'Open 4/4 Chances' : 'Login For 4/4 Chances'}
-              </button>
-            </div>
-          </div>
         </div>
 
         {loading ? (
@@ -431,20 +438,7 @@ const MembershipPortal: React.FC = () => {
                         <h3 className="text-xl font-black uppercase tracking-tight text-white md:text-4xl">{activeSection.title}</h3>
                         <p className="mt-3 max-w-2xl text-sm text-neutral-400">{activeSection.description}</p>
                       </div>
-                      <div className="flex flex-wrap gap-2">
-                        <button
-                          onClick={() => smoothScrollToId('portal-plan-list')}
-                          className="rounded-full border border-white/20 px-4 py-2 text-[10px] font-black uppercase tracking-[0.12em] text-white transition-all hover:border-gold/40 hover:text-gold sm:text-xs"
-                        >
-                          View Plans
-                        </button>
-                        <button
-                          onClick={openPortalWhatsAppNumber}
-                          className="rounded-full border border-white/20 px-4 py-2 text-[10px] font-black uppercase tracking-[0.12em] text-white transition-all hover:border-gold/40 hover:text-gold sm:text-xs"
-                        >
-                          WhatsApp
-                        </button>
-                      </div>
+
                     </div>
                   </div>
 
@@ -455,38 +449,40 @@ const MembershipPortal: React.FC = () => {
                   ) : (
                     <div id="portal-plan-list" className="flex flex-col gap-4 md:gap-6">
                       {visiblePlans.map((plan) => (
-                        <div key={plan.id} className="grid gap-4 border-b border-white/5 pb-4 last:border-b-0 md:gap-6 md:pb-6 lg:grid-cols-[1.1fr_0.9fr]">
-                          <div className="flex h-full flex-col rounded-[20px] border border-white/10 bg-[#121212]/50 p-5 transition-all duration-300 hover:border-gold/30 md:p-8">
-                            <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                              <div>
-                                <h4 className="text-xl font-black uppercase leading-tight tracking-tight text-white md:text-3xl">{plan.name}</h4>
+                        <div key={plan.id} className="portal-plan-grid grid gap-4 border-b border-white/5 pb-4 last:border-b-0 md:gap-6 md:pb-6 lg:grid-cols-[1.1fr_0.9fr]">
+                          <div className="portal-plan-card flex h-full flex-col rounded-[20px] border border-white/10 bg-[#121212]/50 p-5 transition-all duration-300 hover:border-gold/30 md:p-8">
+                            <div className="portal-plan-info">
+                              <div className="portal-plan-title-row">
+                                <h4 className="portal-plan-title text-xl font-black uppercase leading-tight tracking-tight text-white md:text-3xl">{plan.name}</h4>
+                                {plan.is_popular && (
+                                  <span className="portal-plan-badge w-fit rounded-full border border-gold/30 px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.14em] text-gold">
+                                    Most Popular
+                                  </span>
+                                )}
                               </div>
-                              {plan.is_popular && (
-                                <span className="w-fit rounded-full border border-gold/30 px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.14em] text-gold">
-                                  Most Popular
-                                </span>
-                              )}
+                              <p className="portal-plan-tagline mb-6 text-sm font-bold uppercase tracking-[0.12em] text-neutral-300">
+                                {plan.tagline}
+                              </p>
+                              <div className="portal-plan-meta-row mb-5">
+                                <p className="portal-plan-price-label text-[10px] font-black uppercase tracking-[0.18em] text-neutral-500">Price</p>
+                                <p className="portal-plan-price mt-1 text-3xl font-black leading-none text-gold md:text-4xl">{'\u20B9'} {plan.price.toLocaleString()}</p>
+                                <div className="portal-plan-duration-subtitle">
+                                  <span className="portal-plan-duration mt-2 text-xs font-bold uppercase tracking-[0.14em] text-neutral-400">{plan.duration}</span>
+                                  <span className="portal-plan-separator hidden"> • </span>
+                                  <span className="portal-plan-subtitle hidden">{plan.tagline}</span>
+                                </div>
+                              </div>
                             </div>
-
-                            <div className="mb-5">
-                              <p className="text-[10px] font-black uppercase tracking-[0.18em] text-neutral-500">Price</p>
-                              <p className="mt-1 text-3xl font-black leading-none text-gold md:text-4xl">{'\u20B9'} {plan.price.toLocaleString()}</p>
-                              <p className="mt-2 text-xs font-bold uppercase tracking-[0.14em] text-neutral-400">{plan.duration}</p>
-                            </div>
-
-                            <p className="mb-6 text-sm font-bold uppercase tracking-[0.12em] text-neutral-300">
-                              {plan.tagline}
-                            </p>
 
                             <button
                               onClick={() => openPaymentModal(plan)}
-                              className="mt-auto w-full rounded-full gold-gradient px-6 py-3 text-xs font-black uppercase tracking-[0.14em] text-black transition-all hover:scale-[1.01]"
+                              className="portal-plan-button mt-auto w-full rounded-full gold-gradient px-6 py-3 text-xs font-black uppercase tracking-[0.14em] text-black transition-all hover:scale-[1.01]"
                             >
-                              Complete Payment
+                              VIEW DETAILS
                             </button>
                           </div>
 
-                          <div className="flex h-full flex-col rounded-[20px] border border-white/10 bg-[#121212]/40 p-5 transition-all duration-300 hover:border-gold/30 md:p-8">
+                          <div className="portal-plan-features-panel flex h-full flex-col rounded-[20px] border border-white/10 bg-[#121212]/40 p-5 transition-all duration-300 hover:border-gold/30 md:p-8">
                             <h5 className="mb-5 border-l border-gold pl-3 text-xl font-black uppercase tracking-tight text-white md:text-xl">Plan Details</h5>
                             {!Array.isArray(plan.features) || plan.features.length === 0 ? (
                               <div className="flex-grow rounded-2xl border border-white/10 p-4 text-sm text-neutral-400">
@@ -496,7 +492,7 @@ const MembershipPortal: React.FC = () => {
                               <ul className="space-y-3 flex-grow">
                                 {plan.features.map((feature, index) => (
                                   <li key={`${plan.id}-${index}`} className="flex items-start gap-3 text-sm text-neutral-300">
-                                    <span className="mt-0.5 text-gold">âœ¦</span>
+                                    <span className="mt-0.5 text-gold">✦</span>
                                     <span>{feature}</span>
                                   </li>
                                 ))}
@@ -575,42 +571,218 @@ const MembershipPortal: React.FC = () => {
 
       {selectedPlan && (
         <div className="fixed inset-0 z-[160] flex items-center justify-center bg-black/85 p-4 backdrop-blur-md" onClick={closePaymentModal}>
-          <div className="relative max-h-[90vh] w-full max-w-[320px] overflow-y-auto rounded-[20px] border border-white/10 bg-[#121212] p-4 sm:max-w-[360px] md:max-w-[390px] md:p-5" onClick={(e) => e.stopPropagation()}>
+          <div className="relative w-full max-w-[340px] sm:max-w-[380px] md:max-w-[420px]" onClick={(e) => e.stopPropagation()}>
+            {/* Close button is a sibling of the scrollable card container to ensure it is always clickable on all mobile devices */}
             <button
               onClick={closePaymentModal}
-              className="absolute right-2.5 top-2.5 h-8 w-8 rounded-full border border-white/15 text-xs text-white transition-all hover:border-gold/40 hover:text-gold"
+              className="absolute right-4 top-4 z-[180] flex h-8 w-8 items-center justify-center rounded-full border border-white/15 bg-[#121212] text-xs text-white transition-all hover:border-gold/40 hover:text-gold"
+              aria-label="Close"
             >
               X
             </button>
-            <p className="mb-1.5 border-l border-gold pl-3 text-[9px] font-black uppercase tracking-[0.18em] text-gold sm:text-[10px]">Scan And Pay</p>
-            <h3 className="mb-1.5 pr-8 text-xl font-black uppercase tracking-tight text-white md:text-2xl">{selectedPlan.name}</h3>
-            <p className="mb-3 text-sm leading-relaxed text-neutral-400">
-              Scan this QR code to pay for <span className="text-white font-bold">{selectedPlan.name}</span>. Amount: <span className="font-bold text-gold">{'\u20B9'} {selectedPlan.price.toLocaleString()}</span>
-            </p>
-            <div className="mb-3 overflow-hidden rounded-[16px] border border-white/10 bg-white p-2">
-              <img src={PAYMENT_QR_IMAGE} alt="NOIZE payment QR code" className="w-full h-auto max-h-[42vh] object-contain rounded-[14px]" />
-            </div>
-            <div className="mb-3 w-full rounded-2xl border border-white/10 p-3 sm:p-4">
-              <p className="text-center text-xs font-bold leading-relaxed text-neutral-300 sm:text-sm">
-                NOTE: After payment, send the payment screenshot to WhatsApp number {PAYMENT_WHATSAPP_NUMBER}.
-              </p>
-            </div>
-            <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
-              <button
-                onClick={() => handlePlanWhatsAppClick(selectedPlan)}
-                className="flex-1 rounded-full gold-gradient px-3 py-2.5 text-[10px] font-black uppercase tracking-[0.12em] text-black transition-all hover:scale-[1.01]"
-              >
-                Open WhatsApp
-              </button>
-              <button
-                onClick={closePaymentModal}
-                className="flex-1 rounded-full border border-white/20 px-3 py-2.5 text-[10px] font-black uppercase tracking-[0.12em] text-white transition-all hover:border-gold/40 hover:text-gold"
-              >
-                Close
-              </button>
+
+            <div className="max-h-[90vh] w-full overflow-y-auto rounded-[24px] border border-white/10 bg-[#121212] p-6 pr-4">
+              {!showPaymentQR ? (
+                /* State 1: Details View */
+                <div className="animate-fade-in pr-6">
+                  <p className="mb-2 border-l border-gold pl-3 text-[10px] font-black uppercase tracking-[0.18em] text-gold sm:text-[11px]">Plan Details</p>
+                  <h3 className="mb-2 pr-4 text-xl font-black uppercase tracking-tight text-white md:text-3xl">{selectedPlan.name}</h3>
+                  
+                  <div className="mb-4">
+                    <span className="text-[10px] font-black uppercase tracking-[0.18em] text-neutral-500 block">Price</span>
+                    <span className="text-3xl font-black leading-none text-gold md:text-4xl">₹ {selectedPlan.price.toLocaleString()}</span>
+                    <span className="ml-2 text-xs font-bold uppercase tracking-[0.14em] text-neutral-400">/ {selectedPlan.duration}</span>
+                  </div>
+
+                  <div className="mb-5 bg-white/5 border border-white/10 rounded-2xl p-4">
+                    <p className="text-sm font-bold uppercase tracking-[0.12em] text-neutral-200 mb-2">Tagline</p>
+                    <p className="text-sm leading-relaxed text-neutral-300 font-light">{selectedPlan.tagline}</p>
+                  </div>
+
+                  <div className="mb-6">
+                    <p className="text-xs font-black uppercase tracking-[0.18em] text-gold mb-3">What's Included</p>
+                    {!Array.isArray(selectedPlan.features) || selectedPlan.features.length === 0 ? (
+                      <p className="text-sm text-neutral-500">No specific features listed for this plan.</p>
+                    ) : (
+                      <ul className="space-y-2.5">
+                        {selectedPlan.features.map((feature, idx) => (
+                          <li key={idx} className="flex items-start gap-3 text-sm text-neutral-300">
+                            <span className="mt-0.5 text-gold text-xs">✦</span>
+                            <span className="leading-relaxed font-light">{feature}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
+
+                  <button
+                    onClick={() => setShowPaymentQR(true)}
+                    className="w-full rounded-full gold-gradient py-3.5 text-xs font-black uppercase tracking-[0.14em] text-black transition-all hover:scale-[1.01] hover:shadow-lg shadow-[0_0_20px_rgba(229,192,123,0.2)]"
+                  >
+                    COMPLETE PAYMENT
+                  </button>
+                </div>
+              ) : (
+                /* State 2: QR Payment View */
+                <div className="animate-fade-in pr-6">
+                  <p className="mb-2 border-l border-gold pl-3 text-[10px] font-black uppercase tracking-[0.18em] text-gold sm:text-[11px]">Scan And Pay</p>
+                  <h3 className="mb-2 pr-4 text-xl font-black uppercase tracking-tight text-white md:text-3xl">{selectedPlan.name}</h3>
+                  <p className="mb-4 text-sm leading-relaxed text-neutral-400 font-light">
+                    Scan this QR code to pay for <span className="text-white font-bold">{selectedPlan.name}</span>. Amount: <span className="font-bold text-gold">₹ {selectedPlan.price.toLocaleString()}</span>
+                  </p>
+                  
+                  <div className="mb-4 overflow-hidden rounded-[16px] border border-white/10 bg-white p-2 flex items-center justify-center">
+                    <img src={PAYMENT_QR_IMAGE} alt="NOIZE payment QR code" className="w-full h-auto max-h-[35vh] object-contain rounded-[14px]" />
+                  </div>
+                  
+                  <div className="mb-5 w-full rounded-2xl border border-white/10 bg-white/5 p-3.5 text-center">
+                    <p className="text-xs font-bold leading-relaxed text-neutral-300 sm:text-sm">
+                      NOTE: After payment, send the payment screenshot to WhatsApp number {PAYMENT_WHATSAPP_NUMBER}.
+                  </p>
+                  </div>
+                  
+                  <div className="flex flex-col sm:flex-row gap-3">
+                    <button
+                      onClick={() => handlePlanWhatsAppClick(selectedPlan)}
+                      className="flex-grow rounded-full gold-gradient py-3 text-xs font-black uppercase tracking-[0.12em] text-black transition-all hover:scale-[1.01]"
+                    >
+                      Open WhatsApp
+                    </button>
+                    <button
+                      onClick={() => setShowPaymentQR(false)}
+                      className="flex-grow rounded-full border border-white/20 py-3 text-xs font-black uppercase tracking-[0.12em] text-white transition-all hover:border-gold/40 hover:text-gold"
+                    >
+                      Back to Details
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>
+      )}
+
+      {showMysteryPopup && (
+        <>
+          <style>{`
+            @keyframes mpOverlay { from{opacity:0} to{opacity:1} }
+            @keyframes mpCardPop {
+              0%{opacity:0;transform:scale(0.88) translateY(18px)}
+              65%{opacity:1;transform:scale(1.02) translateY(-4px)}
+              100%{opacity:1;transform:scale(1) translateY(0)}
+            }
+            @keyframes mpIconPulse {
+              0%,100%{transform:scale(1);box-shadow:0 0 0 0 rgba(229,192,123,0)}
+              50%{transform:scale(1.06);box-shadow:0 0 22px 4px rgba(229,192,123,0.28)}
+            }
+            @keyframes mpShimmer {
+              0%{transform:translateX(-160%) skewX(-18deg);opacity:0}
+              20%{opacity:0.55}
+              100%{transform:translateX(160%) skewX(-18deg);opacity:0}
+            }
+            .mp-overlay {
+              position:fixed;inset:0;z-index:200;
+              display:flex;align-items:center;justify-content:center;
+              padding:1rem;
+              background:rgba(0,0,0,0.80);
+              backdrop-filter:blur(6px);
+              animation:mpOverlay 0.25s ease-out;
+            }
+            .mp-card {
+              position:relative;width:100%;max-width:320px;
+              background:#0e0e0e;
+              border:1px solid rgba(229,192,123,0.22);
+              border-radius:20px;
+              padding:1.85rem 1.75rem 1.65rem;
+              text-align:center;overflow:hidden;
+              animation:mpCardPop 0.4s ease-out;
+            }
+            .mp-glow {
+              pointer-events:none;position:absolute;inset:0;border-radius:20px;
+              background:radial-gradient(ellipse at 50% 0%,rgba(229,192,123,0.13) 0%,transparent 68%);
+            }
+            .mp-shimmer {
+              pointer-events:none;position:absolute;inset-y:0;left:-30%;width:40%;
+              background:linear-gradient(90deg,transparent,rgba(255,255,255,0.07),transparent);
+              animation:mpShimmer 3.2s ease-in-out 1.2s infinite;
+            }
+            .mp-icon {
+              width:2.6rem;height:2.6rem;border-radius:50%;
+              background:linear-gradient(135deg,#E5C07B 0%,#C9993E 100%);
+              display:flex;align-items:center;justify-content:center;
+              margin:0 auto 1.1rem;
+              animation:mpIconPulse 2s ease-in-out infinite;
+            }
+            .mp-eyebrow {
+              font-size:0.6rem;font-weight:900;letter-spacing:0.28em;
+              text-transform:uppercase;color:#E5C07B;margin-bottom:0.3rem;
+            }
+            .mp-title {
+              font-size:1.3rem;font-weight:900;letter-spacing:-0.01em;
+              text-transform:uppercase;color:#fff;margin-bottom:0.6rem;
+            }
+            .mp-body {
+              font-size:0.75rem;color:rgba(255,255,255,0.4);
+              line-height:1.65;margin-bottom:1.4rem;padding:0 0.25rem;
+            }
+            .mp-reveal-btn {
+              width:100%;padding:0.9rem 1rem;border-radius:12px;border:none;
+              background:linear-gradient(135deg,#E5C07B 0%,#C9993E 100%);
+              color:#000;font-size:0.68rem;font-weight:900;
+              letter-spacing:0.18em;text-transform:uppercase;
+              cursor:pointer;transition:opacity 0.2s,transform 0.15s;
+              margin-bottom:0.85rem;
+            }
+            .mp-reveal-btn:hover{opacity:0.88;transform:scale(1.015);}
+            .mp-later {
+              background:none;border:none;font-size:0.68rem;
+              color:rgba(255,255,255,0.3);cursor:pointer;
+              transition:color 0.2s;padding:0.2rem;
+            }
+            .mp-later:hover{color:rgba(255,255,255,0.6);}
+          `}</style>
+
+          <div className="mp-overlay" onClick={() => setShowMysteryPopup(false)}>
+            <div className="mp-card" onClick={(e) => e.stopPropagation()}>
+              <div className="mp-glow" />
+              <div className="mp-shimmer" />
+
+              <div style={{ position: 'relative', zIndex: 1 }}>
+                <div className="mp-icon">
+                  <svg width="20" height="20" fill="none" stroke="#000"
+                    strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"
+                    viewBox="0 0 24 24">
+                    <path d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364-.707.707M6.343 17.657l-.707.707m12.728 0-.707-.707M6.343 6.343l-.707-.707M12 7a5 5 0 1 0 0 10A5 5 0 0 0 12 7z"/>
+                  </svg>
+                </div>
+
+                <p className="mp-eyebrow">You Got Lucky</p>
+                <h3 className="mp-title">Mystery Chance</h3>
+                <p className="mp-body">
+                  A special opportunity just unlocked for you.
+                  Tap below to reveal your 4/4 mystery offer.
+                </p>
+
+                <button
+                  className="mp-reveal-btn"
+                  onClick={() => {
+                    setShowMysteryPopup(false);
+                    openMysteryOffersPortal();
+                  }}
+                >
+                  Reveal My Offer
+                </button>
+                <br />
+                <button
+                  className="mp-later"
+                  onClick={() => setShowMysteryPopup(false)}
+                >
+                  Maybe later
+                </button>
+              </div>
+            </div>
+          </div>
+        </>
       )}
     </div>
   );

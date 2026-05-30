@@ -44,3 +44,367 @@ body {
     display: none;
   }
 }
+
+@keyframes slideUp {
+  0% { opacity: 0; transform: translateY(20px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+.animate-slide-up {
+  animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@media (max-width: 768px) {
+  /* Tab pills horizontal scrollability without wrapping */
+  .membership-tabs-container {
+    display: flex !important;
+    flex-wrap: nowrap !important;
+    overflow-x: auto !important;
+    justify-content: flex-start !important;
+    gap: 8px !important;
+    padding-bottom: 8px !important;
+    -webkit-overflow-scrolling: touch !important;
+    scrollbar-width: none !important;
+  }
+  
+  .membership-tabs-container::-webkit-scrollbar {
+    display: none !important;
+  }
+  
+  .membership-tabs-container button {
+    flex-shrink: 0 !important;
+  }
+
+  /* Grid layout to stack strip cards */
+  .membership-grid {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 12px !important;
+  }
+
+  /* Horizontal strip membership card */
+  .membership-card {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    height: 74px !important;
+    padding: 12px 16px !important;
+    border-radius: 12px !important;
+    background: #1a1a1a !important;
+    border: 0.5px solid #2a2a2a !important;
+    box-shadow: none !important;
+    transform: none !important;
+    transition: none !important;
+    overflow: visible !important;
+  }
+  
+  .membership-card:hover {
+    transform: none !important;
+    box-shadow: none !important;
+    border-color: #2a2a2a !important;
+  }
+
+  /* Hide features list on mobile */
+  .membership-features {
+    display: none !important;
+  }
+
+  /* Left-aligned text content area */
+  .membership-info {
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: center !important;
+    align-items: flex-start !important;
+    text-align: left !important;
+    flex: 1 !important;
+    min-width: 0 !important;
+    gap: 2px !important;
+  }
+
+  /* Title Row */
+  .membership-title-row {
+    display: flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+    margin-bottom: 0 !important;
+    width: 100% !important;
+  }
+
+  .membership-title {
+    font-size: 11px !important;
+    font-weight: 800 !important;
+    color: #E5C07B !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.1em !important;
+    margin: 0 !important;
+    line-height: 1.2 !important;
+    white-space: nowrap !important;
+  }
+
+  /* Inline outlined gold pill badge */
+  .membership-badge {
+    position: static !important;
+    transform: none !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    font-size: 7px !important;
+    font-weight: 800 !important;
+    color: #E5C07B !important;
+    background: transparent !important;
+    border: 0.5px solid #E5C07B !important;
+    padding: 1px 6px !important;
+    border-radius: 999px !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.05em !important;
+    margin: 0 !important;
+    line-height: 1 !important;
+    height: 14px !important;
+    white-space: nowrap !important;
+  }
+
+  /* Hide original separate tagline element */
+  .membership-tagline {
+    display: none !important;
+  }
+
+  /* Metadata row: Price, Duration and Subtitle */
+  .membership-meta-row {
+    display: flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+    margin: 0 !important;
+    width: 100% !important;
+  }
+
+  .membership-price {
+    font-size: 20px !important;
+    font-weight: 800 !important;
+    color: #E5C07B !important;
+    margin: 0 !important;
+    line-height: 1.1 !important;
+    white-space: nowrap !important;
+    flex-shrink: 0 !important;
+  }
+  
+  .membership-price span {
+    font-size: 11px !important;
+    font-weight: 400 !important;
+    color: rgba(229, 192, 123, 0.6) !important;
+  }
+
+  .membership-duration-subtitle {
+    display: flex !important;
+    align-items: center !important;
+    gap: 4px !important;
+    font-size: 10px !important;
+    color: #888888 !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+  }
+
+  .membership-duration {
+    display: inline !important;
+    font-size: 10px !important;
+    color: #888888 !important;
+    margin: 0 !important;
+  }
+
+  .membership-separator {
+    display: inline !important;
+    color: #555555 !important;
+    font-size: 8px !important;
+  }
+
+  .membership-subtitle {
+    display: inline !important;
+    font-size: 10px !important;
+    color: #888888 !important;
+    font-weight: 400 !important;
+    margin: 0 !important;
+  }
+
+  /* Button stays right-aligned */
+  .membership-button {
+    flex-shrink: 0 !important;
+    width: auto !important;
+    height: 32px !important;
+    padding: 0 14px !important;
+    border-radius: 999px !important;
+    font-size: 9px !important;
+    font-weight: 800 !important;
+    letter-spacing: 0.1em !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    margin: 0 !important;
+    line-height: 1 !important;
+  }
+
+  /* Portal Membership plan card mobile styles */
+  .portal-plan-features-panel {
+    display: none !important;
+  }
+  
+  .portal-plan-grid {
+    display: flex !important;
+    flex-direction: column !important;
+    border-bottom: 0.5px solid #2a2a2a !important;
+    padding-bottom: 12px !important;
+    gap: 0 !important;
+  }
+  
+  .portal-plan-grid:last-child {
+    border-bottom: none !important;
+    padding-bottom: 0 !important;
+  }
+
+  .portal-plan-card {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    height: 74px !important;
+    padding: 12px 16px !important;
+    border-radius: 12px !important;
+    background: #1a1a1a !important;
+    border: 0.5px solid #2a2a2a !important;
+    box-shadow: none !important;
+    transform: none !important;
+    transition: none !important;
+    overflow: visible !important;
+  }
+  
+  .portal-plan-card:hover {
+    transform: none !important;
+    box-shadow: none !important;
+    border-color: #2a2a2a !important;
+  }
+
+  .portal-plan-info {
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: center !important;
+    align-items: flex-start !important;
+    text-align: left !important;
+    flex: 1 !important;
+    min-width: 0 !important;
+    gap: 2px !important;
+    padding-right: 12px !important;
+  }
+
+  .portal-plan-title-row {
+    display: flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+    margin-bottom: 0 !important;
+    width: 100% !important;
+  }
+
+  .portal-plan-title {
+    font-size: 11px !important;
+    font-weight: 800 !important;
+    color: #E5C07B !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.1em !important;
+    margin: 0 !important;
+    line-height: 1.2 !important;
+    white-space: nowrap !important;
+  }
+
+  .portal-plan-badge {
+    position: static !important;
+    transform: none !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    font-size: 7px !important;
+    font-weight: 800 !important;
+    color: #E5C07B !important;
+    background: transparent !important;
+    border: 0.5px solid #E5C07B !important;
+    padding: 1px 6px !important;
+    border-radius: 999px !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.05em !important;
+    margin: 0 !important;
+    line-height: 1 !important;
+    height: 14px !important;
+    white-space: nowrap !important;
+  }
+
+  .portal-plan-tagline,
+  .portal-plan-price-label {
+    display: none !important;
+  }
+
+  .portal-plan-meta-row {
+    display: flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+    margin: 0 !important;
+    width: 100% !important;
+  }
+
+  .portal-plan-price {
+    font-size: 20px !important;
+    font-weight: 800 !important;
+    color: #E5C07B !important;
+    margin: 0 !important;
+    line-height: 1.1 !important;
+    white-space: nowrap !important;
+    flex-shrink: 0 !important;
+  }
+
+  .portal-plan-duration-subtitle {
+    display: flex !important;
+    align-items: center !important;
+    gap: 4px !important;
+    font-size: 10px !important;
+    color: #888888 !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+  }
+
+  .portal-plan-duration {
+    display: inline !important;
+    font-size: 10px !important;
+    color: #888888 !important;
+    margin: 0 !important;
+  }
+
+  .portal-plan-separator {
+    display: inline !important;
+    color: #555555 !important;
+    font-size: 8px !important;
+  }
+
+  .portal-plan-subtitle {
+    display: inline !important;
+    font-size: 10px !important;
+    color: #888888 !important;
+    font-weight: 400 !important;
+    margin: 0 !important;
+  }
+
+  .portal-plan-button {
+    flex-shrink: 0 !important;
+    width: auto !important;
+    height: 32px !important;
+    padding: 0 14px !important;
+    border-radius: 999px !important;
+    font-size: 9px !important;
+    font-weight: 800 !important;
+    letter-spacing: 0.1em !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    margin: 0 !important;
+    line-height: 1 !important;
+  }
+}
+
+

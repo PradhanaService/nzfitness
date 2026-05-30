@@ -10,8 +10,6 @@ type OfflinePortalCustomer = {
   phoneNumber: string;
 };
 
-type RevealState = 'idle' | 'unwrapping' | 'revealed';
-
 const OFFLINE_PORTAL_CUSTOMER_KEY = 'noize_offline_portal_customer';
 const OFFLINE_PORTAL_ACCESS_KEY = 'noize_offline_portal_access';
 const MAX_OFFER_CHANCES = 4;
@@ -26,12 +24,14 @@ const OfflineOffersPortal: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [usedChances, setUsedChances] = useState(0);
   const [errorMessage, setErrorMessage] = useState('');
-  const [revealState, setRevealState] = useState<RevealState>('idle');
-  const [activeChance, setActiveChance] = useState<number | null>(null);
-  const [revealedOffer, setRevealedOffer] = useState<Offer | null>(null);
+  const [unwrapping, setUnwrapping] = useState(false);
+  const [popup, setPopup] = useState<number | null>(null);
+  const [isRevealed, setIsRevealed] = useState(false);
 
-  const chancesRemaining = Math.max(MAX_OFFER_CHANCES - usedChances, 0);
-  const allChancesUsed = usedChances >= MAX_OFFER_CHANCES;
+  const totalChances = MAX_OFFER_CHANCES;
+  const opened = usedChances;
+  const allUsed = opened >= totalChances;
+  const remaining = Math.max(totalChances - opened, 0);
 
   useEffect(() => {
     if (isPreviewMode) {
@@ -141,461 +141,387 @@ const OfflineOffersPortal: React.FC = () => {
     return true;
   };
 
-  const handleRevealChance = async (chanceNumber: number) => {
-    if (loading || revealState === 'unwrapping' || allChancesUsed || offers.length === 0) return;
-    if (chanceNumber !== usedChances + 1) return;
+  const spawnParticles = (el: HTMLElement) => {
+    const PCOLORS = ["#E5C07B", "#C9993E", "#ffffff", "#52C27A", "#EF9F27"];
+    for (let p = 0; p < 14; p++) {
+      const d = document.createElement('div');
+      d.className = 'particle go';
+      const a = (p / 14) * 360;
+      const dist = 55 + Math.random() * 40;
+      d.style.cssText = `background:${PCOLORS[p % 5]};--tx:${Math.cos(a * Math.PI / 180) * dist}px;--ty:${Math.sin(a * Math.PI / 180) * dist}px;left:-3px;top:-3px;animation-delay:${Math.random() * 0.15}s;`;
+      el.appendChild(d);
+      setTimeout(() => d.remove(), 900);
+    }
+  };
 
-    setErrorMessage('');
-    setActiveChance(chanceNumber);
-    setRevealState('unwrapping');
+  const handleShowGiftPopup = (idx: number) => {
+    if (unwrapping) return;
+    setPopup(idx);
+    setIsRevealed(false);
+  };
+
+  const doUnwrap = async () => {
+    if (unwrapping || popup === null) return;
+    setUnwrapping(true);
+
+    // Apply CSS animations to components
+    ['wt', 'wb', 'rh', 'rv'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.classList.add('off');
+    });
+
+    const ptsEl = document.getElementById('pts');
+    if (ptsEl) spawnParticles(ptsEl);
 
     const nextCount = usedChances + 1;
     const persisted = await consumeChance(nextCount);
+
     if (!persisted) {
-      setRevealState('idle');
-      setActiveChance(null);
+      ['wt', 'wb', 'rh', 'rv'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.classList.remove('off');
+      });
+      setUnwrapping(false);
       return;
     }
 
-    const nextOffer = offers[(chanceNumber - 1) % offers.length] || null;
-
     window.setTimeout(() => {
-      setRevealedOffer(nextOffer);
-      setRevealState('revealed');
-    }, 1400);
+      setUnwrapping(false);
+      setIsRevealed(true);
+    }, 630);
   };
 
-  const closeReveal = () => {
-    setRevealState('idle');
-    setActiveChance(null);
-    setRevealedOffer(null);
+  const handleClosePopup = () => {
+    setPopup(null);
+    setIsRevealed(false);
   };
 
-  const claimOffer = (offer: Offer) => {
+  const handleOpenWhatsApp = (offer: Offer) => {
     if (!customer) return;
-    const message = `Hi, I am ${customer.fullName}. I want to claim the mystery offline offer: ${offer.title} (${offer.price_text}). My verified email is ${customer.email}.`;
+    const valueText = offer.price_text || 'Exclusive Rate';
+    const message = `Hi NOIZE! I want to claim my Mystery Offer: ${offer.title} (${valueText}) for member ${customer.fullName}. My verified email is ${customer.email}.`;
     window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`, '_blank');
+  };
+
+  const getStatus = (i: number) => {
+    if (i < usedChances) return 'opened';
+    if (i === usedChances && !allUsed) return 'tappable';
+    return 'locked';
   };
 
   if (!customer) return null;
 
   return (
-    <div className="min-h-screen bg-[#0A0A0A] px-4 py-8 text-white md:px-8 md:py-12 w-full overflow-x-hidden">
+    <div className="min-h-screen bg-[#0e0e0e] text-white w-full overflow-x-hidden">
       <style>{`
-        @keyframes giftPulse {
-          0%, 100% { transform: scale(1); box-shadow: 0 0 0 rgba(229,192,123,0); }
-          50% { transform: scale(1.03); box-shadow: 0 0 40px rgba(229,192,123,0.22); }
+        @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;500;700;900&display=swap');
+        *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+        :root{
+          --gold:#E5C07B;--gold-d:#C9993E;--bdr:rgba(229,192,123,0.22);
+          --bg:#0e0e0e;--card:#141414;
+          --text:#ffffff;--dim:rgba(255,255,255,0.55);--muted:rgba(255,255,255,0.28);
+          --green:#52C27A;--ff:'Bebas Neue',sans-serif;--fb:'DM Sans',sans-serif;
         }
-        @keyframes unwrapLid {
-          0% { transform: translateY(0) rotate(0deg); opacity: 1; }
-          100% { transform: translateY(-42px) rotate(-10deg); opacity: 0; }
+        @keyframes shimmer{0%{transform:translateX(-160%) skewX(-18deg);opacity:0}20%{opacity:.5}100%{transform:translateX(160%) skewX(-18deg);opacity:0}}
+        @keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(229,192,123,0)}50%{box-shadow:0 0 16px 3px rgba(229,192,123,0.28)}}
+        @keyframes blink{0%,100%{opacity:1}50%{opacity:.4}}
+        @keyframes overlayIn{from{opacity:0}to{opacity:1}}
+        @keyframes wrapTopOff{0%{transform:translateY(0) scaleY(1);opacity:1}60%{transform:translateY(-140%) scaleY(0.6);opacity:.4}100%{transform:translateY(-180%) scaleY(0);opacity:0}}
+        @keyframes wrapBotOff{0%{transform:translateY(0) scaleY(1);opacity:1}60%{transform:translateY(140%) scaleY(0.6);opacity:.4}100%{transform:translateY(180%) scaleY(0);opacity:0}}
+        @keyframes ribbonH{0%{transform:scaleX(1);opacity:1}100%{transform:scaleX(0);opacity:0}}
+        @keyframes ribbonV{0%{transform:scaleY(1);opacity:1}100%{transform:scaleY(0);opacity:0}}
+        @keyframes particleFly{0%{opacity:1;transform:translate(0,0) scale(1)}100%{opacity:0;transform:translate(var(--tx),var(--ty)) scale(0)}}
+        @keyframes iconBounce{0%,100%{transform:scale(1)}50%{transform:scale(1.12)}}
+        @keyframes slideUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
+        .offline-offers-body {
+          background: var(--bg);
+          color: var(--text);
+          font-family: var(--fb);
+          -webkit-font-smoothing: antialiased;
         }
-        @keyframes shimmerSweep {
-          0% { transform: translateX(-160%); opacity: 0; }
-          20% { opacity: 1; }
-          100% { transform: translateX(160%); opacity: 0; }
-        }
-        @keyframes revealRise {
-          0% { transform: translateY(24px) scale(0.96); opacity: 0; }
-          100% { transform: translateY(0) scale(1); opacity: 1; }
-        }
-        @keyframes overlayFade {
-          0% { opacity: 0; }
-          100% { opacity: 1; }
-        }
-        @keyframes modalPop {
-          0% { transform: scale(0.82) translateY(24px); opacity: 0; }
-          65% { transform: scale(1.02) translateY(-6px); opacity: 1; }
-          100% { transform: scale(1) translateY(0); opacity: 1; }
-        }
-        @keyframes burstOrbit {
-          0% { transform: translate(0, 0) scale(0.2); opacity: 0; }
-          20% { opacity: 1; }
-          100% { transform: translate(var(--tx), var(--ty)) scale(1); opacity: 0; }
-        }
-        @keyframes sparkleBlink {
-          0%, 100% { opacity: 0.3; transform: scale(0.8); }
-          50% { opacity: 1; transform: scale(1.15); }
-        }
-        @keyframes lidPop {
-          0% { transform: translateY(0) rotate(0deg); }
-          100% { transform: translateY(-48px) rotate(-12deg); }
-        }
+        .page{min-height:100vh;padding:16px 14px 40px;}
+        .topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;}
+        .brand{font-family:var(--ff);font-size:22px;letter-spacing:3px;color:var(--gold);}
+        .logout-btn{background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.10);color:var(--dim);font-family:var(--fb);font-size:10px;font-weight:700;letter-spacing:1.6px;text-transform:uppercase;padding:7px 14px;border-radius:100px;cursor:pointer;}
+        .intro{border-radius:16px;padding:18px 18px 16px;margin-bottom:14px;position:relative;overflow:hidden;background:var(--bg);border:1px solid var(--bdr);}
+        .intro::before{content:'';pointer-events:none;position:absolute;inset:0;background:radial-gradient(ellipse at 50% 0%,rgba(229,192,123,0.12) 0%,transparent 65%);}
+        .shimmer-el{pointer-events:none;position:absolute;inset-y:0;left:-30%;width:40%;background:gradient;background:linear-gradient(90deg,transparent,rgba(255,255,255,0.05),transparent);animation:shimmer 4s ease-in-out 1s infinite;}
+        .eyebrow{font-size:9px;font-weight:900;letter-spacing:2.8px;text-transform:uppercase;color:var(--gold);margin-bottom:5px;position:relative;}
+        .intro-title{font-family:var(--ff);font-size:clamp(28px,7vw,40px);letter-spacing:2px;line-height:1;position:relative;}
+        .intro-title span{color:var(--gold);}
+        .intro-desc{font-size:12px;color:var(--dim);margin-top:7px;line-height:1.6;position:relative;}
+        .intro-bottom{display:flex;gap:8px;margin-top:14px;position:relative;}
+        .stat{border-radius:10px;padding:10px 14px;flex:1;text-align:center;background:var(--card);border:1px solid rgba(255,255,255,0.07);min-width: 0;}
+        .stat.g{border-color:var(--bdr);background:rgba(229,192,123,0.07);}
+        .stat-lbl{font-size:8px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:3px;}
+        .stat-val{font-family:var(--ff);font-size:20px;letter-spacing:1px;line-height:1;}
+        .stat-val.gold{color:var(--gold);}
+        .stat-val.sm{font-family:var(--fb);font-size:14px;font-weight:500;letter-spacing:0;}
+        .panel{border-radius:16px;padding:18px 16px;background:var(--bg);border:1px solid var(--bdr);position:relative;overflow:hidden;}
+        .panel::before{content:'';pointer-events:none;position:absolute;inset:0;background:radial-gradient(ellipse at 50% 0%,rgba(229,192,123,0.08) 0%,transparent 60%);}
+        .panel-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;position:relative;}
+        .panel-title{font-family:var(--ff);font-size:22px;letter-spacing:1.5px;}
+        .badge-pill{font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;padding:5px 12px;border-radius:100px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);color:var(--muted);}
+        .badge-pill.active{border-color:var(--bdr);color:var(--gold);background:rgba(229,192,123,0.10);}
+        .chances-list{display:flex;flex-direction:column;gap:8px;position:relative;}
+        .chance-row{display:flex;align-items:center;gap:12px;border-radius:10px;padding:11px 14px;background:var(--card);border:1px solid rgba(255,255,255,0.07);cursor:default;transition:border-color .2s,background .2s,transform .1s;position:relative;overflow:hidden;width: 100%;text-align: left;}
+        .chance-row.tappable{border-color:rgba(229,192,123,0.45);cursor:pointer;}
+        .chance-row.tappable::after{content:'';pointer-events:none;position:absolute;inset-y:0;left:-30%;width:40%;background:linear-gradient(90deg,transparent,rgba(255,255,255,0.06),transparent);animation:shimmer 3s ease-in-out 0.5s infinite;}
+        .chance-row.tappable:active{transform:scale(0.985);}
+        .chance-row.opened{opacity:.6;}
+        .row-icon{width:30px;height:30px;flex-shrink:0;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;}
+        .row-icon.tap{background:linear-gradient(135deg,var(--gold),var(--gold-d));color:#000;animation:pulse 2s ease-in-out infinite;}
+        .row-icon.done{background:rgba(82,194,122,0.15);color:var(--green);}
+        .row-icon.lock{background:rgba(255,255,255,0.05);color:var(--muted);}
+        .row-meta{flex:1;min-width:0;}
+        .row-num{font-size:8px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:2px;}
+        .row-txt{font-size:12px;line-height:1.4;}
+        .row-txt.tap-t{color:rgba(229,192,123,0.85);font-style:italic;}
+        .row-txt.lock-t{color:var(--muted);}
+        .row-txt.offer-t{color:var(--dim);}
+        .row-txt.offer-t strong{color:var(--gold);font-weight:600;}
+        .row-badge{font-size:8px;font-weight:900;letter-spacing:1.2px;text-transform:uppercase;padding:3px 9px;border-radius:100px;flex-shrink:0;}
+        .row-badge.done{background:rgba(82,194,122,0.10);color:var(--green);border:1px solid rgba(82,194,122,0.20);}
+        .row-badge.tap{background:rgba(229,192,123,0.12);color:var(--gold);border:1px solid var(--bdr);animation:blink 2s infinite;}
+        .row-badge.lock{background:rgba(255,255,255,0.04);color:var(--muted);border:1px solid rgba(255,255,255,0.07);}
+        .panel-note{margin-top:12px;border-radius:10px;padding:11px 14px;font-size:12px;color:var(--dim);line-height:1.6;background:var(--card);border:1px solid rgba(255,255,255,0.07);position:relative;}
+        .panel-note strong{color:var(--gold);font-weight:500;}
+        .ended-panel{border-radius:16px;padding:22px 16px;background:var(--bg);border:1px solid var(--bdr);position:relative;overflow:hidden;text-align:center;margin-top:16px;}
+        .ended-panel::before{content:'';pointer-events:none;position:absolute;inset:0;background:radial-gradient(ellipse at 50% 0%,rgba(229,192,123,0.10) 0%,transparent 65%);}
+        .ended-ey{font-size:9px;font-weight:900;letter-spacing:2.5px;text-transform:uppercase;color:var(--gold);margin-bottom:10px;position:relative;}
+        .ended-cnt{font-family:var(--ff);font-size:42px;letter-spacing:2px;line-height:1;margin-bottom:4px;position:relative;}
+        .ended-sub{font-size:12px;color:var(--muted);margin-bottom:16px;position:relative;}
+        .ended-box{border-radius:10px;padding:14px;font-size:12px;color:var(--dim);line-height:1.65;margin-bottom:18px;background:var(--card);border:1px solid rgba(255,255,255,0.07);position:relative;}
+        .cta{width:100%;padding:14px;border-radius:12px;border:none;background:linear-gradient(135deg,var(--gold),var(--gold-d));color:#000;font-family:var(--fb);font-size:11px;font-weight:900;letter-spacing:2px;text-transform:uppercase;cursor:pointer;position:relative;transition:opacity 0.2s;}
+        .cta:hover{opacity:0.9;}
+
+        /* OVERLAY */
+        .overlay{position:fixed;inset:0;z-index:150;background:rgba(0,0,0,0.85);display:flex;align-items:center;justify-content:center;padding:20px;animation:overlayIn .22s ease;backdrop-filter:blur(5px);}
+        .overlay-inner{width:100%;max-width:340px;position:relative;}
+        .gift-box{position:relative;width:110px;height:110px;margin:0 auto 0;cursor:pointer;}
+        .gift-wrap-top{position:absolute;top:0;left:0;right:0;height:50%;background:rgba(229,192,123,0.14);border:1px solid rgba(229,192,123,0.35);border-bottom:none;border-radius:10px 10px 0 0;transform-origin:top center;transition:transform 0.4s;}
+        .gift-wrap-bot{position:absolute;bottom:0;left:0;right:0;height:50%;background:rgba(229,192,123,0.10);border:1px solid rgba(229,192,123,0.28);border-top:none;border-radius:0 0 10px 10px;transform-origin:bottom center;transition:transform 0.4s;}
+        .ribbon-h{position:absolute;top:50%;left:0;right:0;height:2px;background:var(--gold);transform:translateY(-50%);transform-origin:center;}
+        .ribbon-v{position:absolute;top:0;bottom:0;left:50%;width:2px;background:var(--gold);transform:translateX(-50%);transform-origin:center;}
+        .ribbon-bow{position:absolute;top:-10px;left:50%;transform:translateX(-50%);width:26px;height:14px;pointer-events:none;}
+        .bow-left{position:absolute;left:0;top:2px;width:11px;height:11px;border:2.5px solid var(--gold);border-radius:50% 50% 0 50%;transform:rotate(-30deg);}
+        .bow-right{position:absolute;right:0;top:2px;width:11px;height:11px;border:2.5px solid var(--gold);border-radius:50% 50% 50% 0;transform:rotate(30deg);}
+        .bow-center{position:absolute;left:50%;top:4px;transform:translateX(-50%);width:6px;height:6px;background:var(--gold);border-radius:50%;}
+        .gift-emoji{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:30px;opacity:0.6;animation:iconBounce 1.8s ease-in-out infinite;}
+        .gift-hint{font-size:10px;color:rgba(229,192,123,0.7);text-align:center;margin-top:10px;letter-spacing:1.5px;text-transform:uppercase;font-weight:700;animation:blink 1.8s infinite;}
+        .gift-sub{margin-top:6px;font-size:11px;color:rgba(255,255,255,0.22);text-align:center;font-weight:600;letter-spacing:1px;}
+        .gift-wrap-top.off{animation:wrapTopOff .55s cubic-bezier(.4,0,.2,1) forwards;}
+        .gift-wrap-bot.off{animation:wrapBotOff .55s cubic-bezier(.4,0,.2,1) .05s forwards;}
+        .ribbon-h.off{animation:ribbonH .35s ease forwards;}
+        .ribbon-v.off{animation:ribbonV .35s ease forwards;}
+        .particles{position:absolute;top:50%;left:50%;width:0;height:0;pointer-events:none;}
+        .particle{position:absolute;width:6px;height:6px;border-radius:50%;opacity:0;}
+        .particle.go{animation:particleFly .7s ease-out forwards;}
+        .offer-card{background:#0e0e0e;border:1px solid var(--bdr);border-radius:20px;padding:24px 20px 20px;position:relative;overflow:hidden;}
+        .offer-card::before{content:'';pointer-events:none;position:absolute;inset:0;background:radial-gradient(ellipse at 50% 0%,rgba(229,192,123,0.13) 0%,transparent 65%);}
+        .offer-card-shimmer{pointer-events:none;position:absolute;inset-y:0;left:-30%;width:40%;background:linear-gradient(90deg,transparent,rgba(255,255,255,0.06),transparent);animation:shimmer 3.5s ease-in-out .8s infinite;}
+        .offer-icon{width:2.5rem;height:2.5rem;border-radius:50%;background:linear-gradient(135deg,var(--gold),var(--gold-d));display:flex;align-items:center;justify-content:center;margin:0 auto 12px;font-size:19px;color:#000;animation:iconBounce 2s ease-in-out infinite;}
+        .offer-eyebrow{font-size:9px;font-weight:900;letter-spacing:2.8px;text-transform:uppercase;color:var(--gold);text-align:center;margin-bottom:4px;position:relative;}
+        .offer-title{font-family:var(--ff);font-size:24px;letter-spacing:2px;color:var(--text);text-align:center;margin-bottom:16px;position:relative;}
+        .offer-value{background:#141414;border:1px solid rgba(229,192,123,0.22);border-radius:12px;padding:14px 16px;margin-bottom:10px;animation:slideUp .25s ease;position:relative;text-align: left;}
+        .offer-value-lbl{font-size:8px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:5px;}
+        .offer-value-txt{font-size:15px;font-weight:700;color:var(--gold);}
+        .offer-desc{background:#141414;border:1px solid rgba(255,255,255,0.07);border-radius:12px;padding:14px 16px;animation:slideUp .32s ease;position:relative;text-align: left;}
+        .offer-desc-lbl{font-size:8px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:5px;}
+        .offer-desc-txt{font-size:12.5px;color:var(--dim);line-height:1.6;}
+        .offer-actions{display:flex;flex-direction:column;gap:8px;margin-top:16px;position:relative;}
+        .btn-wa{width:100%;padding:14px;border-radius:12px;border:none;background:linear-gradient(135deg,var(--gold) 0%,var(--gold-d) 100%);color:#000000;font-family:var(--fb);font-size:11px;font-weight:900;letter-spacing:2px;text-transform:uppercase;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:opacity .2s,transform .15s;box-shadow:0 0 24px rgba(229,192,123,0.25);}
+        .btn-wa:hover{opacity:.88;}
+        .btn-wa:active{transform:scale(0.97);}
+        .btn-close{width:100%;padding:10px;border-radius:12px;border:1px solid rgba(255,255,255,0.10);background:rgba(255,255,255,0.04);color:var(--dim);font-family:var(--fb);font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;cursor:pointer;transition:background 0.2s;}
+        .btn-close:hover{background:rgba(255,255,255,0.08);}
       `}</style>
 
-      <div className="mx-auto w-full max-w-6xl space-y-8">
-        <div className="glass rounded-[36px] border border-gold/20 p-6 md:p-10">
-          <div className="mb-5 flex justify-end">
-            <button
-              onClick={() => navigate('/logout')}
-              className="rounded-full border border-white/10 bg-white/5 px-5 py-2 text-xs font-black uppercase tracking-[0.2em] text-white transition-all hover:bg-white/10"
-            >
-              Logout
-            </button>
-          </div>
-          <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between lg:gap-10 w-full">
-            <div className="min-w-0 flex-1 w-full">
-              <p className="mb-3 text-xs font-black uppercase tracking-[0.3em] text-gold">Mystery Offline Access</p>
-              <h1 className="text-3xl font-black uppercase tracking-tight md:text-5xl">
-                Tap To <span className="text-gold">Unwrap</span>
-              </h1>
-              <p className="mt-4 w-full max-w-3xl text-sm text-neutral-400 md:text-base leading-relaxed">
-                {isPreviewMode
-                  ? 'Admin preview mode for the mystery reveal flow.'
-                  : `Welcome ${customer.fullName}. You have 4 mystery chances. Every tap unwraps one hidden offer. After all 4 chances are used, only membership remains claimable.`}
-              </p>
-            </div>
-
-            <div className="grid w-full gap-3 grid-cols-1 md:grid-cols-3 lg:min-w-[500px]">
-              <div className="min-w-0 rounded-2xl border border-white/10 bg-white/5 px-4 py-3">
-                <p className="mb-1 text-[10px] font-black uppercase tracking-widest text-neutral-500">Member</p>
-                <p className="truncate font-bold text-white">{customer.fullName}</p>
-              </div>
-              <div className="min-w-0 rounded-2xl border border-white/10 bg-white/5 px-4 py-3">
-                <p className="mb-1 text-[10px] font-black uppercase tracking-widest text-neutral-500">Verified Email</p>
-                <p className="truncate text-sm font-bold text-white md:text-base">{customer.email}</p>
-              </div>
-              <div className="min-w-0 rounded-2xl border border-gold/30 bg-gold/10 px-4 py-3">
-                <p className="mb-1 text-[10px] font-black uppercase tracking-widest text-neutral-500">Chances</p>
-                <p className="text-xl font-black text-gold">{usedChances}/{MAX_OFFER_CHANCES}</p>
-              </div>
-            </div>
-          </div>
+      <div className="page offline-offers-body">
+        <div className="topbar">
+          <div className="brand">NOIZE</div>
+          <button onClick={() => navigate('/logout')} className="logout-btn">
+            Logout
+          </button>
         </div>
 
         {loading ? (
-          <div className="glass rounded-[32px] border border-white/10 p-12 text-center">
+          <div className="intro text-center py-20">
             <div className="mx-auto mb-4 h-12 w-12 animate-spin rounded-full border-4 border-gold border-t-transparent"></div>
-            <p className="font-bold text-gold">Loading the mystery offers portal...</p>
+            <p className="font-bold text-gold">Synchronizing with NOIZE database...</p>
           </div>
         ) : errorMessage ? (
-          <div className="glass rounded-[32px] border border-red-500/30 p-8 text-center text-red-400">
+          <div className="intro text-center text-red-400 p-8">
             {errorMessage}
           </div>
         ) : offers.length === 0 ? (
-          <div className="glass rounded-[32px] border border-white/10 p-12 text-center">
+          <div className="intro text-center p-12">
             <h2 className="mb-4 text-2xl font-black text-white">No Active Mystery Offers</h2>
             <p className="mb-8 text-neutral-400">There are no active offers right now, so membership is the only claimable path.</p>
             <button
               onClick={() => navigate('/portal')}
-              className="gold-gradient rounded-full px-10 py-4 text-sm font-black uppercase tracking-widest text-black transition-all hover:shadow-[0_8px_30px_rgba(229,192,123,0.4)]"
+              className="cta"
+              style={{ maxWidth: '320px', margin: '0 auto' }}
             >
               Go To Membership
             </button>
           </div>
         ) : (
-          <div className="grid gap-6 lg:grid-cols-[0.9fr_1.1fr]">
-            <div className="glass rounded-[32px] border border-white/10 p-5 md:p-6">
-              <div className="mb-5 flex items-center justify-between gap-3">
-                <div>
-                  <p className="mb-2 text-[10px] font-black uppercase tracking-[0.25em] text-gold">Mystery Chances</p>
-                  <h2 className="text-2xl font-black text-white">Tap Boxes</h2>
+          <>
+            <div className="intro">
+              <div className="shimmer-el"></div>
+              <div className="eyebrow">Mystery Offline Access</div>
+              <div className="intro-title">TAP TO <span>UNWRAP</span></div>
+              <div className="intro-desc">Welcome {customer.fullName}. You have {totalChances} mystery chances. Every tap unwraps one hidden offer.</div>
+              <div className="intro-bottom">
+                <div className="stat">
+                  <div className="stat-lbl">Member</div>
+                  <div className="stat-val sm">{customer.fullName}</div>
                 </div>
-                <span className="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-xs font-bold uppercase tracking-widest text-neutral-300">
-                  {chancesRemaining} Left
-                </span>
+                <div className="stat g">
+                  <div className="stat-lbl">Chances</div>
+                  <div className="stat-val gold">{opened}/{totalChances}</div>
+                </div>
+              </div>
+            </div>
+
+            <div className="panel">
+              <div className="panel-hdr">
+                <div>
+                  <div className="eyebrow" style={{ marginBottom: '3px' }}>Mystery Chances</div>
+                  <div className="panel-title">Tap Boxes</div>
+                </div>
+                <div className={`badge-pill ${remaining > 0 ? 'active' : ''}`}>{remaining} Left</div>
               </div>
 
-              <div className="grid gap-4 sm:grid-cols-2">
-                {Array.from({ length: MAX_OFFER_CHANCES }, (_, index) => {
-                  const chanceNumber = index + 1;
-                  const isOpened = chanceNumber < usedChances + (revealState === 'idle' ? 1 : 0);
-                  const isCurrent = activeChance === chanceNumber;
-                  const isNext = chanceNumber === usedChances + 1 && !allChancesUsed && revealState !== 'unwrapping';
-                  const isLocked = chanceNumber > usedChances + 1 || allChancesUsed;
+              <div className="chances-list">
+                {Array.from({ length: totalChances }).map((_, i) => {
+                  const s = getStatus(i);
+                  const iconCls = s === 'opened' ? 'done' : s === 'tappable' ? 'tap' : 'lock';
+                  const icon = s === 'opened' ? '✓' : s === 'tappable' ? '✦' : '○';
+                  
+                  // Safely fetch offer details
+                  const offerForChance = offers[i % offers.length];
+
+                  let txt = s === 'opened'
+                    ? `<div class="row-txt offer-t"><strong>Offer:</strong> ${offerForChance ? (offerForChance.price_text || offerForChance.title) : ''}</div>`
+                    : s === 'tappable'
+                    ? `<div class="row-txt tap-t">Tap to reveal hidden offer</div>`
+                    : `<div class="row-txt lock-t">Locked</div>`;
 
                   return (
                     <button
-                      key={chanceNumber}
-                      type="button"
-                      onClick={() => void handleRevealChance(chanceNumber)}
-                      disabled={!isNext}
-                      className={`group relative overflow-hidden rounded-[28px] border p-5 text-left transition-all ${
-                        isCurrent
-                          ? 'border-gold bg-gold/10'
-                          : isOpened
-                            ? 'border-white/10 bg-white/5'
-                            : isNext
-                              ? 'border-gold/40 bg-[#17130b] hover:border-gold hover:bg-gold/10'
-                              : 'border-white/10 bg-[#101010] opacity-70'
-                      }`}
-                      style={isCurrent ? { animation: 'giftPulse 1.15s ease-in-out infinite' } : undefined}
+                      key={i}
+                      disabled={s !== 'tappable'}
+                      className={`chance-row ${s === 'tappable' ? 'tappable' : s === 'opened' ? 'opened' : ''}`}
+                      onClick={() => handleShowGiftPopup(i)}
+                      style={{ border: 'none', font: 'inherit', color: 'inherit' }}
                     >
-                      <div
-                        className="pointer-events-none absolute inset-y-0 left-[-30%] w-1/2 -skew-x-12 bg-gradient-to-r from-transparent via-white/20 to-transparent"
-                        style={isCurrent ? { animation: 'shimmerSweep 1.25s ease-in-out infinite' } : undefined}
-                      />
-                      <div className="relative z-10">
-                        <p className="mb-2 text-[10px] font-black uppercase tracking-[0.25em] text-neutral-500">Chance {chanceNumber}</p>
-                        <div className="mb-4 flex items-center justify-between">
-                          <div className="text-4xl">{isOpened ? '✓' : '🎁'}</div>
-                          <span className={`rounded-full px-3 py-1 text-[10px] font-black uppercase tracking-widest ${
-                            isCurrent
-                              ? 'bg-gold text-black'
-                              : isOpened
-                                ? 'bg-white/10 text-neutral-300'
-                                : isNext
-                                  ? 'bg-gold/20 text-gold'
-                                  : 'bg-white/5 text-neutral-500'
-                          }`}>
-                            {isCurrent ? 'Unwrapping' : isOpened ? 'Opened' : isNext ? 'Tap Now' : 'Locked'}
-                          </span>
-                        </div>
-                        <div className="rounded-2xl border border-white/10 bg-black/20 px-4 py-3">
-                          <p
-                            className="text-sm font-semibold text-white/85"
-                            style={isCurrent ? { animation: 'unwrapLid 1.1s ease-in forwards' } : undefined}
-                          >
-                            {isOpened
-                              ? 'This mystery chance has already been used.'
-                              : isNext
-                                ? 'Tap to open a hidden gift offer.'
-                                : 'Unlock previous chances first.'}
-                          </p>
-                        </div>
+                      <div className={`row-icon ${iconCls}`}>{icon}</div>
+                      <div className="row-meta">
+                        <div className="row-num">Chance {i + 1}</div>
+                        <div dangerouslySetInnerHTML={{ __html: txt }} />
+                      </div>
+                      <div className={`row-badge ${s === 'opened' ? 'done' : s === 'tappable' ? 'tap' : 'lock'}`}>
+                        {s === 'opened' ? 'Done' : s === 'tappable' ? 'Tap' : 'Lock'}
                       </div>
                     </button>
                   );
                 })}
               </div>
 
-              <div className="mt-5 rounded-3xl border border-gold/20 bg-gold/10 p-5">
-                <p className="text-sm leading-relaxed text-white">
-                  {allChancesUsed
-                    ? 'All 4 mystery chances are finished. Offer taps are now closed and only the membership portal can be claimed.'
-                    : `Each tap uses exactly 1 chance. You have ${chancesRemaining} mystery ${chancesRemaining === 1 ? 'chance' : 'chances'} remaining.`}
-                </p>
+              <div className="panel-note">
+                {!allUsed ? (
+                  <>
+                    You have <strong>{remaining} chance{remaining !== 1 ? 's' : ''} remaining</strong>. Tap the glowing row to unwrap your next offer.
+                  </>
+                ) : (
+                  'All 4 mystery chances are finished. Only the membership portal can now be claimed.'
+                )}
               </div>
             </div>
 
-            <div className={`glass rounded-[32px] border border-gold/20 p-6 transition-all md:p-8 ${revealState !== 'idle' ? 'opacity-35 blur-[2px]' : ''}`}>
-              {allChancesUsed ? (
-                <div className="space-y-6 text-center" style={{ animation: 'revealRise 0.5s ease-out' }}>
-                  <p className="text-xs font-black uppercase tracking-[0.3em] text-gold">Mystery Ended</p>
-                  <h2 className="text-3xl font-black text-white md:text-4xl">4/4 Chances Used</h2>
-                  <div className="rounded-3xl border border-white/10 bg-black/20 p-6">
-                    <p className="text-lg leading-relaxed text-neutral-300">
-                      The mystery offers are now closed for this member. Only membership plans can be claimed from here.
-                    </p>
-                  </div>
-                  <button
-                    onClick={() => navigate('/portal')}
-                    className="gold-gradient w-full rounded-full px-8 py-4 text-sm font-black uppercase tracking-widest text-black transition-all hover:shadow-[0_8px_30px_rgba(229,192,123,0.4)]"
-                  >
-                    Go To Membership
-                  </button>
-                </div>
-              ) : revealState === 'idle' || !revealedOffer ? (
-                <div className="space-y-6 text-center">
-                  <p className="text-xs font-black uppercase tracking-[0.3em] text-gold">Hidden Reward</p>
-                  <div className="rounded-[32px] border border-dashed border-gold/30 bg-[#14110a] px-6 py-14">
-                    <div className="mb-5 text-6xl">🎁</div>
-                    <h2 className="mb-3 text-3xl font-black text-white">Tap A Gift To Reveal</h2>
-                    <p className="mx-auto max-w-xl text-neutral-400">
-                      Every mystery tap opens one hidden offer. When the reveal appears here, the member can either claim it or close it and save the rest of the journey for the next chance.
-                    </p>
-                  </div>
-                  <button
-                    onClick={() => navigate('/portal')}
-                    className="w-full rounded-full border border-white/10 bg-white/5 px-8 py-4 text-sm font-black uppercase tracking-widest text-white transition-all hover:bg-white/10"
-                  >
-                    Skip To Membership
-                  </button>
-                </div>
-              ) : revealState === 'unwrapping' ? (
-                <div className="space-y-6 text-center" style={{ animation: 'giftPulse 1.15s ease-in-out infinite' }}>
-                  <p className="text-xs font-black uppercase tracking-[0.3em] text-gold">Gift Unwrapping</p>
-                  <div className="rounded-[32px] border border-gold/40 bg-[#17130b] px-6 py-16">
-                    <div className="mb-5 text-7xl">🎁</div>
-                    <h2 className="mb-3 text-3xl font-black text-white">Opening Chance {activeChance}</h2>
-                    <p className="text-neutral-300">Your mysterious offer is being unwrapped...</p>
-                  </div>
-                </div>
-              ) : (
-                <div className="space-y-6" style={{ animation: 'revealRise 0.5s ease-out' }}>
-                  <div>
-                    <p className="mb-3 text-xs font-black uppercase tracking-[0.3em] text-gold">Mystery Revealed</p>
-                    <h2 className="text-3xl font-black leading-tight text-white md:text-4xl">{revealedOffer.title}</h2>
-                  </div>
-
-                  <div className="grid gap-4 sm:grid-cols-2">
-                    <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
-                      <p className="mb-1 text-[10px] font-black uppercase tracking-widest text-neutral-500">Price</p>
-                      <p className="text-2xl font-black text-gold">{revealedOffer.price_text}</p>
+            {allUsed && (
+              <div className="overlay" style={{ background: 'rgba(0,0,0,0.95)', zIndex: 9999 }}>
+                <div className="overlay-inner" style={{ maxWidth: '400px' }}>
+                  <div className="ended-panel" style={{ marginTop: 0, padding: '32px 24px', background: '#0e0e0e', border: '1px solid rgba(229,192,123,0.3)' }}>
+                    <div className="ended-ey">Mystery Ended</div>
+                    <div className="ended-cnt" style={{ fontSize: '48px', marginBottom: '8px' }}>{opened}/{totalChances} Used</div>
+                    <div className="ended-sub" style={{ fontSize: '13px', marginBottom: '20px' }}>All chances exhausted</div>
+                    <div className="ended-box" style={{ fontSize: '13px', marginBottom: '24px', textAlign: 'center', background: '#141414' }}>
+                      The mystery offers are now closed. Only membership plans can be claimed from here.
                     </div>
-                    <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
-                      <p className="mb-1 text-[10px] font-black uppercase tracking-widest text-neutral-500">Valid Till</p>
-                      <p className="text-lg font-black text-white">{new Date(revealedOffer.valid_till).toLocaleDateString()}</p>
-                    </div>
-                  </div>
-
-                  <div className="rounded-3xl border border-white/10 bg-black/20 p-5 md:p-6">
-                    <p className="leading-relaxed text-neutral-300">{revealedOffer.description}</p>
-                  </div>
-
-                  <div className="rounded-3xl border border-gold/20 bg-gold/10 p-5">
-                    <p className="text-sm leading-relaxed text-white">
-                      Chance <span className="font-black text-gold">{usedChances}/{MAX_OFFER_CHANCES}</span> is now used.
-                      {usedChances < MAX_OFFER_CHANCES
-                        ? ` You can close this and tap the next gift later, or claim this offer right now.`
-                        : ' This was your final mystery reveal, so the next step is membership only.'}
-                    </p>
-                  </div>
-
-                  <div className="flex flex-col gap-4 sm:flex-row">
-                    <button
-                      onClick={() => claimOffer(revealedOffer)}
-                      className="gold-gradient flex-1 rounded-full px-8 py-4 text-sm font-black uppercase tracking-widest text-black transition-all hover:shadow-[0_8px_30px_rgba(229,192,123,0.4)]"
-                    >
-                      Claim Offer
+                    <button className="cta" onClick={() => navigate('/portal')} style={{ padding: '16px', fontSize: '12px' }}>
+                      Go to Membership
                     </button>
-                    {usedChances < MAX_OFFER_CHANCES ? (
-                      <button
-                        onClick={closeReveal}
-                        className="flex-1 rounded-full border border-white/10 bg-white/5 px-8 py-4 text-sm font-black uppercase tracking-widest text-white transition-all hover:bg-white/10"
-                      >
-                        Close
-                      </button>
-                    ) : (
-                      <button
-                        onClick={() => navigate('/portal')}
-                        className="flex-1 rounded-full border border-white/10 bg-white/5 px-8 py-4 text-sm font-black uppercase tracking-widest text-white transition-all hover:bg-white/10"
-                      >
-                        Go To Membership
-                      </button>
-                    )}
                   </div>
                 </div>
-              )}
-            </div>
-          </div>
+              </div>
+            )}
+          </>
         )}
       </div>
 
-      {revealState !== 'idle'  ? (
-        <div
-          className="fixed inset-0 z-[90] flex items-center justify-center bg-black/85 px-4 py-6 backdrop-blur-md"
-          style={{ animation: 'overlayFade 0.28s ease-out' }}
-        >
-          <div className="pointer-events-none absolute inset-0 overflow-hidden">
-            {[
-              ['-26%', '-18%'],
-              ['28%', '-22%'],
-              ['34%', '6%'],
-              ['18%', '24%'],
-              ['-18%', '26%'],
-              ['-34%', '4%'],
-              ['-10%', '-28%'],
-              ['12%', '-32%'],
-            ].map(([tx, ty], index) => (
-              <span
-                key={`${tx}-${ty}`}
-                className="absolute left-1/2 top-1/2 h-3 w-3 rounded-full bg-gold/80 shadow-[0_0_18px_rgba(229,192,123,0.55)]"
-                style={{
-                  ['--tx' as '--tx']: tx,
-                  ['--ty' as '--ty']: ty,
-                  animation: `burstOrbit ${0.8 + index * 0.08}s ease-out ${index * 0.04}s infinite`,
-                }}
-              />
-            ))}
-            {Array.from({ length: 14 }, (_, index) => (
-              <span
-                key={`spark-${index}`}
-                className="absolute rounded-full bg-white/80"
-                style={{
-                  width: `${4 + (index % 3) * 2}px`,
-                  height: `${4 + (index % 3) * 2}px`,
-                  left: `${12 + index * 6}%`,
-                  top: `${18 + (index % 5) * 13}%`,
-                  animation: `sparkleBlink ${1.1 + index * 0.06}s ease-in-out ${index * 0.08}s infinite`,
-                }}
-              />
-            ))}
-          </div>
-
-          <div
-            className="relative w-full max-w-4xl overflow-hidden rounded-[40px] border border-gold/30 bg-[radial-gradient(circle_at_top,_rgba(229,192,123,0.18),_rgba(12,12,12,0.96)_42%,_rgba(6,6,6,0.98)_100%)] p-6 shadow-[0_28px_120px_rgba(0,0,0,0.68)] md:p-10"
-            style={{ animation: 'modalPop 0.42s ease-out' }}
-          >
-            <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(135deg,rgba(255,255,255,0.08),transparent_34%,transparent_70%,rgba(229,192,123,0.08))]" />
-            <div className="relative z-10">
-              {revealState === 'unwrapping' ? (
-                <div className="flex min-h-[70vh] flex-col items-center justify-center text-center">
-                  <p className="mb-4 text-xs font-black uppercase tracking-[0.35em] text-gold">Boop Pop Bang</p>
-                  <div className="relative mb-10 h-48 w-48">
-                    <div className="absolute left-6 right-6 top-10 h-16 rounded-[18px] border border-gold/50 bg-gold/25" style={{ animation: 'lidPop 0.9s ease-in-out infinite alternate' }} />
-                    <div className="absolute bottom-4 left-4 right-4 h-28 rounded-[28px] border border-gold/50 bg-gradient-to-b from-[#3a2b0f] to-[#1a1409] shadow-[0_0_30px_rgba(229,192,123,0.25)]" />
-                    <div className="absolute left-1/2 top-2 h-36 w-4 -translate-x-1/2 rounded-full bg-gold/90" />
-                    <div className="absolute left-6 right-6 top-[4.4rem] h-4 rounded-full bg-gold/90" />
+      {/* GIFT POPUP OVERLAY */}
+      {popup !== null && (
+        <div id="overlay" className="overlay" onClick={(e) => { if (e.target === document.getElementById('overlay')) handleClosePopup(); }}>
+          <div className="overlay-inner">
+            {!isRevealed ? (
+              <div style={{ textAlign: 'center' }}>
+                <div className="gift-box" id="gbox" onClick={doUnwrap}>
+                  <div className="gift-emoji">🎁</div>
+                  <div className="gift-wrap-top" id="wt">
+                    <div className="ribbon-h" id="rh"></div>
                   </div>
-                  <h2 className="mb-3 text-4xl font-black text-white md:text-6xl">Unwrapping Chance {activeChance}</h2>
-                  <p className="max-w-2xl text-lg text-neutral-300">Little pops, small bursts, and a full-screen gift reveal opening now.</p>
+                  <div className="gift-wrap-bot" id="wb"></div>
+                  <div className="ribbon-v" id="rv"></div>
+                  <div className="ribbon-bow">
+                    <div className="bow-left"></div>
+                    <div className="bow-right"></div>
+                    <div className="bow-center"></div>
+                  </div>
+                  <div className="particles" id="pts"></div>
                 </div>
-              ) : revealedOffer ? (
-                <div className="flex min-h-[70vh] flex-col justify-center">
-                  <div className="mb-6 text-center">
-                    <p className="mb-3 text-xs font-black uppercase tracking-[0.35em] text-gold">Mystery Revealed</p>
-                    <h2 className="text-4xl font-black leading-tight text-white md:text-6xl">{revealedOffer.title}</h2>
-                  </div>
-
-                  <div className="grid gap-6 lg:grid-cols-[1.05fr_0.95fr]">
-                    <div className="space-y-5 rounded-[30px] border border-white/10 bg-black/30 p-6 md:p-8">
-                      <div className="grid gap-4 sm:grid-cols-2">
-                        <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
-                          <p className="mb-1 text-[10px] font-black uppercase tracking-widest text-neutral-500">Price</p>
-                          <p className="text-2xl font-black text-gold">{revealedOffer.price_text}</p>
-                        </div>
-                        <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
-                          <p className="mb-1 text-[10px] font-black uppercase tracking-widest text-neutral-500">Valid Till</p>
-                          <p className="text-lg font-black text-white">{new Date(revealedOffer.valid_till).toLocaleDateString()}</p>
-                        </div>
-                      </div>
-
-                      <div className="rounded-3xl border border-white/10 bg-[#111111] p-5 md:p-6">
-                        <p className="leading-relaxed text-neutral-300">{revealedOffer.description}</p>
-                      </div>
-
-                      <div className="rounded-3xl border border-gold/20 bg-gold/10 p-5">
-                        <p className="text-sm leading-relaxed text-white">
-                          Chance <span className="font-black text-gold">{usedChances}/{MAX_OFFER_CHANCES}</span> is now used.
-                          {usedChances < MAX_OFFER_CHANCES
-                            ? ' Close this full-screen card and come back later for the next mystery tap, or claim this offer right now.'
-                            : ' This was the final reveal. After this, only membership remains.'}
-                        </p>
-                      </div>
+                <div className="gift-hint">Tap to unwrap</div>
+                <div className="gift-sub">Chance {popup + 1} of {totalChances}</div>
+              </div>
+            ) : (
+              (() => {
+                const currentOffer = offers[popup % offers.length];
+                if (!currentOffer) return null;
+                return (
+                  <div className="offer-card">
+                    <div className="offer-card-shimmer"></div>
+                    <div className="offer-icon">★</div>
+                    <div className="offer-eyebrow">Mystery Unlocked</div>
+                    <div className="offer-title">{currentOffer.title}</div>
+                    <div className="offer-value">
+                      <div className="offer-value-lbl">Your Offer</div>
+                      <div className="offer-value-txt">{currentOffer.price_text || 'Exclusive Offer'}</div>
                     </div>
-
-                    <div className="flex flex-col justify-between rounded-[30px] border border-gold/20 bg-[linear-gradient(180deg,rgba(229,192,123,0.14),rgba(20,20,20,0.3))] p-6 md:p-8">
-                      <div>
-                        <p className="mb-2 text-sm font-black uppercase tracking-[0.25em] text-gold">Special Moment</p>
-                        <h3 className="mb-4 text-3xl font-black text-white">Tap. Pop. Reveal.</h3>
-                        <p className="text-neutral-300">
-                          This reveal now takes the whole screen so it feels like opening a real gift. Claim it now, or close it and save the next surprise for later.
-                        </p>
-                      </div>
-
-                      <div className="mt-8 flex flex-col gap-4">
-                        <button
-                          onClick={() => claimOffer(revealedOffer)}
-                          className="gold-gradient rounded-full px-8 py-4 text-sm font-black uppercase tracking-widest text-black transition-all hover:shadow-[0_8px_30px_rgba(229,192,123,0.4)]"
-                        >
-                          Claim Offer
-                        </button>
-                        <button
-                          onClick={closeReveal}
-                          className="rounded-full border border-white/10 bg-white/5 px-8 py-4 text-sm font-black uppercase tracking-widest text-white transition-all hover:bg-white/10"
-                        >
-                          Close
-                        </button>
-                      </div>
+                    <div className="offer-desc">
+                      <div className="offer-desc-lbl">Details</div>
+                      <div className="offer-desc-txt">{currentOffer.description}</div>
+                    </div>
+                    <div className="offer-actions">
+                      <button className="btn-wa" onClick={() => handleOpenWhatsApp(currentOffer)}>
+                        <svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor">
+                          <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" />
+                        </svg>
+                        Confirm on WhatsApp
+                      </button>
+                      <button className="btn-close" onClick={handleClosePopup}>
+                        Close
+                      </button>
                     </div>
                   </div>
-                </div>
-              ) : null}
-            </div>
+                );
+              })()
+            )}
           </div>
         </div>
-      ) : null}
+      )}
     </div>
   );
 };
