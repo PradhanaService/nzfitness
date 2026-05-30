@@ -22,7 +22,19 @@ const TransformationsPage: React.FC = () => {
         setSiteImages(imageMap);
       }
     };
+
     fetchImages();
+
+    const channel = supabase
+      .channel('public:section_images')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'section_images' }, () => {
+        fetchImages();
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, []);
 
   return (
