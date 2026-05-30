@@ -3505,6 +3505,22 @@ const App: React.FC = () => {
     }, 1450);
   }, []);
 
+  useEffect(() => {
+    if (!isLoading) {
+      const hash = window.location.hash;
+      if (hash) {
+        const id = hash.replace('#', '');
+        const timer = setTimeout(() => {
+          const element = document.getElementById(id);
+          if (element) {
+            element.scrollIntoView({ behavior: 'smooth' });
+          }
+        }, 150);
+        return () => clearTimeout(timer);
+      }
+    }
+  }, [isLoading]);
+
   if (isLoading) {
     return (
       <div className="fixed inset-0 z-[9999] bg-[#0A0A0A] flex items-center justify-center">

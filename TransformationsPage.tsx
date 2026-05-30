@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Navbar, Footer, Transformations, SiteImagesContext } from './App';
+import { SharedNavbar, Footer, Transformations, SiteImagesContext } from './App';
 import { supabase } from './supabaseClient';
 
 const TransformationsPage: React.FC = () => {
@@ -28,7 +28,7 @@ const TransformationsPage: React.FC = () => {
   return (
     <SiteImagesContext.Provider value={siteImages}>
       <div className="min-h-screen bg-[#050505] text-white flex flex-col">
-        <Navbar onJoinNow={() => window.location.href = '/#contact'} />
+        <SharedNavbar onJoinNow={() => window.location.href = '/#contact'} />
         
         <main className="flex-1 pt-24 pb-[100px] md:pb-0">
           <div className="container mx-auto px-4 md:px-6 pt-8 relative z-20">
