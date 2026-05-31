@@ -93,7 +93,15 @@ const OfflineOffersPortal: React.FC = () => {
             throw error;
           }
 
-          setUsedChances(data?.offer_view_count || 0);
+          const currentCount = data?.offer_view_count || 0;
+          setUsedChances(currentCount);
+          if (currentCount >= MAX_OFFER_CHANCES) {
+            sessionStorage.setItem('noize_chances_exhausted', 'true');
+            localStorage.setItem('noize_chances_exhausted', 'true');
+          } else {
+            sessionStorage.removeItem('noize_chances_exhausted');
+            localStorage.removeItem('noize_chances_exhausted');
+          }
         } else {
           setUsedChances(0);
         }
@@ -121,6 +129,10 @@ const OfflineOffersPortal: React.FC = () => {
   const consumeChance = async (nextCount: number) => {
     if (isPreviewMode || !customer) {
       setUsedChances(nextCount);
+      if (nextCount >= MAX_OFFER_CHANCES) {
+        sessionStorage.setItem('noize_chances_exhausted', 'true');
+        localStorage.setItem('noize_chances_exhausted', 'true');
+      }
       return true;
     }
 
@@ -139,6 +151,10 @@ const OfflineOffersPortal: React.FC = () => {
     }
 
     setUsedChances(nextCount);
+    if (nextCount >= MAX_OFFER_CHANCES) {
+      sessionStorage.setItem('noize_chances_exhausted', 'true');
+      localStorage.setItem('noize_chances_exhausted', 'true');
+    }
     return true;
   };
 
@@ -155,10 +171,10 @@ const OfflineOffersPortal: React.FC = () => {
     }
   };
 
-  const handleShowGiftPopup = (idx: number) => {
+  const handleShowGiftPopup = (idx: number, opened: boolean = false) => {
     if (unwrapping) return;
     setPopup(idx);
-    setIsRevealed(false);
+    setIsRevealed(opened);
   };
 
   const doUnwrap = async () => {
@@ -416,9 +432,9 @@ const OfflineOffersPortal: React.FC = () => {
                   return (
                     <button
                       key={i}
-                      disabled={s !== 'tappable'}
+                      disabled={s === 'locked'}
                       className={`chance-row ${s === 'tappable' ? 'tappable' : s === 'opened' ? 'opened' : ''}`}
-                      onClick={() => handleShowGiftPopup(i)}
+                      onClick={() => handleShowGiftPopup(i, s === 'opened')}
                       style={{ border: 'none', font: 'inherit', color: 'inherit' }}
                     >
                       <div className={`row-icon ${iconCls}`}>{icon}</div>

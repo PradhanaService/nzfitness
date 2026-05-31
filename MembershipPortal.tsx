@@ -176,7 +176,45 @@ const MembershipPortal: React.FC = () => {
   const [pendingPlan, setPendingPlan] = useState<MembershipPlan | null>(null);
   const [portalSelectedSlot, setPortalSelectedSlot] = useState(existingSlot);
   const isOfflineUser = !!sessionStorage.getItem(OFFLINE_PORTAL_ACCESS_KEY);
+  const [chancesExhausted, setChancesExhausted] = useState(
+    sessionStorage.getItem('noize_chances_exhausted') === 'true' ||
+    localStorage.getItem('noize_chances_exhausted') === 'true'
+  );
   const [showMysteryPopup, setShowMysteryPopup] = useState(false);
+
+  useEffect(() => {
+    if (!isOfflineUser) return;
+
+    const verifyChances = async () => {
+      try {
+        const savedAccess = sessionStorage.getItem('noize_offline_portal_access');
+        if (!savedAccess) return;
+
+        const access = JSON.parse(savedAccess);
+        if (!access?.email) return;
+
+        const { data, error } = await supabase
+          .from('user_offer_stats')
+          .select('offer_view_count')
+          .eq('phone_number', access.email.trim().toLowerCase())
+          .single();
+
+        if (!error && data && data.offer_view_count >= 4) {
+          sessionStorage.setItem('noize_chances_exhausted', 'true');
+          localStorage.setItem('noize_chances_exhausted', 'true');
+          setChancesExhausted(true);
+        } else {
+          sessionStorage.removeItem('noize_chances_exhausted');
+          localStorage.removeItem('noize_chances_exhausted');
+          setChancesExhausted(false);
+        }
+      } catch (err) {
+        console.error('Error verifying exhausted chances:', err);
+      }
+    };
+
+    void verifyChances();
+  }, [isOfflineUser]);
 
   const openExclusiveOffersLogin = () => {
     window.location.href = '/?exclusiveOffers=1';
@@ -248,7 +286,8 @@ const MembershipPortal: React.FC = () => {
     if (
       sessionStorage.getItem('mysteryPopupShown') === 'true' ||
       sessionStorage.getItem('mysteryClaimed') === 'true' ||
-      localStorage.getItem('mysteryClaimed') === 'true'
+      localStorage.getItem('mysteryClaimed') === 'true' ||
+      chancesExhausted
     ) {
       return;
     }
@@ -375,7 +414,7 @@ const MembershipPortal: React.FC = () => {
             <span className="transition-transform duration-300 group-hover:-translate-x-1 text-sm font-black">←</span>
             <span>Back to Home</span>
           </button>
-          {isOfflineUser && (
+          {isOfflineUser && !chancesExhausted && (
             <button
               onClick={() => navigate('/?exclusiveOffers=1')}
               className="flex items-center gap-2 rounded-full border border-white/20 px-4 py-2 text-[10px] font-black uppercase tracking-[0.16em] text-gold transition-all duration-300 hover:border-gold/50"
