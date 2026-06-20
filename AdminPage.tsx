@@ -43,6 +43,7 @@ const isFutureOrTodayDate = (dateValue: string) => Boolean(dateValue) && dateVal
 const AdminLogin: React.FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -85,12 +86,21 @@ const AdminLogin: React.FC = () => {
           <div>
             <label className="block text-white font-bold mb-2">Password</label>
             <input
-              type="password"
+              type={showPassword ? 'text' : 'password'}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-gold focus:outline-none"
               required
             />
+            <label className="mt-3 flex w-fit cursor-pointer items-center gap-2 text-sm text-neutral-300">
+              <input
+                type="checkbox"
+                checked={showPassword}
+                onChange={(e) => setShowPassword(e.target.checked)}
+                className="h-4 w-4 cursor-pointer accent-gold"
+              />
+              Show password
+            </label>
           </div>
 
           {error && (
@@ -1284,11 +1294,6 @@ const GalleryManagement: React.FC = () => {
     { prefix: 'program_crossfit', label: 'Program Gallery: CrossFit' },
     { prefix: 'program_zumba', label: 'Program Gallery: Zumba' },
     { prefix: 'program_yoga', label: 'Program Gallery: Yoga' },
-    { prefix: 'program_functional', label: 'Program Gallery: Functional Training' },
-    { prefix: 'transformation_1', label: 'Transformation Zone: Slide 1 Before/After' },
-    { prefix: 'transformation_2', label: 'Transformation Zone: Slide 2 Before/After' },
-    { prefix: 'bg_philosophy', label: 'The Noize Philosophy: Background' },
-    { prefix: 'bg_programs', label: 'Training Universe: Background' },
     { prefix: 'highlight_1', label: 'Weekly Highlights: Frame 1' },
     { prefix: 'highlight_2', label: 'Weekly Highlights: Frame 2' },
     { prefix: 'highlight_3', label: 'Weekly Highlights: Frame 3' },
