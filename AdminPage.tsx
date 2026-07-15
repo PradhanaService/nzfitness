@@ -1582,6 +1582,7 @@ const GalleryManagement: React.FC = () => {
 };
 // Reviews Management Component
 const ReviewsManagement: React.FC = () => {
+  const formRef = React.useRef<HTMLFormElement | null>(null);
   const [reviews, setReviews] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -1649,6 +1650,7 @@ const ReviewsManagement: React.FC = () => {
       display_order: review.display_order,
     });
     setShowForm(true);
+    scrollToEditor(formRef.current);
   };
 
   const handleDelete = async (id: string) => {
@@ -1674,7 +1676,17 @@ const ReviewsManagement: React.FC = () => {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h2 className="text-2xl font-black text-white">Manage Reviews</h2>
-        <button onClick={() => { setShowForm(!showForm); setEditingReview(null); setErrorMessage(''); setSuccessMessage(''); setFormData({ name: '', text: '', rating: 5, is_active: true, display_order: 0 }); }} className="gold-gradient text-black font-bold py-2 px-6 rounded-full hover:scale-105 transition-all">
+        <button onClick={() => {
+          const nextShowForm = !showForm;
+          setShowForm(nextShowForm);
+          setEditingReview(null);
+          setErrorMessage('');
+          setSuccessMessage('');
+          setFormData({ name: '', text: '', rating: 5, is_active: true, display_order: 0 });
+          if (nextShowForm) {
+            scrollToEditor(formRef.current);
+          }
+        }} className="gold-gradient text-black font-bold py-2 px-6 rounded-full hover:scale-105 transition-all">
           {showForm ? 'Cancel' : '+ Add Review'}
         </button>
       </div>
