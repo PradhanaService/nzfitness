@@ -1620,20 +1620,26 @@ const ReviewsManagement: React.FC = () => {
 
     if (editingReview) {
       const { error } = await supabase.from('reviews').update(formData).eq('id', editingReview.id);
-      if (error) setErrorMessage(getRlsFixMessage('reviews', error.message));
-      else setSuccessMessage('Review updated.');
+      if (error) {
+        setErrorMessage(getRlsFixMessage('reviews', error.message));
+        setSaving(false);
+        return;
+      }
+      setSuccessMessage('Review updated.');
     } else {
       const { error } = await supabase.from('reviews').insert([formData]);
-      if (error) setErrorMessage(getRlsFixMessage('reviews', error.message));
-      else setSuccessMessage('Review created.');
+      if (error) {
+        setErrorMessage(getRlsFixMessage('reviews', error.message));
+        setSaving(false);
+        return;
+      }
+      setSuccessMessage('Review created.');
     }
 
-    if (!errorMessage) {
-      setFormData({ name: '', text: '', rating: 5, is_active: true, display_order: 0 });
-      setEditingReview(null);
-      setShowForm(false);
-      await fetchReviews();
-    }
+    setFormData({ name: '', text: '', rating: 5, is_active: true, display_order: 0 });
+    setEditingReview(null);
+    setShowForm(false);
+    await fetchReviews();
     setSaving(false);
   };
 
