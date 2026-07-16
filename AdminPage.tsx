@@ -1581,7 +1581,7 @@ const GalleryManagement: React.FC = () => {
 };
 // Reviews Management Component
 const ReviewsManagement: React.FC = () => {
-  const formRef = React.useRef<HTMLFormElement | null>(null);
+  const reviewFormRef = React.useRef<HTMLFormElement | null>(null);
   const [reviews, setReviews] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -1597,12 +1597,17 @@ const ReviewsManagement: React.FC = () => {
     display_order: 0,
   });
 
+  const resetFormState = () => {
+    setEditingReview(null);
+    setFormData({ name: '', text: '', rating: 5, is_active: true, display_order: 0 });
+  };
+
   const fetchReviews = async () => {
     const { data, error } = await supabase
       .from('reviews')
       .select('*')
       .order('display_order', { ascending: true });
-    
+
     if (data) setReviews(data);
     if (error) setErrorMessage(error.message);
     setLoading(false);
@@ -1611,6 +1616,12 @@ const ReviewsManagement: React.FC = () => {
   useEffect(() => {
     fetchReviews();
   }, []);
+
+  useEffect(() => {
+    if (showForm) {
+      scrollToEditor(reviewFormRef.current);
+    }
+  }, [showForm, editingReview]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -1636,11 +1647,17 @@ const ReviewsManagement: React.FC = () => {
       setSuccessMessage('Review created.');
     }
 
-    setFormData({ name: '', text: '', rating: 5, is_active: true, display_order: 0 });
-    setEditingReview(null);
+    resetFormState();
     setShowForm(false);
     await fetchReviews();
     setSaving(false);
+  };
+
+  const openCreateForm = () => {
+    setErrorMessage('');
+    setSuccessMessage('');
+    resetFormState();
+    setShowForm(true);
   };
 
   const handleEdit = (review: any) => {
@@ -1655,7 +1672,13 @@ const ReviewsManagement: React.FC = () => {
       display_order: review.display_order,
     });
     setShowForm(true);
-    scrollToEditor(formRef.current);
+  };
+
+  const handleCancel = () => {
+    setErrorMessage('');
+    setSuccessMessage('');
+    resetFormState();
+    setShowForm(false);
   };
 
   const handleDelete = async (id: string) => {
@@ -1681,17 +1704,10 @@ const ReviewsManagement: React.FC = () => {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h2 className="text-2xl font-black text-white">Manage Reviews</h2>
-        <button onClick={() => {
-          const nextShowForm = !showForm;
-          setShowForm(nextShowForm);
-          setEditingReview(null);
-          setErrorMessage('');
-          setSuccessMessage('');
-          setFormData({ name: '', text: '', rating: 5, is_active: true, display_order: 0 });
-          if (nextShowForm) {
-            scrollToEditor(formRef.current);
-          }
-        }} className="gold-gradient text-black font-bold py-2 px-6 rounded-full hover:scale-105 transition-all">
+        <button
+          onClick={() => (showForm ? handleCancel() : openCreateForm())}
+          className="gold-gradient text-black font-bold py-2 px-6 rounded-full hover:scale-105 transition-all"
+        >
           {showForm ? 'Cancel' : '+ Add Review'}
         </button>
       </div>
@@ -1700,7 +1716,7 @@ const ReviewsManagement: React.FC = () => {
       {successMessage && <div className="bg-green-500/10 border border-green-500/30 rounded-xl p-3 text-green-500 text-sm">{successMessage}</div>}
 
       {showForm && (
-        <form ref={formRef} onSubmit={handleSubmit} className="glass rounded-2xl p-6 border border-gold/30 space-y-4">
+        <form ref={reviewFormRef} onSubmit={handleSubmit} className="glass rounded-2xl p-6 border border-gold/30 space-y-4">
           <h3 className="text-xl font-bold text-white">{editingReview ? 'Edit Review' : 'New Review'}</h3>
           <div>
             <label className="block text-white font-bold mb-2">Reviewer Name *</label>
@@ -1736,7 +1752,7 @@ const ReviewsManagement: React.FC = () => {
             <div className="flex justify-between items-start mb-4">
               <div>
                 <h3 className="text-xl font-bold text-white mb-2">{review.name}</h3>
-                <div className="flex text-gold mb-2">{'★'.repeat(review.rating)}{'☆'.repeat(5 - review.rating)}</div>
+                <div className="flex text-gold mb-2">{'\u2605'.repeat(review.rating)}{'\u2606'.repeat(5 - review.rating)}</div>
                 <p className="text-neutral-400 mb-2 italic">"{review.text}"</p>
               </div>
               <div className="flex flex-col gap-2 items-end">
@@ -2167,3 +2183,4 @@ const Admin: React.FC = () => {
 };
 
 export default Admin;
+
