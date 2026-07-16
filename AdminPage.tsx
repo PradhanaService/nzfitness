@@ -21,7 +21,7 @@ const normalizeMembershipCategory = (category?: string | null): MembershipCatego
 const isPortalContentTableMissing = (message?: string) =>
   typeof message === 'string' && message.toLowerCase().includes("could not find the table 'public.portal_content'");
 
-const getRlsFixMessage = (tableName: 'membership_plans' | 'section_images', message?: string) => {
+const getRlsFixMessage = (tableName: 'offers' | 'membership_plans' | 'section_images' | 'reviews' | 'portal_content', message?: string) => {
   if (typeof message !== 'string') return message || 'Request failed.';
   if (!message.toLowerCase().includes('row-level security policy')) return message;
 
@@ -169,7 +169,7 @@ const OffersManagement: React.FC = () => {
         .eq('id', editingOffer.id);
 
       if (error) {
-        setErrorMessage(getRlsFixMessage('membership_plans', error.message));
+        setErrorMessage(getRlsFixMessage('offers', error.message));
         setSaving(false);
         return;
       }
@@ -180,7 +180,7 @@ const OffersManagement: React.FC = () => {
         .insert([formData]);
       
       if (error) {
-        setErrorMessage(error.message || 'Failed to create offer. You may have reached the 5 offers per year limit.');
+        setErrorMessage(getRlsFixMessage('offers', error.message || 'Failed to create offer. You may have reached the 5 offers per year limit.'));
         setSaving(false);
         return;
       }
@@ -215,7 +215,7 @@ const OffersManagement: React.FC = () => {
       setSuccessMessage('');
       const { error } = await supabase.from('offers').delete().eq('id', id);
       if (error) {
-        setErrorMessage(error.message);
+        setErrorMessage(getRlsFixMessage('offers', error.message));
         return;
       }
       setSuccessMessage('Offer deleted.');
@@ -231,12 +231,11 @@ const OffersManagement: React.FC = () => {
       .update({ is_active: !offer.is_active })
       .eq('id', offer.id);
     if (error) {
-      setErrorMessage(error.message);
+      setErrorMessage(getRlsFixMessage('offers', error.message));
       return;
     }
     fetchOffers();
   };
-
   if (loading) {
     return <div className="text-white text-center p-8">Loading...</div>;
   }
@@ -1621,11 +1620,11 @@ const ReviewsManagement: React.FC = () => {
 
     if (editingReview) {
       const { error } = await supabase.from('reviews').update(formData).eq('id', editingReview.id);
-      if (error) setErrorMessage(error.message);
+      if (error) setErrorMessage(getRlsFixMessage('reviews', error.message));
       else setSuccessMessage('Review updated.');
     } else {
       const { error } = await supabase.from('reviews').insert([formData]);
-      if (error) setErrorMessage(error.message);
+      if (error) setErrorMessage(getRlsFixMessage('reviews', error.message));
       else setSuccessMessage('Review created.');
     }
 
@@ -1656,7 +1655,7 @@ const ReviewsManagement: React.FC = () => {
   const handleDelete = async (id: string) => {
     if (confirm('Are you sure you want to delete this review?')) {
       const { error } = await supabase.from('reviews').delete().eq('id', id);
-      if (error) setErrorMessage(error.message);
+      if (error) setErrorMessage(getRlsFixMessage('reviews', error.message));
       else {
         setSuccessMessage('Review deleted.');
         fetchReviews();
@@ -1666,7 +1665,7 @@ const ReviewsManagement: React.FC = () => {
 
   const toggleActive = async (review: any) => {
     const { error } = await supabase.from('reviews').update({ is_active: !review.is_active }).eq('id', review.id);
-    if (error) setErrorMessage(error.message);
+    if (error) setErrorMessage(getRlsFixMessage('reviews', error.message));
     else fetchReviews();
   };
 
@@ -1904,7 +1903,7 @@ const MembershipPortalContentManagement: React.FC = () => {
       if (isPortalContentTableMissing(error.message)) {
         setErrorMessage('The `portal_content` table is missing in Supabase. Run `PORTAL_CONTENT_SCHEMA.sql` once, then try saving again.');
       } else {
-        setErrorMessage(error.message);
+        setErrorMessage(getRlsFixMessage('portal_content', error.message));
       }
     } else {
       setSuccessMessage(`${MEMBERSHIP_PORTAL_SECTIONS.find((item) => item.section_key === sectionKey)?.label} updated in realtime.`);
@@ -2011,7 +2010,7 @@ const MembershipPortalContentManagement: React.FC = () => {
 // Main Admin Dashboard
 
 const AdminDashboard: React.FC<{ user: User }> = ({ user }) => {
-  const [activeTab, setActiveTab] = useState<'offers' | 'festive' | 'plans' | 'images' | 'reviews'>('offers');
+  const [activeTab, setActiveTab] = useState<'offers' | 'festive' | 'plans' | 'images' | 'reviews' | 'portals'>('offers');
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
@@ -2095,9 +2094,31 @@ const AdminDashboard: React.FC<{ user: User }> = ({ user }) => {
           >
             Reviews
           </button>
+          <button
+            onClick={() => setActiveTab('portals')}
+            className={`px-6 py-3 rounded-full font-bold transition-all ${
+              activeTab === 'portals'
+                ? 'gold-gradient text-black font-black'
+                : 'glass border border-white/10 text-white'
+            }`}
+          >
+            Membership Portals
+          </button>
         </div>
 
-        {activeTab === 'offers' ? <OffersManagement /> : activeTab === 'festive' ? <FestiveOffersManagement /> : activeTab === 'plans' ? <PlansManagement /> : activeTab === 'images' ? <GalleryManagement /> : <ReviewsManagement />}
+        {activeTab === 'offers' ? (
+          <OffersManagement />
+        ) : activeTab === 'festive' ? (
+          <FestiveOffersManagement />
+        ) : activeTab === 'plans' ? (
+          <PlansManagement />
+        ) : activeTab === 'images' ? (
+          <GalleryManagement />
+        ) : activeTab === 'reviews' ? (
+          <ReviewsManagement />
+        ) : (
+          <MembershipPortalContentManagement />
+        )}
       </div>
     </div>
   );

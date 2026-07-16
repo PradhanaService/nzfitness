@@ -115,8 +115,68 @@ CREATE POLICY "Authenticated users can delete section images"
   TO authenticated
   USING (true);
 
+-- Fix public.reviews RLS (preventing RLS violations for authenticated admin actions)
+ALTER TABLE public.reviews ENABLE ROW LEVEL SECURITY;
+GRANT SELECT ON public.reviews TO anon, authenticated;
+GRANT INSERT, UPDATE, DELETE ON public.reviews TO authenticated;
+
+DROP POLICY IF EXISTS "Enable read access for all users" ON public.reviews;
+DROP POLICY IF EXISTS "Enable insert for authenticated users" ON public.reviews;
+DROP POLICY IF EXISTS "Enable update for authenticated users" ON public.reviews;
+DROP POLICY IF EXISTS "Enable delete for authenticated users" ON public.reviews;
+DROP POLICY IF EXISTS "Public can read reviews" ON public.reviews;
+DROP POLICY IF EXISTS "Authenticated users can insert reviews" ON public.reviews;
+DROP POLICY IF EXISTS "Authenticated users can update reviews" ON public.reviews;
+DROP POLICY IF EXISTS "Authenticated users can delete reviews" ON public.reviews;
+
+CREATE POLICY "Public can read reviews"
+  ON public.reviews
+  FOR SELECT
+  USING (true);
+
+CREATE POLICY "Authenticated users can insert reviews"
+  ON public.reviews
+  FOR INSERT
+  TO authenticated
+  WITH CHECK (true);
+
+CREATE POLICY "Authenticated users can update reviews"
+  ON public.reviews
+  FOR UPDATE
+  TO authenticated
+  USING (true)
+  WITH CHECK (true);
+
+CREATE POLICY "Authenticated users can delete reviews"
+  ON public.reviews
+  FOR DELETE
+  TO authenticated
+  USING (true);
+
+-- Fix public.portal_content RLS (preventing RLS violations for portal section edits)
+ALTER TABLE public.portal_content ENABLE ROW LEVEL SECURITY;
+GRANT SELECT ON public.portal_content TO anon, authenticated;
+GRANT INSERT, UPDATE, DELETE ON public.portal_content TO authenticated;
+
+DROP POLICY IF EXISTS "Enable read access for all users" ON public.portal_content;
+DROP POLICY IF EXISTS "Enable all actions for authenticated admins" ON public.portal_content;
+DROP POLICY IF EXISTS "Public can read portal content" ON public.portal_content;
+DROP POLICY IF EXISTS "Authenticated users can manage portal content" ON public.portal_content;
+
+CREATE POLICY "Public can read portal content"
+  ON public.portal_content
+  FOR SELECT
+  USING (true);
+
+CREATE POLICY "Authenticated users can manage portal content"
+  ON public.portal_content
+  FOR ALL
+  TO authenticated
+  USING (true)
+  WITH CHECK (true);
+
 SELECT schemaname, tablename, policyname, cmd, roles
 FROM pg_policies
 WHERE schemaname = 'public'
-  AND tablename IN ('offers', 'membership_plans', 'section_images')
+  AND tablename IN ('offers', 'membership_plans', 'section_images', 'reviews', 'portal_content')
 ORDER BY tablename, policyname;

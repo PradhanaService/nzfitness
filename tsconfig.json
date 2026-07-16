@@ -30,6 +30,7 @@
   "exclude": [
     "supabase",
     "node_modules",
-    "dist"
+    "dist",
+    "app"
   ]
 }
